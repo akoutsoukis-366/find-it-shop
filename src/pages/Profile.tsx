@@ -1,10 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Phone, MapPin, Loader2, Save, ArrowLeft } from 'lucide-react';
+import { User, Phone, MapPin, Loader2, Save, ArrowLeft, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
@@ -25,6 +36,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<Profile>({
     full_name: '',
@@ -94,6 +106,33 @@ const Profile = () => {
       toast.error('Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Sign out and redirect
+      await supabase.auth.signOut();
+      toast.success('Your account has been deleted');
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -242,6 +281,53 @@ const Profile = () => {
                   </>
                 )}
               </Button>
+
+              {/* Delete Account Section */}
+              <div className="border-t border-destructive/20 pt-6 mt-8">
+                <h2 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full" disabled={deleting}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        Delete Account
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your account
+                        and remove all your data from our servers, including your profile, orders history,
+                        and any other associated information.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={deleting}
+                      >
+                        {deleting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          'Yes, delete my account'
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </motion.div>
         </div>
