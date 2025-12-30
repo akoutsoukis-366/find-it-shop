@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface UserData {
   id: string;
@@ -20,6 +30,11 @@ const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; user: UserData | null }>({
+    open: false,
+    user: null,
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -28,21 +43,18 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Fetch profiles with order stats
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, email, full_name, created_at');
 
       if (profilesError) throw profilesError;
 
-      // Fetch orders to calculate stats per user
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('user_id, total');
 
       if (ordersError) throw ordersError;
 
-      // Calculate order stats per user
       const orderStats = (orders || []).reduce((acc, order) => {
         if (order.user_id) {
           if (!acc[order.user_id]) {
@@ -54,10 +66,7 @@ const AdminUsers = () => {
         return acc;
       }, {} as Record<string, { count: number; total: number }>);
 
-      // Fetch user verification status from auth (via edge function or admin API)
-      // For now, we'll use a simplified approach - checking if email is confirmed
-      // by calling the edge function that can access auth.users
-      const { data: authData, error: authError } = await supabase.functions.invoke('get-users-auth-status', {
+      const { data: authData } = await supabase.functions.invoke('get-users-auth-status', {
         body: { userIds: profiles?.map(p => p.user_id) || [] }
       });
 
@@ -79,43 +88,75 @@ const AdminUsers = () => {
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
-      // Fallback: just show profiles without auth status
-      try {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, email, full_name, created_at');
-
-        const { data: orders } = await supabase
-          .from('orders')
-          .select('user_id, total');
-
-        const orderStats = (orders || []).reduce((acc, order) => {
-          if (order.user_id) {
-            if (!acc[order.user_id]) {
-              acc[order.user_id] = { count: 0, total: 0 };
-            }
-            acc[order.user_id].count += 1;
-            acc[order.user_id].total += order.total || 0;
-          }
-          return acc;
-        }, {} as Record<string, { count: number; total: number }>);
-
-        const usersData: UserData[] = (profiles || []).map(profile => ({
-          id: profile.user_id,
-          email: profile.email || 'No email',
-          email_confirmed_at: null, // Unknown without auth data
-          created_at: profile.created_at,
-          full_name: profile.full_name,
-          orders_count: orderStats[profile.user_id]?.count || 0,
-          total_spent: orderStats[profile.user_id]?.total || 0,
-        }));
-
-        setUsers(usersData);
-      } catch (e) {
-        toast.error('Failed to load users');
-      }
+      toast.error('Failed to load users');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async (user: UserData) => {
+    setActionLoading(user.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+        body: { action: 'resend_verification', email: user.email }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || 'Failed to resend verification');
+      }
+
+      toast.success(`Verification email sent to ${user.email}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to resend verification';
+      toast.error(message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBanUser = async (user: UserData) => {
+    setActionLoading(user.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+        body: { action: 'ban_user', userId: user.id }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || 'Failed to ban user');
+      }
+
+      toast.success(`User ${user.email} has been banned`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to ban user';
+      toast.error(message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    const user = deleteDialog.user;
+    if (!user) return;
+
+    setActionLoading(user.id);
+    setDeleteDialog({ open: false, user: null });
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+        body: { action: 'delete_user', userId: user.id }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || 'Failed to delete user');
+      }
+
+      toast.success(`User ${user.email} has been deleted`);
+      setUsers(prev => prev.filter(u => u.id !== user.id));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete user';
+      toast.error(message);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -154,7 +195,6 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* Search */}
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -165,7 +205,6 @@ const AdminUsers = () => {
         />
       </div>
 
-      {/* Users Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -226,13 +265,38 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" title="Send email">
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" title="Ban user">
+                        {!user.email_confirmed_at && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Resend verification email"
+                            onClick={() => handleResendVerification(user)}
+                            disabled={actionLoading === user.id}
+                          >
+                            {actionLoading === user.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Mail className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="Ban user"
+                          onClick={() => handleBanUser(user)}
+                          disabled={actionLoading === user.id}
+                        >
                           <Ban className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete user">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-destructive hover:text-destructive" 
+                          title="Delete user"
+                          onClick={() => setDeleteDialog({ open: true, user })}
+                          disabled={actionLoading === user.id}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -244,6 +308,23 @@ const AdminUsers = () => {
           </table>
         </div>
       </motion.div>
+
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, user: open ? deleteDialog.user : null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {deleteDialog.user?.email}? This action cannot be undone and will remove all their data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

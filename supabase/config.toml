@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.get-users-auth-status]
 verify_jwt = false
+
+[functions.admin-user-actions]
+verify_jwt = false
