@@ -35,38 +35,50 @@ const Cart = () => {
   const handleCheckout = async () => {
     setIsLoading(true);
     try {
+      // Check if user is logged in and email is verified
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Please log in to proceed with checkout.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check email verification status
+      if (!user.email_confirmed_at) {
+        toast.error('Please verify your email before placing an order. Check your inbox for the verification link.');
+        setIsLoading(false);
+        return;
+      }
+
       const cartItems = items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
         selectedColor: item.selectedColor,
       }));
 
-      // Get current user and profile for prefilling
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get profile for prefilling
       let customerInfo = undefined;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
       
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (profile) {
-          customerInfo = {
-            email: profile.email || user.email,
-            name: profile.full_name,
-            phone: profile.phone,
-            address: {
-              line1: profile.address_line1,
-              line2: profile.address_line2,
-              city: profile.city,
-              state: profile.state,
-              postal_code: profile.postal_code,
-              country: profile.country,
-            },
-          };
-        }
+      if (profile) {
+        customerInfo = {
+          email: profile.email || user.email,
+          name: profile.full_name,
+          phone: profile.phone,
+          address: {
+            line1: profile.address_line1,
+            line2: profile.address_line2,
+            city: profile.city,
+            state: profile.state,
+            postal_code: profile.postal_code,
+            country: profile.country,
+          },
+        };
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {

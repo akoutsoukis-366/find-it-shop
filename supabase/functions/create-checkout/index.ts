@@ -102,7 +102,7 @@ serve(async (req) => {
       }
     }
 
-    // Create checkout session (guest checkout supported)
+    // Create checkout session with prefilled customer data
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       line_items: lineItems,
       mode: "payment",
@@ -138,11 +138,34 @@ serve(async (req) => {
           "ZA", "ZM", "ZW"
         ],
       },
+      phone_number_collection: {
+        enabled: true,
+      },
     };
 
-    // Add customer or customer_email
+    // Add customer with full prefill or just email
     if (customerId) {
       sessionConfig.customer = customerId;
+      // Update customer with latest info if available
+      if (customerInfo) {
+        try {
+          await stripe.customers.update(customerId, {
+            name: customerInfo.name || undefined,
+            phone: customerInfo.phone || undefined,
+            address: customerInfo.address?.line1 ? {
+              line1: customerInfo.address.line1,
+              line2: customerInfo.address.line2 || undefined,
+              city: customerInfo.address.city || undefined,
+              state: customerInfo.address.state || undefined,
+              postal_code: customerInfo.address.postal_code || undefined,
+              country: customerInfo.address.country || 'US',
+            } : undefined,
+          });
+          console.log("[CREATE-CHECKOUT] Updated customer with latest profile data");
+        } catch (updateError) {
+          console.log("[CREATE-CHECKOUT] Could not update customer:", updateError);
+        }
+      }
     } else if (email) {
       sessionConfig.customer_email = email;
     }
