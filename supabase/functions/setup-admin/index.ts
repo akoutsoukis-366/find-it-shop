@@ -14,8 +14,14 @@ serve(async (req) => {
   try {
     const { email, password, setupKey } = await req.json();
 
-    // Simple setup key check - in production use a more secure method
-    if (setupKey !== "itag-admin-setup-2024") {
+    // Validate setup key from environment secret
+    const validSetupKey = Deno.env.get("ADMIN_SETUP_KEY");
+    if (!validSetupKey) {
+      console.error("[SETUP-ADMIN] ADMIN_SETUP_KEY environment variable is not configured");
+      throw new Error("Setup is not properly configured");
+    }
+    
+    if (!setupKey || setupKey !== validSetupKey) {
       throw new Error("Invalid setup key");
     }
 
