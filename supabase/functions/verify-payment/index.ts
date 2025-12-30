@@ -13,13 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId } = await req.json();
+    const { sessionId, userId } = await req.json();
     
     if (!sessionId) {
       throw new Error("No session ID provided");
     }
 
-    console.log("[VERIFY-PAYMENT] Verifying session:", sessionId);
+    console.log("[VERIFY-PAYMENT] Verifying session:", sessionId, "User:", userId);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -90,6 +90,7 @@ serve(async (req) => {
         total: session.amount_total || 0,
         currency: session.currency || "usd",
         status: "completed",
+        user_id: userId || null,
       })
       .select()
       .single();

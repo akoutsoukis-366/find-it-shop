@@ -18,6 +18,9 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogin from "./pages/admin/AdminLogin";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +37,9 @@ const App = () => (
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/about" element={<About />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
