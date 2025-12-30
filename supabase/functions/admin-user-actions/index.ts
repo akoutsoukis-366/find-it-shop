@@ -76,12 +76,46 @@ serve(async (req) => {
       case 'delete_user': {
         if (!userId) throw new Error("User ID required");
         
-        // Delete from auth (this will cascade to profiles due to FK)
+        // First, manually delete related data that might not have cascade
+        // Delete user roles
+        const { error: rolesDeleteError } = await supabaseAdmin
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+        
+        if (rolesDeleteError) {
+          console.error("[ADMIN-USER-ACTIONS] Error deleting user roles:", rolesDeleteError);
+        }
+
+        // Delete profile
+        const { error: profileDeleteError } = await supabaseAdmin
+          .from('profiles')
+          .delete()
+          .eq('user_id', userId);
+        
+        if (profileDeleteError) {
+          console.error("[ADMIN-USER-ACTIONS] Error deleting profile:", profileDeleteError);
+        }
+
+        // Update orders to remove user_id (keep orders for records)
+        const { error: ordersUpdateError } = await supabaseAdmin
+          .from('orders')
+          .update({ user_id: null })
+          .eq('user_id', userId);
+        
+        if (ordersUpdateError) {
+          console.error("[ADMIN-USER-ACTIONS] Error updating orders:", ordersUpdateError);
+        }
+        
+        // Now delete from auth
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
         
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          console.error("[ADMIN-USER-ACTIONS] Error deleting auth user:", deleteError);
+          throw new Error(`Failed to delete user: ${deleteError.message}`);
+        }
         
-        console.log("[ADMIN-USER-ACTIONS] User deleted:", userId);
+        console.log("[ADMIN-USER-ACTIONS] User deleted successfully:", userId);
         return new Response(JSON.stringify({ success: true, message: "User deleted" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
