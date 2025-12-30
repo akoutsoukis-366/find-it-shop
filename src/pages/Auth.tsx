@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Phone, MapPin, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Phone, MapPin, Loader2, AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,11 @@ const Auth = () => {
   const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('US');
+  
+  // Forgot password
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   useEffect(() => {
     // Check if already logged in
@@ -67,6 +72,28 @@ const Auth = () => {
       toast.success('Welcome back!');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (resetError) throw resetError;
+
+      setResetEmailSent(true);
+      toast.success('Password reset email sent!');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send reset email';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -180,18 +207,84 @@ const Auth = () => {
             animate={{ opacity: 1, y: 0 }}
             className="bg-card rounded-2xl border border-border p-8"
           >
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
+            {showForgotPassword ? (
+              <div>
+                <button
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmailSent(false);
+                    setError(null);
+                  }}
+                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Login
+                </button>
 
-              {error && (
-                <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3">
-                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
-                  <p className="text-sm text-destructive">{error}</p>
-                </div>
-              )}
+                <h2 className="text-2xl font-bold text-foreground mb-2">Reset Password</h2>
+                <p className="text-muted-foreground mb-6">
+                  Enter your email address and we'll send you a link to reset your password.
+                </p>
+
+                {error && (
+                  <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                    <p className="text-sm text-destructive">{error}</p>
+                  </div>
+                )}
+
+                {resetEmailSent ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-foreground mb-2">Check your email</h3>
+                    <p className="text-muted-foreground">
+                      We've sent a password reset link to <strong>{forgotEmail}</strong>
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="forgot-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        'Send Reset Link'
+                      )}
+                    </Button>
+                  </form>
+                )}
+              </div>
+            ) : (
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-8">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+
+                {error && (
+                  <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                    <p className="text-sm text-destructive">{error}</p>
+                  </div>
+                )}
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-6">
@@ -237,6 +330,16 @@ const Auth = () => {
                       'Sign In'
                     )}
                   </Button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
@@ -400,6 +503,7 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
+            )}
           </motion.div>
         </div>
       </main>
