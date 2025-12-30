@@ -21,8 +21,12 @@ const PaymentSuccess = () => {
       if (sessionId) {
         try {
           console.log('[PaymentSuccess] Verifying session:', sessionId);
+          
+          // Get current user if logged in
+          const { data: { session: authSession } } = await supabase.auth.getSession();
+          
           const { data, error } = await supabase.functions.invoke('verify-payment', {
-            body: { sessionId },
+            body: { sessionId, userId: authSession?.user?.id },
           });
           
           if (error) {
