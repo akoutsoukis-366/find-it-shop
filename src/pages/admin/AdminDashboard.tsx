@@ -1,20 +1,77 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, Users, DollarSign, TrendingUp, ShoppingCart, ArrowUp, ArrowDown } from 'lucide-react';
+import { Package, Users, DollarSign, ShoppingCart, ArrowUp, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  customer_name: string | null;
+  items: OrderItem[];
+  total: number;
+  status: string;
+  created_at: string;
+}
 
 const AdminDashboard = () => {
-  const stats = [
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      
+      const parsedOrders = (data || []).map(order => ({
+        ...order,
+        items: order.items as unknown as OrderItem[]
+      }));
+      
+      setOrders(parsedOrders);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate stats from orders
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const orderCount = orders.length;
+
+  const stats: Array<{
+    title: string;
+    value: string;
+    change: string;
+    trend: 'up' | 'down' | 'neutral';
+    icon: typeof DollarSign;
+  }> = [
     {
       title: 'Total Revenue',
-      value: '$45,231.89',
-      change: '+20.1%',
-      trend: 'up',
+      value: `$${(totalRevenue / 100).toFixed(2)}`,
+      change: '+0%',
+      trend: 'neutral',
       icon: DollarSign,
     },
     {
       title: 'Orders',
-      value: '1,234',
-      change: '+15.3%',
-      trend: 'up',
+      value: orderCount.toString(),
+      change: '+0%',
+      trend: 'neutral',
       icon: ShoppingCart,
     },
     {
@@ -26,33 +83,37 @@ const AdminDashboard = () => {
     },
     {
       title: 'Customers',
-      value: '892',
-      change: '+12.5%',
-      trend: 'up',
+      value: new Set(orders.map(o => o.customer_name)).size.toString(),
+      change: '+0%',
+      trend: 'neutral',
       icon: Users,
     },
   ];
 
-  const recentOrders = [
-    { id: '#12345', customer: 'John Doe', product: 'iTag Pro', amount: '$39.99', status: 'Completed' },
-    { id: '#12344', customer: 'Jane Smith', product: 'iTag 4-Pack', amount: '$89.99', status: 'Processing' },
-    { id: '#12343', customer: 'Bob Wilson', product: 'iTag Mini', amount: '$24.99', status: 'Shipped' },
-    { id: '#12342', customer: 'Alice Brown', product: 'iTag Ultra', amount: '$59.99', status: 'Completed' },
-    { id: '#12341', customer: 'Charlie Davis', product: 'iTag Pet', amount: '$29.99', status: 'Processing' },
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed':
+      case 'completed':
         return 'bg-success/20 text-success';
-      case 'Processing':
+      case 'processing':
         return 'bg-warning/20 text-warning';
-      case 'Shipped':
+      case 'shipped':
         return 'bg-primary/20 text-primary';
       default:
         return 'bg-muted text-muted-foreground';
     }
   };
+
+  const formatPrice = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -78,7 +139,7 @@ const AdminDashboard = () => {
               <div className={`flex items-center gap-1 text-sm ${
                 stat.trend === 'up' ? 'text-success' : stat.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
               }`}>
-                {stat.trend === 'up' ? <ArrowUp className="h-4 w-4" /> : stat.trend === 'down' ? <ArrowDown className="h-4 w-4" /> : null}
+                {stat.trend === 'up' && <ArrowUp className="h-4 w-4" />}
                 {stat.change}
               </div>
             </div>
@@ -98,34 +159,46 @@ const AdminDashboard = () => {
         <div className="p-6 border-b border-border">
           <h2 className="text-xl font-bold text-foreground">Recent Orders</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Product</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Amount</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-foreground">{order.id}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{order.customer}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{order.product}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-foreground">{order.amount}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </td>
+        {orders.length === 0 ? (
+          <div className="p-12 text-center">
+            <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No orders yet</h3>
+            <p className="text-muted-foreground">Orders will appear here after customers complete checkout.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Amount</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-foreground font-mono">
+                      {order.id.slice(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{order.customer_name || 'Guest'}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {order.items.map(item => item.name).join(', ')}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-foreground">{formatPrice(order.total)}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </motion.div>
     </div>
   );

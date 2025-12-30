@@ -1,26 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Eye, Package, Check, X } from 'lucide-react';
+import { Search, Eye, Package, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
-const mockOrders = [
-  { id: '#12345', customer: 'John Doe', email: 'john@example.com', products: ['iTag Pro'], total: '$39.99', date: 'Dec 28, 2024', status: 'completed' },
-  { id: '#12344', customer: 'Jane Smith', email: 'jane@example.com', products: ['iTag 4-Pack'], total: '$89.99', date: 'Dec 28, 2024', status: 'processing' },
-  { id: '#12343', customer: 'Bob Wilson', email: 'bob@example.com', products: ['iTag Mini', 'iTag Pet'], total: '$54.98', date: 'Dec 27, 2024', status: 'shipped' },
-  { id: '#12342', customer: 'Alice Brown', email: 'alice@example.com', products: ['iTag Ultra'], total: '$59.99', date: 'Dec 27, 2024', status: 'completed' },
-  { id: '#12341', customer: 'Charlie Davis', email: 'charlie@example.com', products: ['iTag Pet'], total: '$29.99', date: 'Dec 26, 2024', status: 'cancelled' },
-  { id: '#12340', customer: 'Diana Evans', email: 'diana@example.com', products: ['iTag Pro', 'iTag Mini'], total: '$64.98', date: 'Dec 26, 2024', status: 'completed' },
-];
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  customer_name: string | null;
+  customer_email: string | null;
+  items: OrderItem[];
+  total: number;
+  created_at: string;
+  status: string;
+}
 
 const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredOrders = mockOrders.filter(
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Parse items from JSONB
+      const parsedOrders = (data || []).map(order => ({
+        ...order,
+        items: order.items as unknown as OrderItem[]
+      }));
+      
+      setOrders(parsedOrders);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredOrders = orders.filter(
     (order) =>
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchQuery.toLowerCase())
+      (order.customer_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (order.customer_email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -37,6 +74,26 @@ const AdminOrders = () => {
         return 'bg-muted text-muted-foreground';
     }
   };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatPrice = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -64,61 +121,61 @@ const AdminOrders = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-2xl border border-border overflow-hidden"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-foreground">{order.id}</td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-foreground">{order.customer}</div>
-                      <div className="text-sm text-muted-foreground">{order.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    {order.products.join(', ')}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-foreground">{order.total}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{order.date}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {order.status === 'processing' && (
-                        <>
-                          <Button variant="ghost" size="icon" className="text-success hover:text-success">
-                            <Package className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+        {filteredOrders.length === 0 ? (
+          <div className="p-12 text-center">
+            <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No orders yet</h3>
+            <p className="text-muted-foreground">Orders will appear here after customers complete checkout.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
+                  <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-foreground font-mono text-sm">
+                      {order.id.slice(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="font-medium text-foreground">{order.customer_name || 'Guest'}</div>
+                        <div className="text-sm text-muted-foreground">{order.customer_email || 'N/A'}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {order.items.map(item => `${item.name} (×${item.quantity})`).join(', ')}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-foreground">{formatPrice(order.total)}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{formatDate(order.created_at)}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="icon">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </motion.div>
     </div>
   );
