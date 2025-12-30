@@ -40,22 +40,25 @@ const Auth = () => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
+  const [justSignedUp, setJustSignedUp] = useState(false);
+
   useEffect(() => {
     // Check if already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session && !justSignedUp) {
         navigate('/');
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      // Don't redirect if user just signed up - they need to verify email
+      if (session && !justSignedUp) {
         navigate('/');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, justSignedUp]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,17 +149,34 @@ const Auth = () => {
         }
       }
 
+      // Pass user metadata during signup so the trigger can use it
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: fullName,
+            phone: phone.trim() || null,
+            address_line1: addressLine1,
+            address_line2: addressLine2,
+            city,
+            state,
+            postal_code: postalCode,
+            country,
+          },
         },
       });
 
       if (signUpError) throw signUpError;
 
       if (data.user) {
+        // Mark that we just signed up to prevent auto-redirect
+        setJustSignedUp(true);
+        
+        // Wait a moment for the trigger to create the profile, then update it
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Update profile with additional info
         const { error: profileError } = await supabase
           .from('profiles')
@@ -176,7 +196,27 @@ const Auth = () => {
           console.error('Profile update error:', profileError);
         }
 
-        toast.success('Account created successfully!');
+        // Sign out the user so they can verify their email first
+        await supabase.auth.signOut();
+        
+        // Show success message and switch to login tab
+        toast.success('Account created! Please check your email to verify your account before logging in.', {
+          duration: 6000,
+        });
+        
+        // Reset form
+        setSignupEmail('');
+        setSignupPassword('');
+        setConfirmPassword('');
+        setFullName('');
+        setPhone('');
+        setAddressLine1('');
+        setAddressLine2('');
+        setCity('');
+        setState('');
+        setPostalCode('');
+        setCountry('US');
+        setJustSignedUp(false);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Signup failed';
