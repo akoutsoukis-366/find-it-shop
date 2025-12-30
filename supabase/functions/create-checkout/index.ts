@@ -7,14 +7,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Map product IDs to Stripe price IDs
+// Map product IDs (UUIDs from database) to Stripe price IDs
 const priceMapping: Record<string, string> = {
-  "1": "price_1SkAGv2IvxMhfbuvLA70JaiF", // iTag Pro
-  "2": "price_1SkAH12IvxMhfbuvcCBgMg9Q", // iTag Mini
-  "3": "price_1SkAH32IvxMhfbuvIkcfVybn", // iTag Ultra
-  "4": "price_1SkAH42IvxMhfbuvLOoxUqX0", // iTag Slim
-  "5": "price_1SkAH62IvxMhfbuvWkXe2cm3", // iTag Pet
-  "6": "price_1SkAH82IvxMhfbuvq03DEvK3", // iTag 4-Pack
+  "c3b9b190-2c40-4585-9df4-3951a73da274": "price_1SkAGv2IvxMhfbuvLA70JaiF", // iTag Pro
+  "9b88372b-d53e-47e6-8a4f-c00c7551873c": "price_1SkAH12IvxMhfbuvcCBgMg9Q", // iTag Mini
+  "582fa096-7c4e-4cc4-b816-f813c517b206": "price_1SkAH32IvxMhfbuvIkcfVybn", // iTag Ultra
+  "9241cf38-6d1b-4d86-b48b-8bb2f6ae6bfd": "price_1SkAH42IvxMhfbuvLOoxUqX0", // iTag Slim
+  "721c44b0-1b4a-4856-9581-9c569232105f": "price_1SkAH62IvxMhfbuvWkXe2cm3", // iTag Pet
+  "b894ac5b-f1ae-4c79-9622-a7d792fc758c": "price_1SkAH82IvxMhfbuvq03DEvK3", // iTag 4-Pack
 };
 
 interface CartItem {
