@@ -41,8 +41,36 @@ const Cart = () => {
         selectedColor: item.selectedColor,
       }));
 
+      // Get current user and profile for prefilling
+      const { data: { user } } = await supabase.auth.getUser();
+      let customerInfo = undefined;
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          customerInfo = {
+            email: profile.email || user.email,
+            name: profile.full_name,
+            phone: profile.phone,
+            address: {
+              line1: profile.address_line1,
+              line2: profile.address_line2,
+              city: profile.city,
+              state: profile.state,
+              postal_code: profile.postal_code,
+              country: profile.country,
+            },
+          };
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { items: cartItems },
+        body: { items: cartItems, customerInfo },
       });
 
       if (error) throw error;

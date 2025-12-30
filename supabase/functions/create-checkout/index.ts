@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,6 +23,20 @@ interface CartItem {
   selectedColor: string;
 }
 
+interface CustomerInfo {
+  email?: string;
+  name?: string;
+  phone?: string;
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -29,10 +44,11 @@ serve(async (req) => {
   }
 
   try {
-    const { items, customerEmail } = await req.json();
+    const { items, customerEmail, customerInfo } = await req.json();
     
     console.log("[CREATE-CHECKOUT] Starting checkout session creation");
     console.log("[CREATE-CHECKOUT] Items received:", JSON.stringify(items));
+    console.log("[CREATE-CHECKOUT] Customer info:", JSON.stringify(customerInfo));
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error("No items provided for checkout");
@@ -56,6 +72,35 @@ serve(async (req) => {
     });
 
     console.log("[CREATE-CHECKOUT] Line items:", JSON.stringify(lineItems));
+
+    // Check for existing Stripe customer or create new one with prefilled info
+    let customerId: string | undefined;
+    const email = customerInfo?.email || customerEmail;
+    
+    if (email) {
+      const customers = await stripe.customers.list({ email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        console.log("[CREATE-CHECKOUT] Found existing customer:", customerId);
+      } else if (customerInfo) {
+        // Create new customer with prefilled info
+        const newCustomer = await stripe.customers.create({
+          email,
+          name: customerInfo.name,
+          phone: customerInfo.phone,
+          address: customerInfo.address ? {
+            line1: customerInfo.address.line1 || '',
+            line2: customerInfo.address.line2 || '',
+            city: customerInfo.address.city || '',
+            state: customerInfo.address.state || '',
+            postal_code: customerInfo.address.postal_code || '',
+            country: customerInfo.address.country || 'US',
+          } : undefined,
+        });
+        customerId = newCustomer.id;
+        console.log("[CREATE-CHECKOUT] Created new customer:", customerId);
+      }
+    }
 
     // Create checkout session (guest checkout supported)
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -95,9 +140,11 @@ serve(async (req) => {
       },
     };
 
-    // Add customer email if provided
-    if (customerEmail) {
-      sessionConfig.customer_email = customerEmail;
+    // Add customer or customer_email
+    if (customerId) {
+      sessionConfig.customer = customerId;
+    } else if (email) {
+      sessionConfig.customer_email = email;
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
