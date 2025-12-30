@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -23,10 +26,37 @@ const productImages: Record<string, string> = {
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   const subtotal = getTotalPrice();
   const shipping = subtotal > 50 ? 0 : 9.99;
   const total = subtotal + shipping;
+
+  const handleCheckout = async () => {
+    setIsLoading(true);
+    try {
+      const cartItems = items.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        selectedColor: item.selectedColor,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { items: cartItems },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Failed to start checkout. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -189,8 +219,21 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <Button variant="hero" size="lg" className="w-full">
-                  Proceed to Checkout
+                <Button 
+                  variant="hero" 
+                  size="lg" 
+                  className="w-full"
+                  onClick={handleCheckout}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Proceed to Checkout'
+                  )}
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center">
