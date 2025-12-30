@@ -61,6 +61,9 @@ const AdminOrders = () => {
   };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
     try {
       const { error } = await supabase
         .from('orders')
@@ -69,11 +72,30 @@ const AdminOrders = () => {
 
       if (error) throw error;
 
-      setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
+      setOrders(orders.map(o => 
+        o.id === orderId ? { ...o, status: newStatus } : o
       ));
       
       toast.success(`Order status updated to ${newStatus}`);
+
+      // Send email notification for shipped or delivered status
+      if (newStatus === 'shipped' || newStatus === 'delivered') {
+        try {
+          await supabase.functions.invoke('send-order-status-email', {
+            body: {
+              customerEmail: order.customer_email,
+              customerName: order.customer_name,
+              orderId: order.id,
+              status: newStatus,
+              items: order.items,
+            },
+          });
+          toast.success('Customer notification sent');
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Don't show error toast - status update was successful
+        }
+      }
     } catch (error) {
       console.error('Error updating order status:', error);
       toast.error('Failed to update order status');
