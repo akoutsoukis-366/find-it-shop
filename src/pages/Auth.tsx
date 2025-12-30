@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { countries } from '@/data/countries';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -89,6 +91,34 @@ const Auth = () => {
     }
 
     try {
+      // Check if email already exists in profiles
+      const { data: existingEmail } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', signupEmail.toLowerCase().trim())
+        .maybeSingle();
+
+      if (existingEmail) {
+        setError('An account with this email already exists');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if phone already exists (only if phone provided)
+      if (phone.trim()) {
+        const { data: existingPhone } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('phone', phone.trim())
+          .maybeSingle();
+
+        if (existingPhone) {
+          setError('An account with this phone number already exists');
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
@@ -105,7 +135,7 @@ const Auth = () => {
           .from('profiles')
           .update({
             full_name: fullName,
-            phone,
+            phone: phone.trim() || null,
             address_line1: addressLine1,
             address_line2: addressLine2,
             city,
@@ -123,7 +153,12 @@ const Auth = () => {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Signup failed';
-      setError(message);
+      // Handle Supabase auth duplicate email error
+      if (message.includes('already registered') || message.includes('already exists')) {
+        setError('An account with this email already exists');
+      } else {
+        setError(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -337,12 +372,18 @@ const Auth = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="country">Country</Label>
-                      <Input
-                        id="country"
-                        placeholder="US"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                      />
+                      <Select value={country} onValueChange={setCountry}>
+                        <SelectTrigger id="country">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                          {countries.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
