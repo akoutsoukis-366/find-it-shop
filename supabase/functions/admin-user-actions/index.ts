@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,15 +18,18 @@ serve(async (req) => {
     );
 
     // Verify the requesting user is an admin
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get("Authorization") || req.headers.get("authorization");
     if (!authHeader) {
-      throw new Error("No authorization header");
+      throw new Error("Unauthorized");
     }
 
-    const token = authHeader.replace("Bearer ", "");
+    const parts = authHeader.trim().split(/\s+/);
+    const token = parts.length === 2 ? parts[1] : authHeader.replace(/^Bearer\s+/i, "");
+
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    
+
     if (authError || !user) {
+      console.error("[ADMIN-USER-ACTIONS] getUser failed:", authError?.message);
       throw new Error("Unauthorized");
     }
 
@@ -145,9 +148,12 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[ADMIN-USER-ACTIONS] Error:", errorMessage);
+
+    const status = errorMessage === "Unauthorized" ? 401 : 400;
+
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status,
     });
   }
 });
