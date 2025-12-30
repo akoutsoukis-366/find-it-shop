@@ -43,16 +43,35 @@ serve(async (req) => {
         price: item.amount_total,
       }));
       
-      // Extract shipping address
-      const shippingAddress = session.shipping_details?.address ? {
-        name: session.shipping_details.name,
-        line1: session.shipping_details.address.line1,
-        line2: session.shipping_details.address.line2,
-        city: session.shipping_details.address.city,
-        state: session.shipping_details.address.state,
-        postal_code: session.shipping_details.address.postal_code,
-        country: session.shipping_details.address.country,
-      } : null;
+      // Extract shipping address - check both shipping_details and customer_details
+      let shippingAddress = null;
+      
+      if (session.shipping_details?.address) {
+        shippingAddress = {
+          name: session.shipping_details.name,
+          line1: session.shipping_details.address.line1,
+          line2: session.shipping_details.address.line2,
+          city: session.shipping_details.address.city,
+          state: session.shipping_details.address.state,
+          postal_code: session.shipping_details.address.postal_code,
+          country: session.shipping_details.address.country,
+        };
+      } else if (session.customer_details?.address) {
+        // Fallback to customer_details address
+        shippingAddress = {
+          name: session.customer_details.name,
+          line1: session.customer_details.address.line1,
+          line2: session.customer_details.address.line2,
+          city: session.customer_details.address.city,
+          state: session.customer_details.address.state,
+          postal_code: session.customer_details.address.postal_code,
+          country: session.customer_details.address.country,
+        };
+      }
+      
+      console.log(`[STRIPE-WEBHOOK] Shipping address:`, JSON.stringify(shippingAddress));
+      console.log(`[STRIPE-WEBHOOK] Session shipping_details:`, JSON.stringify(session.shipping_details));
+      console.log(`[STRIPE-WEBHOOK] Session customer_details:`, JSON.stringify(session.customer_details));
       
       // Insert order into database
       const { data, error } = await supabase
