@@ -83,18 +83,25 @@ serve(async (req) => {
         customerId = customers.data[0].id;
         console.log("[CREATE-CHECKOUT] Found existing customer:", customerId);
       } else if (customerInfo) {
-        // Create new customer with prefilled info
+        // Create new customer with prefilled info including shipping
+        const addressData = customerInfo.address ? {
+          line1: customerInfo.address.line1 || '',
+          line2: customerInfo.address.line2 || '',
+          city: customerInfo.address.city || '',
+          state: customerInfo.address.state || '',
+          postal_code: customerInfo.address.postal_code || '',
+          country: customerInfo.address.country || 'US',
+        } : undefined;
+        
         const newCustomer = await stripe.customers.create({
           email,
           name: customerInfo.name,
           phone: customerInfo.phone,
-          address: customerInfo.address ? {
-            line1: customerInfo.address.line1 || '',
-            line2: customerInfo.address.line2 || '',
-            city: customerInfo.address.city || '',
-            state: customerInfo.address.state || '',
-            postal_code: customerInfo.address.postal_code || '',
-            country: customerInfo.address.country || 'US',
+          address: addressData,
+          shipping: addressData ? {
+            name: customerInfo.name || '',
+            phone: customerInfo.phone || '',
+            address: addressData,
           } : undefined,
         });
         customerId = newCustomer.id;
@@ -146,22 +153,29 @@ serve(async (req) => {
     // Add customer with full prefill or just email
     if (customerId) {
       sessionConfig.customer = customerId;
-      // Update customer with latest info if available
+      // Update customer with latest info including shipping for prefill
       if (customerInfo) {
         try {
+          const addressData = customerInfo.address?.line1 ? {
+            line1: customerInfo.address.line1,
+            line2: customerInfo.address.line2 || undefined,
+            city: customerInfo.address.city || undefined,
+            state: customerInfo.address.state || undefined,
+            postal_code: customerInfo.address.postal_code || undefined,
+            country: customerInfo.address.country || 'US',
+          } : undefined;
+          
           await stripe.customers.update(customerId, {
             name: customerInfo.name || undefined,
             phone: customerInfo.phone || undefined,
-            address: customerInfo.address?.line1 ? {
-              line1: customerInfo.address.line1,
-              line2: customerInfo.address.line2 || undefined,
-              city: customerInfo.address.city || undefined,
-              state: customerInfo.address.state || undefined,
-              postal_code: customerInfo.address.postal_code || undefined,
-              country: customerInfo.address.country || 'US',
+            address: addressData,
+            shipping: addressData ? {
+              name: customerInfo.name || '',
+              phone: customerInfo.phone || '',
+              address: addressData,
             } : undefined,
           });
-          console.log("[CREATE-CHECKOUT] Updated customer with latest profile data");
+          console.log("[CREATE-CHECKOUT] Updated customer with latest profile and shipping data");
         } catch (updateError) {
           console.log("[CREATE-CHECKOUT] Could not update customer:", updateError);
         }
