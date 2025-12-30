@@ -11,13 +11,25 @@ import itagSlim from '@/assets/itag-slim.png';
 import itagPet from '@/assets/itag-pet.png';
 import itagPack from '@/assets/itag-pack.png';
 
-const productImages: Record<string, string> = {
-  '1': itagPro,
-  '2': itagMini,
-  '3': itagUltra,
-  '4': itagSlim,
-  '5': itagPet,
-  '6': itagPack,
+const productImageMap: Record<string, string> = {
+  'itag-pro': itagPro,
+  'itag-mini': itagMini,
+  'itag-ultra': itagUltra,
+  'itag-slim': itagSlim,
+  'itag-pet': itagPet,
+  'itag-pack': itagPack,
+  'itag-4-pack': itagPack,
+};
+
+const getProductImage = (imagePath: string | undefined, productName: string): string => {
+  // Try to match by image path
+  if (imagePath) {
+    const key = imagePath.split('/').pop()?.replace('.png', '') || '';
+    if (productImageMap[key]) return productImageMap[key];
+  }
+  // Try to match by product name
+  const nameKey = productName.toLowerCase().replace(/\s+/g, '-');
+  return productImageMap[nameKey] || itagPro;
 };
 
 interface ProductCardProps {
@@ -30,7 +42,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    addItem(product, product.colors[0]);
+    addItem(product, product.colors[0] || '#1a1a1a');
     toast.success(`${product.name} added to cart!`);
   };
 
@@ -53,7 +65,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {/* Image */}
           <div className="aspect-square bg-gradient-to-b from-secondary to-card p-8 flex items-center justify-center overflow-hidden">
             <motion.img
-              src={productImages[product.id] || itagPro}
+              src={getProductImage(product.image, product.name)}
               alt={product.name}
               className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
             />
@@ -92,24 +104,27 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 variant="secondary"
                 onClick={handleAddToCart}
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
+                disabled={!product.inStock}
               >
                 <ShoppingCart className="h-4 w-4" />
               </Button>
             </div>
 
             {/* Colors */}
-            <div className="flex items-center gap-2">
-              {product.colors.slice(0, 4).map((color, i) => (
-                <div
-                  key={i}
-                  className="w-4 h-4 rounded-full border border-border"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-              {product.colors.length > 4 && (
-                <span className="text-xs text-muted-foreground">+{product.colors.length - 4}</span>
-              )}
-            </div>
+            {product.colors.length > 0 && (
+              <div className="flex items-center gap-2">
+                {product.colors.slice(0, 4).map((color, i) => (
+                  <div
+                    key={i}
+                    className="w-4 h-4 rounded-full border border-border"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+                {product.colors.length > 4 && (
+                  <span className="text-xs text-muted-foreground">+{product.colors.length - 4}</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </Link>
