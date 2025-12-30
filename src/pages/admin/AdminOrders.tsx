@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Eye, Package, X, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search, Package, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface OrderItem {
   name: string;
@@ -53,6 +60,26 @@ const AdminOrders = () => {
     }
   };
 
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      setOrders(orders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+      
+      toast.success(`Order status updated to ${newStatus}`);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('Failed to update order status');
+    }
+  };
+
   const filteredOrders = orders.filter(
     (order) =>
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -62,7 +89,7 @@ const AdminOrders = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'delivered':
         return 'bg-success/20 text-success';
       case 'processing':
         return 'bg-warning/20 text-warning';
@@ -138,7 +165,6 @@ const AdminOrders = () => {
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -159,16 +185,25 @@ const AdminOrders = () => {
                     <td className="px-6 py-4 font-medium text-foreground">{formatPrice(order.total)}</td>
                     <td className="px-6 py-4 text-muted-foreground">{formatDate(order.created_at)}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Select
+                        value={order.status}
+                        onValueChange={(value) => handleStatusChange(order.id, value)}
+                      >
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                              {order.status}
+                            </span>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="shipped">Shipped</SelectItem>
+                          <SelectItem value="delivered">Delivered</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
                   </tr>
                 ))}
