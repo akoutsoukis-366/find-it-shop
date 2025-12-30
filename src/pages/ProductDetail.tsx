@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Minus, Plus, Star, Truck, Shield, RefreshCcw } from 'lucide-react';
-import { products } from '@/data/products';
+import { ArrowLeft, Minus, Plus, Star, Truck, Shield, RefreshCcw, Loader2 } from 'lucide-react';
+import { useProduct } from '@/hooks/useProducts';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -15,23 +15,48 @@ import itagSlim from '@/assets/itag-slim.png';
 import itagPet from '@/assets/itag-pet.png';
 import itagPack from '@/assets/itag-pack.png';
 
-const productImages: Record<string, string> = {
-  '1': itagPro,
-  '2': itagMini,
-  '3': itagUltra,
-  '4': itagSlim,
-  '5': itagPet,
-  '6': itagPack,
+const productImageMap: Record<string, string> = {
+  'itag-pro': itagPro,
+  'itag-mini': itagMini,
+  'itag-ultra': itagUltra,
+  'itag-slim': itagSlim,
+  'itag-pet': itagPet,
+  'itag-pack': itagPack,
+  'itag-4-pack': itagPack,
+};
+
+const getProductImage = (imagePath: string | undefined, productName: string): string => {
+  // Try to match by image path
+  if (imagePath) {
+    const key = imagePath.split('/').pop()?.replace('.png', '') || '';
+    if (productImageMap[key]) return productImageMap[key];
+  }
+  // Try to match by product name
+  const nameKey = productName.toLowerCase().replace(/\s+/g, '-');
+  return productImageMap[nameKey] || itagPro;
 };
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = products.find((p) => p.id === id);
-  const [selectedColor, setSelectedColor] = useState(product?.colors[0] || '');
+  const { product, isLoading, error } = useProduct(id);
+  const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
 
-  if (!product) {
+  // Set default color when product loads
+  if (product && !selectedColor && product.colors.length > 0) {
+    setSelectedColor(product.colors[0]);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -46,7 +71,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addItem(product, selectedColor);
+      addItem(product, selectedColor || product.colors[0]);
     }
     toast.success(`${quantity} x ${product.name} added to cart!`);
   };
@@ -79,7 +104,7 @@ const ProductDetail = () => {
               <div className="aspect-square bg-card rounded-3xl border border-border overflow-hidden flex items-center justify-center p-12">
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
                 <motion.img
-                  src={productImages[product.id] || itagPro}
+                  src={getProductImage(product.image, product.name)}
                   alt={product.name}
                   className="relative w-full h-full object-contain"
                   initial={{ scale: 0.9 }}
@@ -128,25 +153,27 @@ const ProductDetail = () => {
               </div>
 
               {/* Color Selection */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-3">
-                  Color
-                </label>
-                <div className="flex items-center gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        selectedColor === color
-                          ? 'border-primary scale-110'
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
+              {product.colors.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-3">
+                    Color
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`w-10 h-10 rounded-full border-2 transition-all ${
+                          selectedColor === color
+                            ? 'border-primary scale-110'
+                            : 'border-border hover:border-muted-foreground'
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Quantity */}
               <div>
@@ -180,8 +207,12 @@ const ProductDetail = () => {
                 size="xl"
                 className="w-full"
                 onClick={handleAddToCart}
+                disabled={!product.inStock}
               >
-                Add to Cart - ${(product.price * quantity).toFixed(2)}
+                {product.inStock 
+                  ? `Add to Cart - $${(product.price * quantity).toFixed(2)}`
+                  : 'Out of Stock'
+                }
               </Button>
 
               {/* Benefits */}
