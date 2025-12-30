@@ -12,26 +12,27 @@ serve(async (req) => {
   }
 
   try {
-    // Verify the requesting user is an admin
-    const supabaseClient = createClient(
+    // Use service role for all operations to bypass RLS
+    const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Verify the requesting user is an admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("No authorization header");
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !user) {
       throw new Error("Unauthorized");
     }
 
-    // Check if user is admin
-    const { data: roleData, error: roleError } = await supabaseClient
+    // Check if user is admin using service role to bypass RLS
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -39,14 +40,9 @@ serve(async (req) => {
       .single();
 
     if (roleError || !roleData) {
+      console.error("[GET-USERS-AUTH-STATUS] Admin check failed for user:", user.id, roleError?.message);
       throw new Error("Admin access required");
     }
-
-    // Use service role to access auth.users
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     const { userIds } = await req.json();
 
