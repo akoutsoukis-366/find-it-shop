@@ -6,6 +6,7 @@ import { products } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import heroImage from '@/assets/itag-hero.png';
 
 const Index = () => {
@@ -31,6 +32,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <EmailVerificationBanner />
       <Navbar />
 
       {/* Hero Section */}
