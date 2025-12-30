@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Package, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Select,
@@ -10,6 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 interface OrderItem {
@@ -26,12 +35,16 @@ interface Order {
   total: number;
   created_at: string;
   status: string;
+  tracking_number: string | null;
 }
 
 const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  const [pendingShipment, setPendingShipment] = useState<{ orderId: string; order: Order } | null>(null);
+  const [trackingNumber, setTrackingNumber] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -46,7 +59,6 @@ const AdminOrders = () => {
 
       if (error) throw error;
       
-      // Parse items from JSONB
       const parsedOrders = (data || []).map(order => ({
         ...order,
         items: order.items as unknown as OrderItem[]
@@ -64,16 +76,55 @@ const AdminOrders = () => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
 
+    // If changing to shipped, show tracking dialog
+    if (newStatus === 'shipped') {
+      setPendingShipment({ orderId, order });
+      setTrackingNumber(order.tracking_number || '');
+      setTrackingDialogOpen(true);
+      return;
+    }
+
+    await updateOrderStatus(orderId, newStatus, order);
+  };
+
+  const handleConfirmShipment = async () => {
+    if (!pendingShipment) return;
+    
+    await updateOrderStatus(
+      pendingShipment.orderId, 
+      'shipped', 
+      pendingShipment.order, 
+      trackingNumber.trim() || undefined
+    );
+    
+    setTrackingDialogOpen(false);
+    setPendingShipment(null);
+    setTrackingNumber('');
+  };
+
+  const updateOrderStatus = async (
+    orderId: string, 
+    newStatus: string, 
+    order: Order,
+    trackingNum?: string
+  ) => {
     try {
+      const updateData: { status: string; tracking_number?: string } = { status: newStatus };
+      if (trackingNum !== undefined) {
+        updateData.tracking_number = trackingNum;
+      }
+
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update(updateData)
         .eq('id', orderId);
 
       if (error) throw error;
 
       setOrders(orders.map(o => 
-        o.id === orderId ? { ...o, status: newStatus } : o
+        o.id === orderId 
+          ? { ...o, status: newStatus, tracking_number: trackingNum ?? o.tracking_number } 
+          : o
       ));
       
       toast.success(`Order status updated to ${newStatus}`);
@@ -88,12 +139,12 @@ const AdminOrders = () => {
               orderId: order.id,
               status: newStatus,
               items: order.items,
+              trackingNumber: trackingNum || order.tracking_number,
             },
           });
           toast.success('Customer notification sent');
         } catch (emailError) {
           console.error('Failed to send email notification:', emailError);
-          // Don't show error toast - status update was successful
         }
       }
     } catch (error) {
@@ -106,7 +157,8 @@ const AdminOrders = () => {
     (order) =>
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (order.customer_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-      (order.customer_email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+      (order.customer_email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (order.tracking_number?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -186,6 +238,7 @@ const AdminOrders = () => {
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Tracking</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
                 </tr>
               </thead>
@@ -206,6 +259,13 @@ const AdminOrders = () => {
                     </td>
                     <td className="px-6 py-4 font-medium text-foreground">{formatPrice(order.total)}</td>
                     <td className="px-6 py-4 text-muted-foreground">{formatDate(order.created_at)}</td>
+                    <td className="px-6 py-4">
+                      {order.tracking_number ? (
+                        <span className="font-mono text-sm text-foreground">{order.tracking_number}</span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <Select
                         value={order.status}
@@ -234,6 +294,33 @@ const AdminOrders = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Tracking Number Dialog */}
+      <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Tracking Number</DialogTitle>
+            <DialogDescription>
+              Enter the tracking number for this shipment. This will be included in the customer's email notification.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Enter tracking number (optional)"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTrackingDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmShipment}>
+              Mark as Shipped
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -14,10 +14,23 @@ interface OrderStatusEmailRequest {
   orderId: string;
   status: string;
   items: Array<{ name: string; quantity: number }>;
+  trackingNumber?: string;
 }
 
-const getEmailContent = (status: string, customerName: string, orderId: string, items: Array<{ name: string; quantity: number }>) => {
+const getEmailContent = (
+  status: string, 
+  customerName: string, 
+  orderId: string, 
+  items: Array<{ name: string; quantity: number }>,
+  trackingNumber?: string
+) => {
   const itemsList = items.map(item => `<li>${item.name} (×${item.quantity})</li>`).join('');
+  const trackingSection = trackingNumber 
+    ? `<div style="background: #e8f4fd; padding: 12px 16px; border-radius: 8px; margin: 16px 0;">
+         <p style="margin: 0; font-weight: 600; color: #1a1a1a;">📍 Tracking Number</p>
+         <p style="margin: 4px 0 0 0; font-family: monospace; font-size: 16px; color: #2563eb;">${trackingNumber}</p>
+       </div>`
+    : '';
   
   if (status === 'shipped') {
     return {
@@ -31,6 +44,7 @@ const getEmailContent = (status: string, customerName: string, orderId: string, 
             <p style="margin: 0 0 8px 0; font-weight: 600;">Order #${orderId.slice(0, 8)}</p>
             <ul style="margin: 0; padding-left: 20px; color: #4a4a4a;">${itemsList}</ul>
           </div>
+          ${trackingSection}
           <p style="color: #4a4a4a; font-size: 16px;">You should receive your package soon. Thank you for shopping with us!</p>
           <p style="color: #888; font-size: 14px; margin-top: 30px;">— The iTag Team</p>
         </div>
@@ -66,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { customerEmail, customerName, orderId, status, items }: OrderStatusEmailRequest = await req.json();
+    const { customerEmail, customerName, orderId, status, items, trackingNumber }: OrderStatusEmailRequest = await req.json();
 
     console.log(`Processing email for order ${orderId}, status: ${status}, email: ${customerEmail}`);
 
@@ -78,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const emailContent = getEmailContent(status, customerName, orderId, items);
+    const emailContent = getEmailContent(status, customerName, orderId, items, trackingNumber);
     
     if (!emailContent) {
       console.log(`Status ${status} does not require an email notification`);

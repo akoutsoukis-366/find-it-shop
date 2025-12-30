@@ -29,6 +29,7 @@ export type Database = {
           stripe_session_id: string | null
           subtotal: number
           total: number
+          tracking_number: string | null
           updated_at: string
           user_id: string | null
         }
@@ -46,6 +47,7 @@ export type Database = {
           stripe_session_id?: string | null
           subtotal: number
           total: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -63,6 +65,7 @@ export type Database = {
           stripe_session_id?: string | null
           subtotal?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
