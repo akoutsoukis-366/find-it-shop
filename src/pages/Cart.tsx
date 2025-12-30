@@ -15,13 +15,23 @@ import itagSlim from '@/assets/itag-slim.png';
 import itagPet from '@/assets/itag-pet.png';
 import itagPack from '@/assets/itag-pack.png';
 
-const productImages: Record<string, string> = {
-  '1': itagPro,
-  '2': itagMini,
-  '3': itagUltra,
-  '4': itagSlim,
-  '5': itagPet,
-  '6': itagPack,
+// Fallback image mapping by product name
+const getProductImage = (product: { name: string; image: string }): string => {
+  // Use the image from the database if available
+  if (product.image && product.image.startsWith('http')) {
+    return product.image;
+  }
+  
+  // Fallback to local assets based on product name
+  const nameLower = product.name.toLowerCase();
+  if (nameLower.includes('pro')) return itagPro;
+  if (nameLower.includes('mini')) return itagMini;
+  if (nameLower.includes('ultra')) return itagUltra;
+  if (nameLower.includes('slim')) return itagSlim;
+  if (nameLower.includes('pet')) return itagPet;
+  if (nameLower.includes('pack') || nameLower.includes('bundle')) return itagPack;
+  
+  return itagPro; // Default fallback
 };
 
 const Cart = () => {
@@ -165,7 +175,7 @@ const Cart = () => {
                       {/* Image */}
                       <div className="w-24 h-24 bg-secondary rounded-xl overflow-hidden flex items-center justify-center">
                         <img
-                          src={productImages[item.product.id] || itagPro}
+                          src={getProductImage(item.product)}
                           alt={item.product.name}
                           className="w-full h-full object-contain p-2"
                         />
