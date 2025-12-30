@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Package, Loader2 } from 'lucide-react';
+import { Search, Package, Loader2, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
 interface OrderItem {
@@ -27,15 +28,30 @@ interface OrderItem {
   price: number;
 }
 
+interface ShippingAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+}
+
 interface Order {
   id: string;
   customer_name: string | null;
   customer_email: string | null;
   items: OrderItem[];
   total: number;
+  subtotal: number;
+  shipping: number | null;
   created_at: string;
+  updated_at: string;
   status: string;
   tracking_number: string | null;
+  shipping_address: ShippingAddress | null;
+  currency: string | null;
+  stripe_session_id: string | null;
 }
 
 const AdminOrders = () => {
@@ -45,6 +61,8 @@ const AdminOrders = () => {
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
   const [pendingShipment, setPendingShipment] = useState<{ orderId: string; order: Order } | null>(null);
   const [trackingNumber, setTrackingNumber] = useState('');
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -61,7 +79,8 @@ const AdminOrders = () => {
       
       const parsedOrders = (data || []).map(order => ({
         ...order,
-        items: order.items as unknown as OrderItem[]
+        items: order.items as unknown as OrderItem[],
+        shipping_address: order.shipping_address as unknown as ShippingAddress | null
       }));
       
       setOrders(parsedOrders);
@@ -72,11 +91,15 @@ const AdminOrders = () => {
     }
   };
 
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setDetailDialogOpen(true);
+  };
+
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
 
-    // If changing to shipped, show tracking dialog
     if (newStatus === 'shipped') {
       setPendingShipment({ orderId, order });
       setTrackingNumber(order.tracking_number || '');
@@ -129,7 +152,6 @@ const AdminOrders = () => {
       
       toast.success(`Order status updated to ${newStatus}`);
 
-      // Send email notification for shipped or delivered status
       if (newStatus === 'shipped' || newStatus === 'delivered') {
         try {
           await supabase.functions.invoke('send-order-status-email', {
@@ -184,8 +206,30 @@ const AdminOrders = () => {
     });
   };
 
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   const formatPrice = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  const formatAddress = (address: ShippingAddress | null): string[] => {
+    if (!address) return ['No shipping address'];
+    const parts = [
+      address.line1,
+      address.line2,
+      [address.city, address.state, address.postal_code].filter(Boolean).join(', '),
+      address.country
+    ].filter(Boolean) as string[];
+    return parts.length > 0 ? parts : ['No shipping address'];
   };
 
   if (loading) {
@@ -238,8 +282,8 @@ const AdminOrders = () => {
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Tracking</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
+                  <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -254,18 +298,11 @@ const AdminOrders = () => {
                         <div className="text-sm text-muted-foreground">{order.customer_email || 'N/A'}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground">
+                    <td className="px-6 py-4 text-muted-foreground max-w-[200px] truncate">
                       {order.items.map(item => `${item.name} (×${item.quantity})`).join(', ')}
                     </td>
                     <td className="px-6 py-4 font-medium text-foreground">{formatPrice(order.total)}</td>
                     <td className="px-6 py-4 text-muted-foreground">{formatDate(order.created_at)}</td>
-                    <td className="px-6 py-4">
-                      {order.tracking_number ? (
-                        <span className="font-mono text-sm text-foreground">{order.tracking_number}</span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
-                      )}
-                    </td>
                     <td className="px-6 py-4">
                       <Select
                         value={order.status}
@@ -286,6 +323,17 @@ const AdminOrders = () => {
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -317,6 +365,126 @@ const AdminOrders = () => {
             </Button>
             <Button onClick={handleConfirmShipment}>
               Mark as Shipped
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>
+              Order #{selectedOrder?.id.slice(0, 8)}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Status & Dates */}
+              <div className="flex items-center justify-between">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedOrder.status)}`}>
+                  {selectedOrder.status}
+                </span>
+                <div className="text-sm text-muted-foreground">
+                  Ordered: {formatDateTime(selectedOrder.created_at)}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Customer Information */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Customer Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Name</div>
+                    <div className="font-medium text-foreground">{selectedOrder.customer_name || 'Guest'}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Email</div>
+                    <div className="font-medium text-foreground">{selectedOrder.customer_email || 'N/A'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Shipping Address */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Shipping Address</h3>
+                <div className="text-sm">
+                  {formatAddress(selectedOrder.shipping_address).map((line, i) => (
+                    <div key={i} className={i === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {selectedOrder.tracking_number && (
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">Tracking</h3>
+                    <div className="font-mono text-sm bg-secondary/50 px-3 py-2 rounded-lg">
+                      {selectedOrder.tracking_number}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <Separator />
+
+              {/* Order Items */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Order Items</h3>
+                <div className="space-y-3">
+                  {selectedOrder.items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div>
+                        <span className="font-medium text-foreground">{item.name}</span>
+                        <span className="text-muted-foreground"> × {item.quantity}</span>
+                      </div>
+                      <div className="font-medium text-foreground">
+                        {formatPrice(item.price * item.quantity)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Order Summary */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-foreground">{formatPrice(selectedOrder.subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="text-foreground">{formatPrice(selectedOrder.shipping || 0)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between font-semibold text-base">
+                  <span className="text-foreground">Total</span>
+                  <span className="text-foreground">{formatPrice(selectedOrder.total)}</span>
+                </div>
+              </div>
+
+              {selectedOrder.stripe_session_id && (
+                <div className="text-xs text-muted-foreground">
+                  Payment ID: {selectedOrder.stripe_session_id}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
