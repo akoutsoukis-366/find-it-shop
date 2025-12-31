@@ -41,6 +41,7 @@ interface ShippingSettings {
   shippingCost: number;
   freeShippingThreshold: number;
   currency: string;
+  taxRate: number;
   standardShippingDaysMin: number;
   standardShippingDaysMax: number;
   expressShippingCost: number;
@@ -56,6 +57,7 @@ const Cart = () => {
     shippingCost: 9.99,
     freeShippingThreshold: 50,
     currency: 'EUR',
+    taxRate: 24,
     standardShippingDaysMin: 5,
     standardShippingDaysMax: 7,
     expressShippingCost: 14.99,
@@ -77,6 +79,7 @@ const Cart = () => {
           'shipping_cost', 
           'free_shipping_threshold', 
           'currency',
+          'tax_rate',
           'standard_shipping_days_min',
           'standard_shipping_days_max',
           'express_shipping_cost',
@@ -95,7 +98,8 @@ const Cart = () => {
         setShippingSettings({
           shippingCost: parseFloat(settingsMap.shipping_cost || '9.99'),
           freeShippingThreshold: parseFloat(settingsMap.free_shipping_threshold || '50'),
-          currency: settingsMap.currency || 'USD',
+          currency: settingsMap.currency || 'EUR',
+          taxRate: parseFloat(settingsMap.tax_rate || '24'),
           standardShippingDaysMin: parseInt(settingsMap.standard_shipping_days_min || '5'),
           standardShippingDaysMax: parseInt(settingsMap.standard_shipping_days_max || '7'),
           expressShippingCost: parseFloat(settingsMap.express_shipping_cost || '14.99'),
@@ -113,7 +117,8 @@ const Cart = () => {
   const subtotal = getTotalPrice();
   const qualifiesForFreeShipping = shippingSettings.freeShippingThreshold > 0 && subtotal >= shippingSettings.freeShippingThreshold;
   const shipping = qualifiesForFreeShipping || shippingSettings.shippingCost === 0 ? 0 : shippingSettings.shippingCost;
-  const total = subtotal + shipping;
+  const taxAmount = shippingSettings.taxRate > 0 ? subtotal * (shippingSettings.taxRate / 100) : 0;
+  const total = subtotal + shipping + taxAmount;
   
   // Progress towards free shipping
   const amountToFreeShipping = shippingSettings.freeShippingThreshold > 0 
@@ -385,6 +390,14 @@ const Cart = () => {
                     <span>Subtotal</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
+                  
+                  {shippingSettings.taxRate > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Tax ({shippingSettings.taxRate}%)</span>
+                      <span>{formatPrice(taxAmount)}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between text-muted-foreground">
                     <span className="flex items-center gap-2">
                       Shipping
@@ -412,42 +425,12 @@ const Cart = () => {
                       Estimated Delivery
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <div className="flex flex-col">
-                          <span className="text-foreground">Standard Shipping</span>
-                          <span className="text-xs text-muted-foreground">
-                            {qualifiesForFreeShipping ? 'Free' : formatPrice(shippingSettings.shippingCost)}
-                          </span>
-                        </div>
-                        <span className="text-muted-foreground font-medium">
-                          {formatDeliveryRange(standardDeliveryMin, standardDeliveryMax)}
-                        </span>
-                      </div>
-                      
-                      {shippingSettings.expressShippingCost > 0 && (
-                        <div className="flex justify-between items-center text-sm">
-                          <div className="flex flex-col">
-                            <span className="text-foreground flex items-center gap-1">
-                              Express Shipping
-                              <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                                Fast
-                              </span>
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              +{formatPrice(shippingSettings.expressShippingCost)}
-                            </span>
-                          </div>
-                          <span className="text-primary font-medium">
-                            {formatDeliveryRange(expressDeliveryMin, expressDeliveryMax)}
-                          </span>
-                        </div>
-                      )}
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-foreground">Standard Shipping</span>
+                      <span className="text-muted-foreground font-medium">
+                        {formatDeliveryRange(standardDeliveryMin, standardDeliveryMax)}
+                      </span>
                     </div>
-                    
-                    <p className="text-xs text-muted-foreground">
-                      Shipping option selected at checkout
-                    </p>
                   </div>
 
                   <div className="border-t border-border pt-4">
@@ -455,6 +438,9 @@ const Cart = () => {
                       <span>Total</span>
                       <span>{formatPrice(total)}</span>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Including {formatPrice(taxAmount)} in taxes
+                    </p>
                   </div>
                 </div>
 
