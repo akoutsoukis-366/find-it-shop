@@ -76,9 +76,15 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[GET-USERS-AUTH-STATUS] Error:", errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage, users: [] }), {
+    // Log full error details server-side for debugging
+    const internalError = error instanceof Error ? error.message : String(error);
+    console.error("[GET-USERS-AUTH-STATUS] Error:", internalError);
+    
+    // Return generic error message to client
+    const safeErrors = ['No authorization header', 'Unauthorized', 'Admin access required', 'userIds array required'];
+    const clientMessage = safeErrors.includes(internalError) ? internalError : 'Failed to fetch user status';
+    
+    return new Response(JSON.stringify({ error: clientMessage, users: [] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200, // Return 200 with empty users to allow fallback
     });

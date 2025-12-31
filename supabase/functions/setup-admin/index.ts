@@ -93,9 +93,20 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[SETUP-ADMIN] Error:", errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Log full error details server-side for debugging
+    const internalError = error instanceof Error ? error.message : String(error);
+    console.error("[SETUP-ADMIN] Error:", internalError);
+    
+    // Only expose validation errors, not internal errors
+    const safeErrors = [
+      'Invalid setup key',
+      'Email and password are required',
+      'Password must be at least 6 characters',
+      'Setup is not properly configured'
+    ];
+    const clientMessage = safeErrors.includes(internalError) ? internalError : 'Setup failed';
+    
+    return new Response(JSON.stringify({ error: clientMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

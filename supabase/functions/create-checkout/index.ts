@@ -288,9 +288,20 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
+    // Log full error details server-side for debugging
+    console.error("[CREATE-CHECKOUT] Error:", error instanceof Error ? error.message : String(error));
+    
+    // Return sanitized error message to client
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[CREATE-CHECKOUT] Error:", errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    const isValidationError = errorMessage.includes('Invalid') || 
+                              errorMessage.includes('must be') || 
+                              errorMessage.includes('required') ||
+                              errorMessage.includes('Too many');
+    
+    // Only expose validation errors, not internal errors
+    const clientMessage = isValidationError ? errorMessage : 'Unable to create checkout session';
+    
+    return new Response(JSON.stringify({ error: clientMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });

@@ -73,11 +73,19 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[DELETE-ACCOUNT] Error:", errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Log full error details server-side for debugging
+    const internalError = error instanceof Error ? error.message : String(error);
+    console.error("[DELETE-ACCOUNT] Error:", internalError);
+    
+    // Return sanitized error message to client
+    const isAuthError = internalError === 'No authorization header provided' || 
+                        internalError === 'User not authenticated';
+    const clientMessage = isAuthError ? internalError : 'Failed to delete account';
+    const status = isAuthError ? 401 : 500;
+    
+    return new Response(JSON.stringify({ error: clientMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status,
     });
   }
 });
