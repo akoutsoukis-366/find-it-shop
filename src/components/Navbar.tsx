@@ -6,6 +6,7 @@ import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useContentSettings } from '@/hooks/useContentSettings';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const totalItems = useCartStore((state) => state.getTotalItems());
+  const { content } = useContentSettings();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -72,9 +74,13 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">iT</span>
-            </div>
+            {content.logo_url ? (
+              <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">iT</span>
+              </div>
+            )}
             <span className="text-xl font-bold text-foreground">iTag</span>
           </Link>
 

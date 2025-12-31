@@ -1,21 +1,26 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ContactModal from './ContactModal';
+import { useContentSettings } from '@/hooks/useContentSettings';
 
 const Footer = () => {
   const [contactOpen, setContactOpen] = useState(false);
+  const { content } = useContentSettings();
 
   return (
     <>
       <footer className="border-t border-border bg-card/50">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">iT</span>
-                </div>
+                {content.logo_url ? (
+                  <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold text-sm">iT</span>
+                  </div>
+                )}
                 <span className="text-xl font-bold text-foreground">iTag</span>
               </div>
               <p className="text-sm text-muted-foreground">

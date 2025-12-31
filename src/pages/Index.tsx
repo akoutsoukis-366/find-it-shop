@@ -8,12 +8,15 @@ import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
-import heroImage from '@/assets/itag-hero.png';
+import defaultHeroImage from '@/assets/itag-hero.png';
 
 const Index = () => {
   const { products, isLoading: productsLoading } = useProducts();
   const { content, isLoading: contentLoading } = useContentSettings();
   const featuredProducts = products.filter((p) => p.featured);
+
+  // Use uploaded hero image or fall back to default
+  const heroImage = content.hero_image_url || defaultHeroImage;
 
   const features = [
     {
