@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, Shield, Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
+import { useContentSettings } from '@/hooks/useContentSettings';
 import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -10,26 +11,29 @@ import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import heroImage from '@/assets/itag-hero.png';
 
 const Index = () => {
-  const { products, isLoading } = useProducts();
+  const { products, isLoading: productsLoading } = useProducts();
+  const { content, isLoading: contentLoading } = useContentSettings();
   const featuredProducts = products.filter((p) => p.featured);
 
   const features = [
     {
       icon: MapPin,
-      title: 'Precision Location',
-      description: 'Find your items with pinpoint accuracy using our advanced tracking technology.',
+      title: content.feature1_title,
+      description: content.feature1_description,
     },
     {
       icon: Zap,
-      title: 'Ultra-Fast Connection',
-      description: 'Instant pairing with your iPhone. Set up in seconds, track for years.',
+      title: content.feature2_title,
+      description: content.feature2_description,
     },
     {
       icon: Shield,
-      title: 'Privacy First',
-      description: 'End-to-end encrypted. Only you can see the location of your items.',
+      title: content.feature3_title,
+      description: content.feature3_description,
     },
   ];
+
+  const isLoading = productsLoading || contentLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,18 +58,17 @@ const Index = () => {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                <span className="text-muted-foreground">New: iTag Ultra now available</span>
+                <span className="text-muted-foreground">{content.hero_badge_text}</span>
               </div>
 
               <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-                Never Lose
+                {content.hero_title_line1}
                 <br />
-                <span className="gradient-text">What Matters</span>
+                <span className="gradient-text">{content.hero_title_line2}</span>
               </h1>
 
               <p className="text-xl text-muted-foreground max-w-md">
-                Premium tracking devices that seamlessly connect with your iPhone. 
-                Find your keys, wallet, luggage, and more with precision accuracy.
+                {content.hero_description}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -84,18 +87,18 @@ const Index = () => {
 
               <div className="flex items-center gap-8 pt-4">
                 <div>
-                  <div className="text-3xl font-bold text-foreground">1M+</div>
-                  <div className="text-sm text-muted-foreground">Items Found</div>
+                  <div className="text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
+                  <div className="text-sm text-muted-foreground">{content.hero_stat1_label}</div>
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div>
-                  <div className="text-3xl font-bold text-foreground">4.9</div>
-                  <div className="text-sm text-muted-foreground">Rating</div>
+                  <div className="text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>
+                  <div className="text-sm text-muted-foreground">{content.hero_stat2_label}</div>
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div>
-                  <div className="text-3xl font-bold text-foreground">500k+</div>
-                  <div className="text-sm text-muted-foreground">Happy Users</div>
+                  <div className="text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>
+                  <div className="text-sm text-muted-foreground">{content.hero_stat3_label}</div>
                 </div>
               </div>
             </motion.div>
@@ -144,10 +147,10 @@ const Index = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Choose iTag?
+              {content.features_title}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Built with cutting-edge technology and designed for your peace of mind.
+              {content.features_subtitle}
             </p>
           </motion.div>
 
@@ -183,10 +186,10 @@ const Index = () => {
           >
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Featured Products
+                {content.featured_products_title}
               </h2>
               <p className="text-muted-foreground">
-                Our most popular tracking devices
+                {content.featured_products_subtitle}
               </p>
             </div>
             <Link to="/products">
@@ -222,16 +225,16 @@ const Index = () => {
             className="text-center max-w-3xl mx-auto"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Ready to Never Lose
+              {content.cta_title_line1}
               <br />
-              <span className="gradient-text">Your Essentials Again?</span>
+              <span className="gradient-text">{content.cta_title_line2}</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join over 500,000 happy customers who trust iTag to keep their valuables safe.
+              {content.cta_description}
             </p>
             <Link to="/products">
               <Button variant="hero" size="xl">
-                Start Shopping
+                {content.cta_button_text}
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
