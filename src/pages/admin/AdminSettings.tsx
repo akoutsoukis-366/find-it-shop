@@ -28,6 +28,8 @@ interface SettingsData {
   express_shipping_cost: string;
   express_shipping_days_min: string;
   express_shipping_days_max: string;
+  warranty_years: string;
+  return_days: string;
   email_notifications: boolean;
   two_factor_auth: boolean;
   international_shipping: boolean;
@@ -63,15 +65,17 @@ const AdminSettings = () => {
     contact_email: '',
     support_phone: '',
     office_address: '',
-    currency: 'USD',
-    tax_rate: '0',
-    shipping_cost: '0',
-    free_shipping_threshold: '0',
+    currency: 'EUR',
+    tax_rate: '24',
+    shipping_cost: '9.99',
+    free_shipping_threshold: '50',
     standard_shipping_days_min: '5',
     standard_shipping_days_max: '7',
     express_shipping_cost: '14.99',
     express_shipping_days_min: '1',
     express_shipping_days_max: '3',
+    warranty_years: '2',
+    return_days: '30',
     email_notifications: true,
     two_factor_auth: false,
     international_shipping: true,
@@ -103,15 +107,17 @@ const AdminSettings = () => {
           contact_email: settingsMap.contact_email || '',
           support_phone: settingsMap.support_phone || '',
           office_address: settingsMap.office_address || '',
-          currency: settingsMap.currency || 'USD',
-          tax_rate: settingsMap.tax_rate || '0',
-          shipping_cost: settingsMap.shipping_cost || '0',
-          free_shipping_threshold: settingsMap.free_shipping_threshold || '0',
+          currency: settingsMap.currency || 'EUR',
+          tax_rate: settingsMap.tax_rate || '24',
+          shipping_cost: settingsMap.shipping_cost || '9.99',
+          free_shipping_threshold: settingsMap.free_shipping_threshold || '50',
           standard_shipping_days_min: settingsMap.standard_shipping_days_min || '5',
           standard_shipping_days_max: settingsMap.standard_shipping_days_max || '7',
           express_shipping_cost: settingsMap.express_shipping_cost || '14.99',
           express_shipping_days_min: settingsMap.express_shipping_days_min || '1',
           express_shipping_days_max: settingsMap.express_shipping_days_max || '3',
+          warranty_years: settingsMap.warranty_years || '2',
+          return_days: settingsMap.return_days || '30',
           email_notifications: settingsMap.email_notifications === 'true',
           two_factor_auth: settingsMap.two_factor_auth === 'true',
           international_shipping: settingsMap.international_shipping === 'true',
@@ -204,14 +210,16 @@ const AdminSettings = () => {
       description: 'Configure currency, tax rates, and shipping options',
       fields: [
         { key: 'currency' as const, label: 'Currency', type: 'currency' },
-        { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number', placeholder: '0', hint: 'Applied to subtotal' },
-        { key: 'shipping_cost' as const, label: 'Standard Shipping Cost', type: 'price', placeholder: '0.00', hint: 'Flat rate for standard shipping' },
-        { key: 'free_shipping_threshold' as const, label: 'Free Shipping Threshold', type: 'price', placeholder: '0.00', hint: 'Orders above this amount get free shipping (0 = disabled)' },
+        { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number', placeholder: '24', hint: 'Applied to subtotal' },
+        { key: 'shipping_cost' as const, label: 'Standard Shipping Cost', type: 'price', placeholder: '9.99', hint: 'Flat rate for standard shipping' },
+        { key: 'free_shipping_threshold' as const, label: 'Free Shipping Threshold', type: 'price', placeholder: '50', hint: 'Orders above this amount get free shipping (0 = disabled)' },
         { key: 'standard_shipping_days_min' as const, label: 'Standard Shipping (Min Days)', type: 'number', placeholder: '5', hint: 'Minimum delivery days for standard shipping' },
         { key: 'standard_shipping_days_max' as const, label: 'Standard Shipping (Max Days)', type: 'number', placeholder: '7', hint: 'Maximum delivery days for standard shipping' },
         { key: 'express_shipping_cost' as const, label: 'Express Shipping Cost', type: 'price', placeholder: '14.99', hint: 'Flat rate for express shipping' },
         { key: 'express_shipping_days_min' as const, label: 'Express Shipping (Min Days)', type: 'number', placeholder: '1', hint: 'Minimum delivery days for express shipping' },
         { key: 'express_shipping_days_max' as const, label: 'Express Shipping (Max Days)', type: 'number', placeholder: '3', hint: 'Maximum delivery days for express shipping' },
+        { key: 'warranty_years' as const, label: 'Warranty (Years)', type: 'number', placeholder: '2', hint: 'Number of years for product warranty' },
+        { key: 'return_days' as const, label: 'Return Policy (Days)', type: 'number', placeholder: '30', hint: 'Number of days for money-back guarantee' },
       ],
     },
   ];

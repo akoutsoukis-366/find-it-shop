@@ -55,7 +55,7 @@ const Cart = () => {
   const [shippingSettings, setShippingSettings] = useState<ShippingSettings>({
     shippingCost: 9.99,
     freeShippingThreshold: 50,
-    currency: 'USD',
+    currency: 'EUR',
     standardShippingDaysMin: 5,
     standardShippingDaysMax: 7,
     expressShippingCost: 14.99,
