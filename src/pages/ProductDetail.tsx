@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Minus, Plus, Star, Truck, Shield, RefreshCcw, Loader2 } from 'lucide-react';
 import { useProduct } from '@/hooks/useProducts';
 import { useCartStore } from '@/store/cartStore';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -42,6 +43,7 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+  const { formatPrice } = useCurrency();
 
   // Set default color when product loads
   if (product && !selectedColor && product.colors.length > 0) {
@@ -123,7 +125,7 @@ const ProductDetail = () => {
               {/* Badge */}
               {product.originalPrice && (
                 <div className="inline-block px-3 py-1 rounded-full gradient-primary text-sm font-semibold text-primary-foreground">
-                  Save ${(product.originalPrice - product.price).toFixed(0)}
+                  Save {formatPrice(product.originalPrice - product.price)}
                 </div>
               )}
 
@@ -144,10 +146,10 @@ const ProductDetail = () => {
 
               {/* Price */}
               <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-foreground">${product.price}</span>
+                <span className="text-4xl font-bold text-foreground">{formatPrice(product.price)}</span>
                 {product.originalPrice && (
                   <span className="text-xl text-muted-foreground line-through">
-                    ${product.originalPrice}
+                    {formatPrice(product.originalPrice)}
                   </span>
                 )}
               </div>
@@ -210,7 +212,7 @@ const ProductDetail = () => {
                 disabled={!product.inStock}
               >
                 {product.inStock 
-                  ? `Add to Cart - $${(product.price * quantity).toFixed(2)}`
+                  ? `Add to Cart - ${formatPrice(product.price * quantity)}`
                   : 'Out of Stock'
                 }
               </Button>
