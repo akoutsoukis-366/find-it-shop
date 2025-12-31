@@ -4,6 +4,7 @@ import { Star, ShoppingCart } from 'lucide-react';
 import { Product, useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useCurrency } from '@/hooks/useCurrency';
 import itagPro from '@/assets/itag-pro.png';
 import itagMini from '@/assets/itag-mini.png';
 import itagUltra from '@/assets/itag-ultra.png';
@@ -39,6 +40,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
+  const { formatPrice } = useCurrency();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -58,7 +60,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {/* Badge */}
           {product.originalPrice && (
             <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full gradient-primary text-xs font-semibold text-primary-foreground">
-              Save ${(product.originalPrice - product.price).toFixed(0)}
+              Save {formatPrice(product.originalPrice - product.price)}
             </div>
           )}
 
@@ -92,10 +94,10 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-bold text-foreground">${product.price}</span>
+                <span className="text-xl font-bold text-foreground">{formatPrice(product.price)}</span>
                 {product.originalPrice && (
                   <span className="text-sm text-muted-foreground line-through">
-                    ${product.originalPrice}
+                    {formatPrice(product.originalPrice)}
                   </span>
                 )}
               </div>

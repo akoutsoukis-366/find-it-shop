@@ -6,6 +6,7 @@ import { addDays, format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCartStore } from '@/store/cartStore';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Navbar from '@/components/Navbar';
@@ -49,6 +50,7 @@ interface ShippingSettings {
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
+  const { formatPrice } = useCurrency();
   const [isLoading, setIsLoading] = useState(false);
   const [shippingSettings, setShippingSettings] = useState<ShippingSettings>({
     shippingCost: 9.99,
@@ -265,7 +267,7 @@ const Cart = () => {
                   <>
                     <Truck className="h-5 w-5 text-primary" />
                     <span className="font-medium text-foreground">
-                      Add ${amountToFreeShipping.toFixed(2)} more for FREE shipping
+                      Add {formatPrice(amountToFreeShipping)} more for FREE shipping
                     </span>
                   </>
                 )}
@@ -275,7 +277,7 @@ const Cart = () => {
                 className={`h-2 ${qualifiesForFreeShipping ? '[&>div]:bg-green-500' : ''}`}
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Free shipping on orders over ${shippingSettings.freeShippingThreshold.toFixed(2)}
+                Free shipping on orders over {formatPrice(shippingSettings.freeShippingThreshold)}
               </p>
             </motion.div>
           )}
@@ -326,7 +328,7 @@ const Cart = () => {
                             </div>
                           </div>
                           <span className="font-semibold text-foreground">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            {formatPrice(item.product.price * item.quantity)}
                           </span>
                         </div>
 
@@ -381,7 +383,7 @@ const Cart = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span className="flex items-center gap-2">
@@ -393,13 +395,13 @@ const Cart = () => {
                       )}
                     </span>
                     <span className={qualifiesForFreeShipping ? 'line-through text-muted-foreground/50' : ''}>
-                      {shipping === 0 && !qualifiesForFreeShipping ? 'Free' : `$${shippingSettings.shippingCost.toFixed(2)}`}
+                      {shipping === 0 && !qualifiesForFreeShipping ? 'Free' : formatPrice(shippingSettings.shippingCost)}
                     </span>
                   </div>
                   {!qualifiesForFreeShipping && shippingSettings.freeShippingThreshold > 0 && amountToFreeShipping > 0 && (
                     <p className="text-sm text-primary flex items-center gap-1">
                       <Truck className="h-4 w-4" />
-                      Add ${amountToFreeShipping.toFixed(2)} more for free shipping!
+                      Add {formatPrice(amountToFreeShipping)} more for free shipping!
                     </p>
                   )}
                   
@@ -415,7 +417,7 @@ const Cart = () => {
                         <div className="flex flex-col">
                           <span className="text-foreground">Standard Shipping</span>
                           <span className="text-xs text-muted-foreground">
-                            {qualifiesForFreeShipping ? 'Free' : `$${shippingSettings.shippingCost.toFixed(2)}`}
+                            {qualifiesForFreeShipping ? 'Free' : formatPrice(shippingSettings.shippingCost)}
                           </span>
                         </div>
                         <span className="text-muted-foreground font-medium">
@@ -433,7 +435,7 @@ const Cart = () => {
                               </span>
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              +${shippingSettings.expressShippingCost.toFixed(2)}
+                              +{formatPrice(shippingSettings.expressShippingCost)}
                             </span>
                           </div>
                           <span className="text-primary font-medium">
@@ -451,7 +453,7 @@ const Cart = () => {
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between text-lg font-semibold text-foreground">
                       <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
                   </div>
                 </div>
