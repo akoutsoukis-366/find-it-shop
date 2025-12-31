@@ -184,7 +184,7 @@ serve(async (req) => {
     const { data: settingsData } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['currency', 'tax_rate']);
+      .in('key', ['currency', 'tax_rate', 'shipping_cost', 'free_shipping_threshold']);
 
     const settingsMap: Record<string, string> = {};
     settingsData?.forEach((item: { key: string; value: string | null }) => {
@@ -193,13 +193,23 @@ serve(async (req) => {
 
     const currency = (settingsMap.currency || 'USD').toLowerCase();
     const taxRate = parseFloat(settingsMap.tax_rate || '0');
+    const shippingCost = parseFloat(settingsMap.shipping_cost || '0');
+    const freeShippingThreshold = parseFloat(settingsMap.free_shipping_threshold || '0');
     
-    console.log("[CREATE-CHECKOUT] Using currency:", currency, "Tax rate:", taxRate);
+    console.log("[CREATE-CHECKOUT] Settings - Currency:", currency, "Tax:", taxRate, "Shipping:", shippingCost, "Free threshold:", freeShippingThreshold);
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
+
+    // Calculate subtotal first for free shipping check
+    const subtotalInCents = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
+      const product = productMap.get(item.productId);
+      const priceInCents = Math.round((product?.price || 0) * 100);
+      return sum + priceInCents * item.quantity;
+    }, 0);
+    const subtotalInDollars = subtotalInCents / 100;
 
     // Build line items from cart using price_data for dynamic currency and prices from DB
     const lineItems = items.map((item: { productId: string; quantity: number; selectedColor: string }) => {
@@ -220,12 +230,7 @@ serve(async (req) => {
 
     // Add tax as a separate line item if tax rate > 0
     if (taxRate > 0) {
-      const subtotal = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
-        const product = productMap.get(item.productId);
-        const priceInCents = Math.round((product?.price || 0) * 100);
-        return sum + priceInCents * item.quantity;
-      }, 0);
-      const taxAmount = Math.round(subtotal * (taxRate / 100));
+      const taxAmount = Math.round(subtotalInCents * (taxRate / 100));
       
       lineItems.push({
         price_data: {
@@ -237,6 +242,26 @@ serve(async (req) => {
         },
         quantity: 1,
       });
+    }
+
+    // Add shipping as a separate line item if applicable
+    const qualifiesForFreeShipping = freeShippingThreshold > 0 && subtotalInDollars >= freeShippingThreshold;
+    
+    if (shippingCost > 0 && !qualifiesForFreeShipping) {
+      const shippingInCents = Math.round(shippingCost * 100);
+      lineItems.push({
+        price_data: {
+          currency: currency,
+          product_data: {
+            name: 'Shipping',
+          },
+          unit_amount: shippingInCents,
+        },
+        quantity: 1,
+      });
+      console.log("[CREATE-CHECKOUT] Added shipping:", shippingInCents, "cents");
+    } else if (qualifiesForFreeShipping) {
+      console.log("[CREATE-CHECKOUT] Free shipping applied (subtotal:", subtotalInDollars, ">= threshold:", freeShippingThreshold, ")");
     }
 
     console.log("[CREATE-CHECKOUT] Line items:", JSON.stringify(lineItems));
