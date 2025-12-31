@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,13 +16,41 @@ const priceMapping: Record<string, string> = {
   "b894ac5b-f1ae-4c79-9622-a7d792fc758c": "price_1SkAH82IvxMhfbuvq03DEvK3", // iTag 4-Pack
 };
 
-interface CartItem {
-  productId: string;
-  quantity: number;
-  selectedColor: string;
+// Valid product IDs set for fast lookup
+const validProductIds = new Set(Object.keys(priceMapping));
+
+// Input validation functions
+function validateCartItem(item: unknown, index: number): { productId: string; quantity: number; selectedColor: string } {
+  if (!item || typeof item !== 'object') {
+    throw new Error(`Invalid cart item at index ${index}`);
+  }
+  
+  const cartItem = item as Record<string, unknown>;
+  
+  // Validate productId
+  if (typeof cartItem.productId !== 'string' || !validProductIds.has(cartItem.productId)) {
+    throw new Error(`Invalid product ID at index ${index}`);
+  }
+  
+  // Validate quantity - must be positive integer between 1 and 100
+  const quantity = Number(cartItem.quantity);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
+    throw new Error(`Invalid quantity at index ${index}: must be between 1 and 100`);
+  }
+  
+  // Validate selectedColor - string with max length
+  const selectedColor = typeof cartItem.selectedColor === 'string' 
+    ? cartItem.selectedColor.slice(0, 50) 
+    : '';
+  
+  return {
+    productId: cartItem.productId,
+    quantity,
+    selectedColor,
+  };
 }
 
-interface CustomerInfo {
+function validateCustomerInfo(info: unknown): {
   email?: string;
   name?: string;
   phone?: string;
@@ -35,6 +62,54 @@ interface CustomerInfo {
     postal_code?: string;
     country?: string;
   };
+} | undefined {
+  if (!info || typeof info !== 'object') {
+    return undefined;
+  }
+  
+  const customerInfo = info as Record<string, unknown>;
+  
+  // Validate email format if provided
+  const email = typeof customerInfo.email === 'string' 
+    ? customerInfo.email.slice(0, 255).trim() 
+    : undefined;
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('Invalid email format');
+  }
+  
+  // Validate name with length limit
+  const name = typeof customerInfo.name === 'string' 
+    ? customerInfo.name.slice(0, 200).trim() 
+    : undefined;
+  
+  // Validate phone with length limit
+  const phone = typeof customerInfo.phone === 'string' 
+    ? customerInfo.phone.slice(0, 30).trim() 
+    : undefined;
+  
+  // Validate address
+  let address: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+  } | undefined;
+  
+  if (customerInfo.address && typeof customerInfo.address === 'object') {
+    const addr = customerInfo.address as Record<string, unknown>;
+    address = {
+      line1: typeof addr.line1 === 'string' ? addr.line1.slice(0, 200).trim() : undefined,
+      line2: typeof addr.line2 === 'string' ? addr.line2.slice(0, 200).trim() : undefined,
+      city: typeof addr.city === 'string' ? addr.city.slice(0, 100).trim() : undefined,
+      state: typeof addr.state === 'string' ? addr.state.slice(0, 50).trim() : undefined,
+      postal_code: typeof addr.postal_code === 'string' ? addr.postal_code.slice(0, 20).trim() : undefined,
+      country: typeof addr.country === 'string' ? addr.country.slice(0, 2).toUpperCase() : undefined,
+    };
+  }
+  
+  return { email, name, phone, address };
 }
 
 serve(async (req) => {
@@ -44,15 +119,39 @@ serve(async (req) => {
   }
 
   try {
-    const { items, customerEmail, customerInfo } = await req.json();
+    const body = await req.json();
     
     console.log("[CREATE-CHECKOUT] Starting checkout session creation");
-    console.log("[CREATE-CHECKOUT] Items received:", JSON.stringify(items));
-    console.log("[CREATE-CHECKOUT] Customer info:", JSON.stringify(customerInfo));
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    // Validate items array
+    if (!body.items || !Array.isArray(body.items)) {
+      throw new Error("Items must be an array");
+    }
+    
+    if (body.items.length === 0) {
       throw new Error("No items provided for checkout");
     }
+    
+    if (body.items.length > 50) {
+      throw new Error("Too many items in cart (max 50)");
+    }
+
+    // Validate each cart item
+    const items = body.items.map((item: unknown, index: number) => validateCartItem(item, index));
+    
+    // Validate customer info
+    const customerInfo = validateCustomerInfo(body.customerInfo);
+    
+    // Validate customerEmail if provided separately
+    let customerEmail: string | undefined;
+    if (typeof body.customerEmail === 'string') {
+      customerEmail = body.customerEmail.slice(0, 255).trim();
+      if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+        throw new Error('Invalid customer email format');
+      }
+    }
+    
+    console.log("[CREATE-CHECKOUT] Validated items count:", items.length);
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -60,11 +159,8 @@ serve(async (req) => {
     });
 
     // Build line items from cart
-    const lineItems = items.map((item: CartItem) => {
+    const lineItems = items.map((item: { productId: string; quantity: number; selectedColor: string }) => {
       const priceId = priceMapping[item.productId];
-      if (!priceId) {
-        throw new Error(`Unknown product ID: ${item.productId}`);
-      }
       return {
         price: priceId,
         quantity: item.quantity,
@@ -196,7 +292,7 @@ serve(async (req) => {
     console.error("[CREATE-CHECKOUT] Error:", errorMessage);
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 400,
     });
   }
 });

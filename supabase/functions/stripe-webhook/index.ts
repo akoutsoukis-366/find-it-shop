@@ -12,19 +12,42 @@ const supabase = createClient(
 );
 
 serve(async (req) => {
-  const signature = req.headers.get("stripe-signature");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  const signature = req.headers.get("stripe-signature");
+  
+  // Security: Require webhook secret to be configured
+  if (!webhookSecret) {
+    console.error("[STRIPE-WEBHOOK] STRIPE_WEBHOOK_SECRET not configured");
+    return new Response(
+      JSON.stringify({ error: "Webhook not configured" }), 
+      { status: 500 }
+    );
+  }
+  
+  // Security: Require signature header
+  if (!signature) {
+    console.error("[STRIPE-WEBHOOK] Missing stripe-signature header");
+    return new Response(
+      JSON.stringify({ error: "Missing signature" }), 
+      { status: 401 }
+    );
+  }
   
   let event: Stripe.Event;
   
   try {
     const body = await req.text();
     
-    if (webhookSecret && signature) {
+    // Verify webhook signature - required for security
+    try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } else {
-      // Development mode - parse event directly
-      event = JSON.parse(body);
+    } catch (signatureError) {
+      const errorMessage = signatureError instanceof Error ? signatureError.message : String(signatureError);
+      console.error("[STRIPE-WEBHOOK] Signature verification failed:", errorMessage);
+      return new Response(
+        JSON.stringify({ error: "Invalid signature" }), 
+        { status: 401 }
+      );
     }
     
     console.log(`[STRIPE-WEBHOOK] Event received: ${event.type}`);
@@ -70,8 +93,6 @@ serve(async (req) => {
       }
       
       console.log(`[STRIPE-WEBHOOK] Shipping address:`, JSON.stringify(shippingAddress));
-      console.log(`[STRIPE-WEBHOOK] Session shipping_details:`, JSON.stringify(session.shipping_details));
-      console.log(`[STRIPE-WEBHOOK] Session customer_details:`, JSON.stringify(session.customer_details));
       
       // Insert order into database
       const { data, error } = await supabase
