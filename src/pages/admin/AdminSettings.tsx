@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Store, CreditCard, Bell, Shield, Palette, Globe, Loader2, FileText, Home, Info } from 'lucide-react';
+import { Store, CreditCard, Bell, Shield, Palette, Globe, Loader2, FileText, Home, Info, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 interface SettingsData {
   store_name: string;
@@ -36,6 +37,9 @@ interface SettingsData {
   two_factor_auth: boolean;
   international_shipping: boolean;
   dark_mode: boolean;
+  // Image URLs
+  hero_image_url: string;
+  logo_url: string;
   // Homepage content
   hero_badge_text: string;
   hero_title_line1: string;
@@ -134,6 +138,9 @@ const defaultSettings: SettingsData = {
   two_factor_auth: false,
   international_shipping: true,
   dark_mode: true,
+  // Image URLs
+  hero_image_url: '',
+  logo_url: '',
   // Homepage content
   hero_badge_text: 'New: iTag Ultra now available',
   hero_title_line1: 'Never Lose',
@@ -544,6 +551,7 @@ const AdminSettings = () => {
       <Tabs defaultValue="store" className="max-w-3xl">
         <TabsList className="mb-6">
           <TabsTrigger value="store">Store Settings</TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="homepage">Homepage Content</TabsTrigger>
           <TabsTrigger value="about">About Page Content</TabsTrigger>
         </TabsList>
@@ -580,6 +588,58 @@ const AdminSettings = () => {
                 />
               </div>
             ))}
+          </motion.div>
+        </TabsContent>
+
+        <TabsContent value="images" className="space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-2xl border border-border p-6"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Image className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Site Images</h2>
+                <p className="text-muted-foreground">Upload and manage site images</p>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <ImageUpload
+                value={settings.hero_image_url}
+                onChange={async (url) => {
+                  handleInputChange('hero_image_url', url);
+                  try {
+                    await updateSetting('hero_image_url', url);
+                    toast.success('Hero image saved');
+                  } catch {
+                    toast.error('Failed to save hero image');
+                  }
+                }}
+                label="Hero Image"
+                description="Main hero image displayed on the homepage (recommended: 800x800px)"
+                folder="hero"
+              />
+
+              <ImageUpload
+                value={settings.logo_url}
+                onChange={async (url) => {
+                  handleInputChange('logo_url', url);
+                  try {
+                    await updateSetting('logo_url', url);
+                    toast.success('Logo saved');
+                  } catch {
+                    toast.error('Failed to save logo');
+                  }
+                }}
+                label="Logo"
+                description="Site logo displayed in the navbar and footer (recommended: 200x200px)"
+                folder="logo"
+              />
+            </div>
           </motion.div>
         </TabsContent>
 

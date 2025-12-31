@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ContentSettings {
+  // Images
+  hero_image_url: string;
+  logo_url: string;
   // Hero section
   hero_badge_text: string;
   hero_title_line1: string;
@@ -65,6 +68,9 @@ export interface ContentSettings {
 }
 
 const defaultContent: ContentSettings = {
+  // Images
+  hero_image_url: '',
+  logo_url: '',
   // Hero section
   hero_badge_text: 'New: iTag Ultra now available',
   hero_title_line1: 'Never Lose',
