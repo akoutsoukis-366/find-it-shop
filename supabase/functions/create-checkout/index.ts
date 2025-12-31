@@ -7,43 +7,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Map product IDs (UUIDs from database) to Stripe price IDs
-const priceMapping: Record<string, string> = {
-  "c3b9b190-2c40-4585-9df4-3951a73da274": "price_1SkAGv2IvxMhfbuvLA70JaiF", // iTag Pro
-  "9b88372b-d53e-47e6-8a4f-c00c7551873c": "price_1SkAH12IvxMhfbuvcCBgMg9Q", // iTag Mini
-  "582fa096-7c4e-4cc4-b816-f813c517b206": "price_1SkAH32IvxMhfbuvIkcfVybn", // iTag Ultra
-  "9241cf38-6d1b-4d86-b48b-8bb2f6ae6bfd": "price_1SkAH42IvxMhfbuvLOoxUqX0", // iTag Slim
-  "721c44b0-1b4a-4856-9581-9c569232105f": "price_1SkAH62IvxMhfbuvWkXe2cm3", // iTag Pet
-  "b894ac5b-f1ae-4c79-9622-a7d792fc758c": "price_1SkAH82IvxMhfbuvq03DEvK3", // iTag 4-Pack
-};
-
-// Product prices in cents (for dynamic tax calculation)
-const productPrices: Record<string, number> = {
-  "c3b9b190-2c40-4585-9df4-3951a73da274": 3999, // iTag Pro
-  "9b88372b-d53e-47e6-8a4f-c00c7551873c": 2499, // iTag Mini
-  "582fa096-7c4e-4cc4-b816-f813c517b206": 5999, // iTag Ultra
-  "9241cf38-6d1b-4d86-b48b-8bb2f6ae6bfd": 3499, // iTag Slim
-  "721c44b0-1b4a-4856-9581-9c569232105f": 2999, // iTag Pet
-  "b894ac5b-f1ae-4c79-9622-a7d792fc758c": 8999, // iTag 4-Pack
-};
-
-// Product names for dynamic pricing
-const productNames: Record<string, string> = {
-  "c3b9b190-2c40-4585-9df4-3951a73da274": "iTag Pro",
-  "9b88372b-d53e-47e6-8a4f-c00c7551873c": "iTag Mini",
-  "582fa096-7c4e-4cc4-b816-f813c517b206": "iTag Ultra",
-  "9241cf38-6d1b-4d86-b48b-8bb2f6ae6bfd": "iTag Slim",
-  "721c44b0-1b4a-4856-9581-9c569232105f": "iTag Pet",
-  "b894ac5b-f1ae-4c79-9622-a7d792fc758c": "iTag 4-Pack",
-};
-
-function getProductName(productId: string): string {
-  return productNames[productId] || "Unknown Product";
+interface Product {
+  id: string;
+  name: string;
+  price: number;
 }
-const validProductIds = new Set(Object.keys(priceMapping));
 
 // Input validation functions
-function validateCartItem(item: unknown, index: number): { productId: string; quantity: number; selectedColor: string } {
+function validateCartItem(
+  item: unknown, 
+  index: number, 
+  validProductIds: Set<string>
+): { productId: string; quantity: number; selectedColor: string } {
   if (!item || typeof item !== 'object') {
     throw new Error(`Invalid cart item at index ${index}`);
   }
@@ -159,8 +134,37 @@ serve(async (req) => {
       throw new Error("Too many items in cart (max 50)");
     }
 
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch all products from database
+    const { data: productsData, error: productsError } = await supabase
+      .from('products')
+      .select('id, name, price');
+
+    if (productsError) {
+      console.error("[CREATE-CHECKOUT] Error fetching products:", productsError);
+      throw new Error("Failed to fetch product data");
+    }
+
+    // Build product maps from database
+    const products = productsData as Product[];
+    const productMap = new Map<string, Product>();
+    const validProductIds = new Set<string>();
+    
+    products.forEach(product => {
+      productMap.set(product.id, product);
+      validProductIds.add(product.id);
+    });
+
+    console.log("[CREATE-CHECKOUT] Loaded", products.length, "products from database");
+
     // Validate each cart item
-    const items = body.items.map((item: unknown, index: number) => validateCartItem(item, index));
+    const items = body.items.map((item: unknown, index: number) => 
+      validateCartItem(item, index, validProductIds)
+    );
     
     // Validate customer info
     const customerInfo = validateCustomerInfo(body.customerInfo);
@@ -177,10 +181,6 @@ serve(async (req) => {
     console.log("[CREATE-CHECKOUT] Validated items count:", items.length);
 
     // Fetch settings from database
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
     const { data: settingsData } = await supabase
       .from('settings')
       .select('key, value')
@@ -201,14 +201,16 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Build line items from cart using price_data for dynamic currency
+    // Build line items from cart using price_data for dynamic currency and prices from DB
     const lineItems = items.map((item: { productId: string; quantity: number; selectedColor: string }) => {
-      const priceInCents = productPrices[item.productId] || 0;
+      const product = productMap.get(item.productId);
+      // Price is stored in dollars in DB, convert to cents
+      const priceInCents = Math.round((product?.price || 0) * 100);
       return {
         price_data: {
           currency: currency,
           product_data: {
-            name: getProductName(item.productId),
+            name: product?.name || "Unknown Product",
           },
           unit_amount: priceInCents,
         },
@@ -219,7 +221,9 @@ serve(async (req) => {
     // Add tax as a separate line item if tax rate > 0
     if (taxRate > 0) {
       const subtotal = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
-        return sum + (productPrices[item.productId] || 0) * item.quantity;
+        const product = productMap.get(item.productId);
+        const priceInCents = Math.round((product?.price || 0) * 100);
+        return sum + priceInCents * item.quantity;
       }, 0);
       const taxAmount = Math.round(subtotal * (taxRate / 100));
       
