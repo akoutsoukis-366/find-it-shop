@@ -1,19 +1,138 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Store, CreditCard, Bell, Shield, Palette, Globe } from 'lucide-react';
+import { Store, CreditCard, Bell, Shield, Palette, Globe, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface SettingsData {
+  store_name: string;
+  contact_email: string;
+  support_phone: string;
+  currency: string;
+  tax_rate: string;
+  email_notifications: boolean;
+  two_factor_auth: boolean;
+  international_shipping: boolean;
+  dark_mode: boolean;
+}
 
 const AdminSettings = () => {
+  const [settings, setSettings] = useState<SettingsData>({
+    store_name: '',
+    contact_email: '',
+    support_phone: '',
+    currency: '',
+    tax_rate: '',
+    email_notifications: true,
+    two_factor_auth: false,
+    international_shipping: true,
+    dark_mode: true,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value');
+
+      if (error) throw error;
+
+      if (data) {
+        const settingsMap: Record<string, string> = {};
+        data.forEach((item: { key: string; value: string | null }) => {
+          settingsMap[item.key] = item.value || '';
+        });
+
+        setSettings({
+          store_name: settingsMap.store_name || '',
+          contact_email: settingsMap.contact_email || '',
+          support_phone: settingsMap.support_phone || '',
+          currency: settingsMap.currency || '',
+          tax_rate: settingsMap.tax_rate || '',
+          email_notifications: settingsMap.email_notifications === 'true',
+          two_factor_auth: settingsMap.two_factor_auth === 'true',
+          international_shipping: settingsMap.international_shipping === 'true',
+          dark_mode: settingsMap.dark_mode === 'true',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      toast.error('Failed to load settings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateSetting = async (key: string, value: string) => {
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .update({ value })
+        .eq('key', key);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating setting:', error);
+      throw error;
+    }
+  };
+
+  const handleInputChange = (key: keyof SettingsData, value: string) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleToggleChange = async (key: keyof SettingsData, checked: boolean) => {
+    setSettings(prev => ({ ...prev, [key]: checked }));
+    
+    try {
+      await updateSetting(key, String(checked));
+      toast.success('Setting updated');
+    } catch {
+      toast.error('Failed to update setting');
+      setSettings(prev => ({ ...prev, [key]: !checked }));
+    }
+  };
+
+  const handleSaveSection = async (keys: (keyof SettingsData)[]) => {
+    setIsSaving(true);
+    try {
+      for (const key of keys) {
+        await updateSetting(key, String(settings[key]));
+      }
+      toast.success('Settings saved successfully');
+    } catch {
+      toast.error('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   const settingsSections = [
     {
       icon: Store,
       title: 'Store Information',
       description: 'Update your store name, description, and contact details',
       fields: [
-        { label: 'Store Name', value: 'iTag Store', type: 'text' },
-        { label: 'Contact Email', value: 'support@itag.com', type: 'email' },
-        { label: 'Support Phone', value: '+1 (555) 123-4567', type: 'tel' },
+        { key: 'store_name' as const, label: 'Store Name', type: 'text' },
+        { key: 'contact_email' as const, label: 'Contact Email', type: 'email' },
+        { key: 'support_phone' as const, label: 'Support Phone', type: 'tel' },
       ],
     },
     {
@@ -21,17 +140,17 @@ const AdminSettings = () => {
       title: 'Payment Settings',
       description: 'Configure payment methods and currencies',
       fields: [
-        { label: 'Currency', value: 'USD', type: 'text' },
-        { label: 'Tax Rate (%)', value: '8.5', type: 'number' },
+        { key: 'currency' as const, label: 'Currency', type: 'text' },
+        { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number' },
       ],
     },
   ];
 
   const toggleSettings = [
-    { icon: Bell, title: 'Email Notifications', description: 'Receive email alerts for new orders', enabled: true },
-    { icon: Shield, title: 'Two-Factor Authentication', description: 'Add an extra layer of security', enabled: false },
-    { icon: Globe, title: 'International Shipping', description: 'Enable shipping to international addresses', enabled: true },
-    { icon: Palette, title: 'Dark Mode', description: 'Use dark theme for admin panel', enabled: true },
+    { key: 'email_notifications' as const, icon: Bell, title: 'Email Notifications', description: 'Receive email alerts for new orders' },
+    { key: 'two_factor_auth' as const, icon: Shield, title: 'Two-Factor Authentication', description: 'Add an extra layer of security' },
+    { key: 'international_shipping' as const, icon: Globe, title: 'International Shipping', description: 'Enable shipping to international addresses' },
+    { key: 'dark_mode' as const, icon: Palette, title: 'Dark Mode', description: 'Use dark theme for admin panel' },
   ];
 
   return (
@@ -63,17 +182,33 @@ const AdminSettings = () => {
 
             <div className="space-y-4">
               {section.fields.map((field) => (
-                <div key={field.label}>
+                <div key={field.key}>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     {field.label}
                   </label>
-                  <Input type={field.type} defaultValue={field.value} />
+                  <Input 
+                    type={field.type} 
+                    value={settings[field.key] as string}
+                    onChange={(e) => handleInputChange(field.key, e.target.value)}
+                  />
                 </div>
               ))}
             </div>
 
             <div className="mt-6 pt-6 border-t border-border">
-              <Button>Save Changes</Button>
+              <Button 
+                onClick={() => handleSaveSection(section.fields.map(f => f.key))}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
             </div>
           </motion.div>
         ))}
@@ -87,7 +222,7 @@ const AdminSettings = () => {
         >
           {toggleSettings.map((setting, index) => (
             <div
-              key={setting.title}
+              key={setting.key}
               className={`flex items-center justify-between p-6 ${
                 index < toggleSettings.length - 1 ? 'border-b border-border' : ''
               }`}
@@ -101,7 +236,10 @@ const AdminSettings = () => {
                   <div className="text-sm text-muted-foreground">{setting.description}</div>
                 </div>
               </div>
-              <Switch defaultChecked={setting.enabled} />
+              <Switch 
+                checked={settings[setting.key] as boolean}
+                onCheckedChange={(checked) => handleToggleChange(setting.key, checked)}
+              />
             </div>
           ))}
         </motion.div>
