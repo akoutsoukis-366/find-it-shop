@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Loader2, Truck, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import itagPro from '@/assets/itag-pro.png';
@@ -34,13 +35,66 @@ const getProductImage = (product: { name: string; image: string }): string => {
   return itagPro; // Default fallback
 };
 
+interface ShippingSettings {
+  shippingCost: number;
+  freeShippingThreshold: number;
+  currency: string;
+}
+
 const Cart = () => {
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [shippingSettings, setShippingSettings] = useState<ShippingSettings>({
+    shippingCost: 9.99,
+    freeShippingThreshold: 50,
+    currency: 'USD',
+  });
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchShippingSettings();
+  }, []);
+
+  const fetchShippingSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', ['shipping_cost', 'free_shipping_threshold', 'currency']);
+
+      if (error) throw error;
+
+      if (data) {
+        const settingsMap: Record<string, string> = {};
+        data.forEach((item) => {
+          settingsMap[item.key] = item.value || '';
+        });
+
+        setShippingSettings({
+          shippingCost: parseFloat(settingsMap.shipping_cost || '9.99'),
+          freeShippingThreshold: parseFloat(settingsMap.free_shipping_threshold || '50'),
+          currency: settingsMap.currency || 'USD',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching shipping settings:', error);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
 
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 50 ? 0 : 9.99;
+  const qualifiesForFreeShipping = shippingSettings.freeShippingThreshold > 0 && subtotal >= shippingSettings.freeShippingThreshold;
+  const shipping = qualifiesForFreeShipping || shippingSettings.shippingCost === 0 ? 0 : shippingSettings.shippingCost;
   const total = subtotal + shipping;
+  
+  // Progress towards free shipping
+  const amountToFreeShipping = shippingSettings.freeShippingThreshold > 0 
+    ? Math.max(0, shippingSettings.freeShippingThreshold - subtotal)
+    : 0;
+  const freeShippingProgress = shippingSettings.freeShippingThreshold > 0
+    ? Math.min(100, (subtotal / shippingSettings.freeShippingThreshold) * 100)
+    : 100;
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -149,6 +203,44 @@ const Cart = () => {
             Continue Shopping
           </Link>
 
+          {/* Free Shipping Progress Banner */}
+          {shippingSettings.freeShippingThreshold > 0 && !settingsLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mb-8 p-4 rounded-xl border ${
+                qualifiesForFreeShipping 
+                  ? 'bg-green-500/10 border-green-500/30' 
+                  : 'bg-primary/5 border-primary/20'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                {qualifiesForFreeShipping ? (
+                  <>
+                    <Gift className="h-5 w-5 text-green-500" />
+                    <span className="font-medium text-green-500">
+                      🎉 You've unlocked FREE shipping!
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Truck className="h-5 w-5 text-primary" />
+                    <span className="font-medium text-foreground">
+                      Add ${amountToFreeShipping.toFixed(2)} more for FREE shipping
+                    </span>
+                  </>
+                )}
+              </div>
+              <Progress 
+                value={freeShippingProgress} 
+                className={`h-2 ${qualifiesForFreeShipping ? '[&>div]:bg-green-500' : ''}`}
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Free shipping on orders over ${shippingSettings.freeShippingThreshold.toFixed(2)}
+              </p>
+            </motion.div>
+          )}
+
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2">
@@ -253,12 +345,22 @@ const Cart = () => {
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                    <span className="flex items-center gap-2">
+                      Shipping
+                      {qualifiesForFreeShipping && (
+                        <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
+                          FREE
+                        </span>
+                      )}
+                    </span>
+                    <span className={qualifiesForFreeShipping ? 'line-through text-muted-foreground/50' : ''}>
+                      {shipping === 0 && !qualifiesForFreeShipping ? 'Free' : `$${shippingSettings.shippingCost.toFixed(2)}`}
+                    </span>
                   </div>
-                  {shipping > 0 && (
-                    <p className="text-sm text-primary">
-                      Add ${(50 - subtotal).toFixed(2)} more for free shipping!
+                  {!qualifiesForFreeShipping && shippingSettings.freeShippingThreshold > 0 && amountToFreeShipping > 0 && (
+                    <p className="text-sm text-primary flex items-center gap-1">
+                      <Truck className="h-4 w-4" />
+                      Add ${amountToFreeShipping.toFixed(2)} more for free shipping!
                     </p>
                   )}
                   <div className="border-t border-border pt-4">
