@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -32,10 +33,24 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Fetch admin email from settings
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'contact_email')
+      .maybeSingle();
+
+    const adminEmail = settingsData?.value || "aris.koutsouki@gmail.com";
+    console.log(`[SEND-CONTACT-EMAIL] Sending notification to: ${adminEmail}`);
+
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({
       from: "iTag <onboarding@resend.dev>",
-      to: ["aris.koutsouki@gmail.com"], // Admin email
+      to: [adminEmail],
       subject: `New Contact Form Submission from ${name}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
