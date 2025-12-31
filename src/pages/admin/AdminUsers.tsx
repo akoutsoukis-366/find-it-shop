@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Mail, Ban, Trash2, CheckCircle, Clock, Loader2, Eye } from 'lucide-react';
+import { Search, Mail, Ban, Trash2, CheckCircle, Clock, Loader2, Eye, Package, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +23,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface ShippingAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+}
+
+interface UserOrder {
+  id: string;
+  status: string;
+  total: number;
+  created_at: string;
+  items: OrderItem[];
+  shipping_address: ShippingAddress | null;
+  tracking_number: string | null;
+  customer_email: string | null;
+  customer_name: string | null;
+}
 
 interface UserProfile {
   user_id: string;
@@ -60,7 +88,10 @@ const AdminUsers = () => {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [selectedUserStats, setSelectedUserStats] = useState<{ orders_count: number; total_spent: number; email_confirmed_at: string | null } | null>(null);
+  const [selectedUserOrders, setSelectedUserOrders] = useState<UserOrder[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [orderDetailDialogOpen, setOrderDetailDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<UserOrder | null>(null);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -122,6 +153,7 @@ const AdminUsers = () => {
   const handleViewUser = async (user: UserData) => {
     setDetailLoading(true);
     setDetailDialogOpen(true);
+    setSelectedUserOrders([]);
     setSelectedUserStats({
       orders_count: user.orders_count,
       total_spent: user.total_spent,
@@ -129,15 +161,32 @@ const AdminUsers = () => {
     });
 
     try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      // Fetch profile and orders in parallel
+      const [profileResult, ordersResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+      ]);
 
-      if (error) throw error;
+      if (profileResult.error) throw profileResult.error;
+      if (ordersResult.error) throw ordersResult.error;
       
-      setSelectedUser(profile);
+      setSelectedUser(profileResult.data);
+      
+      // Parse orders data
+      const parsedOrders: UserOrder[] = (ordersResult.data || []).map(order => ({
+        ...order,
+        items: order.items as unknown as OrderItem[],
+        shipping_address: order.shipping_address as unknown as ShippingAddress | null
+      }));
+      setSelectedUserOrders(parsedOrders);
     } catch (error) {
       console.error('Error fetching user details:', error);
       toast.error('Failed to load user details');
@@ -145,6 +194,48 @@ const AdminUsers = () => {
     } finally {
       setDetailLoading(false);
     }
+  };
+
+  const handleViewOrder = (order: UserOrder) => {
+    setSelectedOrder(order);
+    setOrderDetailDialogOpen(true);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return 'bg-success/20 text-success';
+      case 'processing':
+        return 'bg-warning/20 text-warning';
+      case 'shipped':
+        return 'bg-primary/20 text-primary';
+      case 'cancelled':
+        return 'bg-destructive/20 text-destructive';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const formatAddress = (address: ShippingAddress | null): string[] => {
+    if (!address) return ['No shipping address'];
+    const parts = [
+      address.line1,
+      address.line2,
+      [address.city, address.state, address.postal_code].filter(Boolean).join(', '),
+      address.country
+    ].filter(Boolean) as string[];
+    return parts.length > 0 ? parts : ['No shipping address'];
   };
 
   const handleResendVerification = async (user: UserData) => {
@@ -486,6 +577,154 @@ const AdminUsers = () => {
                     <div className="text-sm text-muted-foreground">Total Spent</div>
                   </div>
                 </div>
+              </div>
+
+              <Separator />
+
+              {/* Order History */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Order History</h3>
+                {selectedUserOrders.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No orders yet</p>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[200px]">
+                    <div className="space-y-2">
+                      {selectedUserOrders.map((order) => (
+                        <div 
+                          key={order.id}
+                          className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg hover:bg-secondary/50 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm text-foreground">
+                                #{order.id.slice(0, 8)}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                                {order.status}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {formatDate(order.created_at)} • {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-foreground">
+                              {formatCurrency(order.total)}
+                            </span>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleViewOrder(order)}
+                              title="View order details"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Detail Dialog */}
+      <Dialog open={orderDetailDialogOpen} onOpenChange={setOrderDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>
+              Order #{selectedOrder?.id.slice(0, 8)}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Status & Dates */}
+              <div className="flex items-center justify-between">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedOrder.status)}`}>
+                  {selectedOrder.status}
+                </span>
+                <div className="text-sm text-muted-foreground">
+                  Ordered: {formatDateTime(selectedOrder.created_at)}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Customer Information */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Customer Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Name</div>
+                    <div className="font-medium text-foreground">{selectedOrder.customer_name || 'Guest'}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Email</div>
+                    <div className="font-medium text-foreground">{selectedOrder.customer_email || 'N/A'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Shipping Address */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Shipping Address</h3>
+                <div className="text-sm">
+                  {formatAddress(selectedOrder.shipping_address).map((line, i) => (
+                    <div key={i} className={i === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {selectedOrder.tracking_number && (
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">Tracking</h3>
+                    <div className="font-mono text-sm bg-secondary/50 px-3 py-2 rounded-lg">
+                      {selectedOrder.tracking_number}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <Separator />
+
+              {/* Order Items */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Order Items</h3>
+                <div className="space-y-3">
+                  {selectedOrder.items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div>
+                        <span className="font-medium text-foreground">{item.name}</span>
+                        <span className="text-muted-foreground"> × {item.quantity}</span>
+                      </div>
+                      <div className="font-medium text-foreground">
+                        {formatCurrency(item.price * item.quantity)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Order Total */}
+              <div className="flex justify-between font-semibold text-base">
+                <span className="text-foreground">Total</span>
+                <span className="text-foreground">{formatCurrency(selectedOrder.total)}</span>
               </div>
             </div>
           )}
