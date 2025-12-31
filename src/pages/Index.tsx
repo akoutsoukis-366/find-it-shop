@@ -107,13 +107,28 @@ const Index = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative flex items-center justify-center"
             >
-              <div className="absolute w-[400px] h-[400px] bg-primary/20 rounded-full blur-[100px] animate-pulse-slow" />
-              <motion.img
-                src={heroImage}
-                alt="iTag Pro"
-                className="relative w-full max-w-md animate-float"
-                style={{ filter: 'drop-shadow(0 0 60px hsl(220, 100%, 60%, 0.3))' }}
-              />
+              {/* Outer glow ring */}
+              <div className="absolute w-[500px] h-[500px] bg-gradient-radial from-primary/30 via-primary/5 to-transparent rounded-full blur-[80px]" />
+              
+              {/* Inner accent glow */}
+              <div className="absolute w-[300px] h-[300px] bg-accent/20 rounded-full blur-[60px] animate-pulse" />
+              
+              {/* Image container with mask for seamless blend */}
+              <div className="relative w-full max-w-lg">
+                <motion.img
+                  src={heroImage}
+                  alt="iTag Pro"
+                  className="relative w-full animate-float mix-blend-screen"
+                  style={{ 
+                    filter: 'drop-shadow(0 0 40px hsl(var(--primary) / 0.4))',
+                    maskImage: 'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
+                  }}
+                />
+              </div>
+              
+              {/* Subtle reflection */}
+              <div className="absolute -bottom-20 w-[300px] h-[100px] bg-primary/10 rounded-full blur-[40px]" />
             </motion.div>
           </div>
         </div>
