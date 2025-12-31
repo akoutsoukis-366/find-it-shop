@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Zap, MapPin, Heart, Mail, Phone, MapPinned } from 'lucide-react';
+import { Shield, Zap, MapPin, Heart, Mail, Phone, MapPinned, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContactModal from '@/components/ContactModal';
+import { usePublicSettings } from '@/hooks/usePublicSettings';
 
 const About = () => {
   const [contactOpen, setContactOpen] = useState(false);
+  const { settings, isLoading } = usePublicSettings();
 
   const values = [
     {
@@ -209,12 +211,16 @@ const About = () => {
                   <Mail className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">Email</h3>
-                <a 
-                  href="mailto:support@itag.com" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  support@itag.com
-                </a>
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
+                ) : (
+                  <a 
+                    href={`mailto:${settings.contact_email}`}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {settings.contact_email}
+                  </a>
+                )}
               </motion.div>
 
               <motion.div
@@ -228,12 +234,16 @@ const About = () => {
                   <Phone className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">Phone</h3>
-                <a 
-                  href="tel:+15551234567" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  +1 (555) 123-4567
-                </a>
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
+                ) : (
+                  <a 
+                    href={`tel:${settings.support_phone.replace(/[^\d+]/g, '')}`}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {settings.support_phone}
+                  </a>
+                )}
               </motion.div>
 
               <motion.div
