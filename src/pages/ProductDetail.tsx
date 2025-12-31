@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Minus, Plus, Star, Truck, Shield, RefreshCcw, Loader2 } from 'lucide-react';
 import { useProduct } from '@/hooks/useProducts';
 import { useCartStore } from '@/store/cartStore';
 import { useCurrency } from '@/hooks/useCurrency';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -44,6 +45,39 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
   const { formatPrice } = useCurrency();
+  const [benefitSettings, setBenefitSettings] = useState({
+    freeShippingThreshold: 50,
+    warrantyYears: 2,
+    returnDays: 30,
+  });
+
+  useEffect(() => {
+    const fetchBenefitSettings = async () => {
+      try {
+        const { data } = await supabase
+          .from('settings')
+          .select('key, value')
+          .in('key', ['free_shipping_threshold', 'warranty_years', 'return_days']);
+
+        if (data) {
+          const settingsMap: Record<string, string> = {};
+          data.forEach((item) => {
+            settingsMap[item.key] = item.value || '';
+          });
+
+          setBenefitSettings({
+            freeShippingThreshold: parseFloat(settingsMap.free_shipping_threshold || '50'),
+            warrantyYears: parseInt(settingsMap.warranty_years || '2'),
+            returnDays: parseInt(settingsMap.return_days || '30'),
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching benefit settings:', error);
+      }
+    };
+
+    fetchBenefitSettings();
+  }, []);
 
   // Set default color when product loads
   if (product && !selectedColor && product.colors.length > 0) {
@@ -79,9 +113,11 @@ const ProductDetail = () => {
   };
 
   const benefits = [
-    { icon: Truck, text: 'Free shipping on orders over $50' },
-    { icon: Shield, text: '2-year warranty included' },
-    { icon: RefreshCcw, text: '30-day money-back guarantee' },
+    { icon: Truck, text: benefitSettings.freeShippingThreshold > 0 
+      ? `Free shipping on orders over ${formatPrice(benefitSettings.freeShippingThreshold)}` 
+      : 'Free shipping on all orders' },
+    { icon: Shield, text: `${benefitSettings.warrantyYears}-year warranty included` },
+    { icon: RefreshCcw, text: `${benefitSettings.returnDays}-day money-back guarantee` },
   ];
 
   return (
