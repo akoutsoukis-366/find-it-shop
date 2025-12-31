@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Send, Loader2 } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,7 +36,8 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      // Save to database
+      const { error: dbError } = await supabase
         .from('contact_messages')
         .insert({
           name: name.trim().slice(0, 100),
@@ -44,9 +45,23 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
           message: message.trim().slice(0, 2000),
         });
 
-      if (error) throw error;
+      if (dbError) throw dbError;
 
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-contact-email', {
+          body: {
+            name: name.trim(),
+            email: email.trim(),
+            message: message.trim(),
+          },
+        });
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the submission if email fails
+      }
+
+      toast.success("Message sent successfully! We'll get back to you soon.");
       setName('');
       setEmail('');
       setMessage('');

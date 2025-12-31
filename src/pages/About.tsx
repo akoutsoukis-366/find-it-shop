@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Zap, MapPin, Users, Award, Heart } from 'lucide-react';
+import { Shield, Zap, MapPin, Heart, Mail, Phone, MapPinned } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ContactModal from '@/components/ContactModal';
 
 const About = () => {
+  const [contactOpen, setContactOpen] = useState(false);
+
   const values = [
     {
       icon: Shield,
@@ -174,9 +179,102 @@ const About = () => {
             </div>
           </div>
         </section>
+
+        {/* Contact Section */}
+        <section className="py-24">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Get in Touch
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Have questions? We'd love to hear from you.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="p-6 rounded-2xl bg-card border border-border text-center"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Email</h3>
+                <a 
+                  href="mailto:support@itag.com" 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  support@itag.com
+                </a>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="p-6 rounded-2xl bg-card border border-border text-center"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Phone</h3>
+                <a 
+                  href="tel:+15551234567" 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  +1 (555) 123-4567
+                </a>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="p-6 rounded-2xl bg-card border border-border text-center"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                  <MapPinned className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Office</h3>
+                <p className="text-muted-foreground">
+                  San Francisco, CA
+                </p>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="text-center mt-12"
+            >
+              <Button 
+                variant="hero" 
+                size="lg"
+                onClick={() => setContactOpen(true)}
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Send us a Message
+              </Button>
+            </motion.div>
+          </div>
+        </section>
       </main>
 
       <Footer />
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </div>
   );
 };
