@@ -115,7 +115,8 @@ serve(async (req) => {
       
       if (error) {
         console.error(`[STRIPE-WEBHOOK] Error inserting order:`, error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        // Return generic error to Stripe webhook
+        return new Response(JSON.stringify({ error: 'Order processing failed' }), { status: 500 });
       }
       
       console.log(`[STRIPE-WEBHOOK] Order created:`, data.id);
@@ -123,8 +124,9 @@ serve(async (req) => {
     
     return new Response(JSON.stringify({ received: true }), { status: 200 });
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    console.error(`[STRIPE-WEBHOOK] Error:`, errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), { status: 400 });
+    // Log full error details server-side for debugging
+    console.error(`[STRIPE-WEBHOOK] Error:`, err instanceof Error ? err.message : String(err));
+    // Return generic error message
+    return new Response(JSON.stringify({ error: 'Webhook processing error' }), { status: 400 });
   }
 });

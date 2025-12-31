@@ -116,9 +116,12 @@ const handler = async (req: Request): Promise<Response> => {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error in send-order-status-email function:", error);
+    // Log full error details server-side for debugging
+    console.error("Error in send-order-status-email function:", error?.message || error);
+    
+    // Return generic error message to client
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Failed to send notification' }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

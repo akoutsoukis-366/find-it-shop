@@ -146,12 +146,23 @@ serve(async (req) => {
         throw new Error("Invalid action");
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[ADMIN-USER-ACTIONS] Error:", errorMessage);
+    // Log full error details server-side for debugging
+    const internalError = error instanceof Error ? error.message : String(error);
+    console.error("[ADMIN-USER-ACTIONS] Error:", internalError);
 
-    const status = errorMessage === "Unauthorized" ? 401 : 400;
+    // Only expose safe error messages to client
+    const safeErrors = [
+      'Unauthorized',
+      'Admin access required',
+      'Email required',
+      'User ID required',
+      'Invalid action'
+    ];
+    const isSafeError = safeErrors.includes(internalError);
+    const clientMessage = isSafeError ? internalError : 'Action failed';
+    const status = internalError === 'Unauthorized' ? 401 : 400;
 
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: clientMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,
     });

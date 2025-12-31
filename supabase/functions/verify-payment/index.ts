@@ -126,9 +126,11 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[VERIFY-PAYMENT] Error:", errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Log full error details server-side for debugging
+    console.error("[VERIFY-PAYMENT] Error:", error instanceof Error ? error.message : String(error));
+    
+    // Return generic error message to client
+    return new Response(JSON.stringify({ error: 'Payment verification failed' }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
