@@ -6,6 +6,7 @@ export interface PublicSettings {
   contact_email: string;
   support_phone: string;
   currency: string;
+  office_address: string;
 }
 
 const defaultSettings: PublicSettings = {
@@ -13,6 +14,7 @@ const defaultSettings: PublicSettings = {
   contact_email: 'support@itag.com',
   support_phone: '+1 (555) 123-4567',
   currency: 'USD',
+  office_address: 'San Francisco, CA',
 };
 
 export const usePublicSettings = () => {
@@ -25,7 +27,7 @@ export const usePublicSettings = () => {
         const { data, error } = await supabase
           .from('settings')
           .select('key, value')
-          .in('key', ['store_name', 'contact_email', 'support_phone', 'currency']);
+          .in('key', ['store_name', 'contact_email', 'support_phone', 'currency', 'office_address']);
 
         if (error) throw error;
 
@@ -40,6 +42,7 @@ export const usePublicSettings = () => {
             contact_email: settingsMap.contact_email || defaultSettings.contact_email,
             support_phone: settingsMap.support_phone || defaultSettings.support_phone,
             currency: settingsMap.currency || defaultSettings.currency,
+            office_address: settingsMap.office_address || defaultSettings.office_address,
           });
         }
       } catch (error) {

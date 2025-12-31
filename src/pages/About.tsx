@@ -257,9 +257,13 @@ const About = () => {
                   <MapPinned className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">Office</h3>
-                <p className="text-muted-foreground">
-                  San Francisco, CA
-                </p>
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
+                ) : (
+                  <p className="text-muted-foreground">
+                    {settings.office_address}
+                  </p>
+                )}
               </motion.div>
             </div>
 

@@ -11,6 +11,7 @@ interface SettingsData {
   store_name: string;
   contact_email: string;
   support_phone: string;
+  office_address: string;
   currency: string;
   tax_rate: string;
   email_notifications: boolean;
@@ -24,6 +25,7 @@ const AdminSettings = () => {
     store_name: '',
     contact_email: '',
     support_phone: '',
+    office_address: '',
     currency: '',
     tax_rate: '',
     email_notifications: true,
@@ -56,6 +58,7 @@ const AdminSettings = () => {
           store_name: settingsMap.store_name || '',
           contact_email: settingsMap.contact_email || '',
           support_phone: settingsMap.support_phone || '',
+          office_address: settingsMap.office_address || '',
           currency: settingsMap.currency || '',
           tax_rate: settingsMap.tax_rate || '',
           email_notifications: settingsMap.email_notifications === 'true',
@@ -133,6 +136,7 @@ const AdminSettings = () => {
         { key: 'store_name' as const, label: 'Store Name', type: 'text' },
         { key: 'contact_email' as const, label: 'Contact Email', type: 'email' },
         { key: 'support_phone' as const, label: 'Support Phone', type: 'tel' },
+        { key: 'office_address' as const, label: 'Office Address', type: 'text' },
       ],
     },
     {
