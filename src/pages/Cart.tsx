@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Loader2, Truck, Gift } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Loader2, Truck, Gift, Calendar } from 'lucide-react';
+import { addDays, format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCartStore } from '@/store/cartStore';
@@ -39,6 +40,11 @@ interface ShippingSettings {
   shippingCost: number;
   freeShippingThreshold: number;
   currency: string;
+  standardShippingDaysMin: number;
+  standardShippingDaysMax: number;
+  expressShippingCost: number;
+  expressShippingDaysMin: number;
+  expressShippingDaysMax: number;
 }
 
 const Cart = () => {
@@ -48,6 +54,11 @@ const Cart = () => {
     shippingCost: 9.99,
     freeShippingThreshold: 50,
     currency: 'USD',
+    standardShippingDaysMin: 5,
+    standardShippingDaysMax: 7,
+    expressShippingCost: 14.99,
+    expressShippingDaysMin: 1,
+    expressShippingDaysMax: 3,
   });
   const [settingsLoading, setSettingsLoading] = useState(true);
 
@@ -60,7 +71,16 @@ const Cart = () => {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['shipping_cost', 'free_shipping_threshold', 'currency']);
+        .in('key', [
+          'shipping_cost', 
+          'free_shipping_threshold', 
+          'currency',
+          'standard_shipping_days_min',
+          'standard_shipping_days_max',
+          'express_shipping_cost',
+          'express_shipping_days_min',
+          'express_shipping_days_max',
+        ]);
 
       if (error) throw error;
 
@@ -74,6 +94,11 @@ const Cart = () => {
           shippingCost: parseFloat(settingsMap.shipping_cost || '9.99'),
           freeShippingThreshold: parseFloat(settingsMap.free_shipping_threshold || '50'),
           currency: settingsMap.currency || 'USD',
+          standardShippingDaysMin: parseInt(settingsMap.standard_shipping_days_min || '5'),
+          standardShippingDaysMax: parseInt(settingsMap.standard_shipping_days_max || '7'),
+          expressShippingCost: parseFloat(settingsMap.express_shipping_cost || '14.99'),
+          expressShippingDaysMin: parseInt(settingsMap.express_shipping_days_min || '1'),
+          expressShippingDaysMax: parseInt(settingsMap.express_shipping_days_max || '3'),
         });
       }
     } catch (error) {
@@ -95,6 +120,20 @@ const Cart = () => {
   const freeShippingProgress = shippingSettings.freeShippingThreshold > 0
     ? Math.min(100, (subtotal / shippingSettings.freeShippingThreshold) * 100)
     : 100;
+
+  // Estimated delivery dates
+  const today = new Date();
+  const standardDeliveryMin = addDays(today, shippingSettings.standardShippingDaysMin);
+  const standardDeliveryMax = addDays(today, shippingSettings.standardShippingDaysMax);
+  const expressDeliveryMin = addDays(today, shippingSettings.expressShippingDaysMin);
+  const expressDeliveryMax = addDays(today, shippingSettings.expressShippingDaysMax);
+
+  const formatDeliveryRange = (minDate: Date, maxDate: Date) => {
+    if (format(minDate, 'MMM') === format(maxDate, 'MMM')) {
+      return `${format(minDate, 'MMM d')} - ${format(maxDate, 'd')}`;
+    }
+    return `${format(minDate, 'MMM d')} - ${format(maxDate, 'MMM d')}`;
+  };
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -363,6 +402,52 @@ const Cart = () => {
                       Add ${amountToFreeShipping.toFixed(2)} more for free shipping!
                     </p>
                   )}
+                  
+                  {/* Estimated Delivery Dates */}
+                  <div className="border-t border-border pt-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Calendar className="h-4 w-4" />
+                      Estimated Delivery
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex flex-col">
+                          <span className="text-foreground">Standard Shipping</span>
+                          <span className="text-xs text-muted-foreground">
+                            {qualifiesForFreeShipping ? 'Free' : `$${shippingSettings.shippingCost.toFixed(2)}`}
+                          </span>
+                        </div>
+                        <span className="text-muted-foreground font-medium">
+                          {formatDeliveryRange(standardDeliveryMin, standardDeliveryMax)}
+                        </span>
+                      </div>
+                      
+                      {shippingSettings.expressShippingCost > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <div className="flex flex-col">
+                            <span className="text-foreground flex items-center gap-1">
+                              Express Shipping
+                              <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                                Fast
+                              </span>
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              +${shippingSettings.expressShippingCost.toFixed(2)}
+                            </span>
+                          </div>
+                          <span className="text-primary font-medium">
+                            {formatDeliveryRange(expressDeliveryMin, expressDeliveryMax)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground">
+                      Shipping option selected at checkout
+                    </p>
+                  </div>
+
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between text-lg font-semibold text-foreground">
                       <span>Total</span>
