@@ -21,6 +21,8 @@ interface SettingsData {
   office_address: string;
   currency: string;
   tax_rate: string;
+  shipping_cost: string;
+  free_shipping_threshold: string;
   email_notifications: boolean;
   two_factor_auth: boolean;
   international_shipping: boolean;
@@ -58,6 +60,8 @@ const AdminSettings = () => {
     office_address: '',
     currency: 'USD',
     tax_rate: '0',
+    shipping_cost: '0',
+    free_shipping_threshold: '0',
     email_notifications: true,
     two_factor_auth: false,
     international_shipping: true,
@@ -91,6 +95,8 @@ const AdminSettings = () => {
           office_address: settingsMap.office_address || '',
           currency: settingsMap.currency || 'USD',
           tax_rate: settingsMap.tax_rate || '0',
+          shipping_cost: settingsMap.shipping_cost || '0',
+          free_shipping_threshold: settingsMap.free_shipping_threshold || '0',
           email_notifications: settingsMap.email_notifications === 'true',
           two_factor_auth: settingsMap.two_factor_auth === 'true',
           international_shipping: settingsMap.international_shipping === 'true',
@@ -179,11 +185,13 @@ const AdminSettings = () => {
     },
     {
       icon: CreditCard,
-      title: 'Payment Settings',
-      description: 'Configure payment methods, currency, and tax rates',
+      title: 'Payment & Shipping',
+      description: 'Configure currency, tax rates, and shipping costs',
       fields: [
         { key: 'currency' as const, label: 'Currency', type: 'currency' },
-        { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number' },
+        { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number', placeholder: '0', hint: 'Applied to subtotal' },
+        { key: 'shipping_cost' as const, label: 'Shipping Cost', type: 'price', placeholder: '0.00', hint: 'Flat rate shipping fee' },
+        { key: 'free_shipping_threshold' as const, label: 'Free Shipping Threshold', type: 'price', placeholder: '0.00', hint: 'Orders above this amount get free shipping (0 = disabled)' },
       ],
     },
   ];
@@ -245,15 +253,20 @@ const AdminSettings = () => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Input 
-                      type={field.type} 
-                      value={settings[field.key] as string}
-                      onChange={(e) => handleInputChange(field.key, e.target.value)}
-                      placeholder={field.type === 'number' ? '0' : undefined}
-                      min={field.type === 'number' ? '0' : undefined}
-                      max={field.type === 'number' ? '100' : undefined}
-                      step={field.type === 'number' ? '0.01' : undefined}
-                    />
+                    <div>
+                      <Input 
+                        type="number"
+                        value={settings[field.key] as string}
+                        onChange={(e) => handleInputChange(field.key, e.target.value)}
+                        placeholder={(field as any).placeholder || '0'}
+                        min="0"
+                        max={field.type === 'number' ? '100' : undefined}
+                        step={field.type === 'price' ? '0.01' : '0.01'}
+                      />
+                      {(field as any).hint && (
+                        <p className="text-xs text-muted-foreground mt-1">{(field as any).hint}</p>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
