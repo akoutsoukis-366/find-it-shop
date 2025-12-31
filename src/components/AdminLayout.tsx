@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Users, CreditCard, Settings, ArrowLeft, BarChart3, LogOut, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Package, Users, CreditCard, Settings, ArrowLeft, BarChart3, LogOut, Loader2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -64,6 +64,7 @@ const AdminLayout = () => {
     { icon: Package, label: 'Products', path: '/admin/products' },
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: CreditCard, label: 'Orders', path: '/admin/orders' },
+    { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
     { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
