@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +17,29 @@ const priceMapping: Record<string, string> = {
   "b894ac5b-f1ae-4c79-9622-a7d792fc758c": "price_1SkAH82IvxMhfbuvq03DEvK3", // iTag 4-Pack
 };
 
-// Valid product IDs set for fast lookup
+// Product prices in cents (for dynamic tax calculation)
+const productPrices: Record<string, number> = {
+  "c3b9b190-2c40-4585-9df4-3951a73da274": 3999, // iTag Pro
+  "9b88372b-d53e-47e6-8a4f-c00c7551873c": 2499, // iTag Mini
+  "582fa096-7c4e-4cc4-b816-f813c517b206": 5999, // iTag Ultra
+  "9241cf38-6d1b-4d86-b48b-8bb2f6ae6bfd": 3499, // iTag Slim
+  "721c44b0-1b4a-4856-9581-9c569232105f": 2999, // iTag Pet
+  "b894ac5b-f1ae-4c79-9622-a7d792fc758c": 8999, // iTag 4-Pack
+};
+
+// Product names for dynamic pricing
+const productNames: Record<string, string> = {
+  "c3b9b190-2c40-4585-9df4-3951a73da274": "iTag Pro",
+  "9b88372b-d53e-47e6-8a4f-c00c7551873c": "iTag Mini",
+  "582fa096-7c4e-4cc4-b816-f813c517b206": "iTag Ultra",
+  "9241cf38-6d1b-4d86-b48b-8bb2f6ae6bfd": "iTag Slim",
+  "721c44b0-1b4a-4856-9581-9c569232105f": "iTag Pet",
+  "b894ac5b-f1ae-4c79-9622-a7d792fc758c": "iTag 4-Pack",
+};
+
+function getProductName(productId: string): string {
+  return productNames[productId] || "Unknown Product";
+}
 const validProductIds = new Set(Object.keys(priceMapping));
 
 // Input validation functions
@@ -153,19 +176,64 @@ serve(async (req) => {
     
     console.log("[CREATE-CHECKOUT] Validated items count:", items.length);
 
+    // Fetch settings from database
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('key, value')
+      .in('key', ['currency', 'tax_rate']);
+
+    const settingsMap: Record<string, string> = {};
+    settingsData?.forEach((item: { key: string; value: string | null }) => {
+      settingsMap[item.key] = item.value || '';
+    });
+
+    const currency = (settingsMap.currency || 'USD').toLowerCase();
+    const taxRate = parseFloat(settingsMap.tax_rate || '0');
+    
+    console.log("[CREATE-CHECKOUT] Using currency:", currency, "Tax rate:", taxRate);
+
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Build line items from cart
+    // Build line items from cart using price_data for dynamic currency
     const lineItems = items.map((item: { productId: string; quantity: number; selectedColor: string }) => {
-      const priceId = priceMapping[item.productId];
+      const priceInCents = productPrices[item.productId] || 0;
       return {
-        price: priceId,
+        price_data: {
+          currency: currency,
+          product_data: {
+            name: getProductName(item.productId),
+          },
+          unit_amount: priceInCents,
+        },
         quantity: item.quantity,
       };
     });
+
+    // Add tax as a separate line item if tax rate > 0
+    if (taxRate > 0) {
+      const subtotal = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
+        return sum + (productPrices[item.productId] || 0) * item.quantity;
+      }, 0);
+      const taxAmount = Math.round(subtotal * (taxRate / 100));
+      
+      lineItems.push({
+        price_data: {
+          currency: currency,
+          product_data: {
+            name: `Tax (${taxRate}%)`,
+          },
+          unit_amount: taxAmount,
+        },
+        quantity: 1,
+      });
+    }
 
     console.log("[CREATE-CHECKOUT] Line items:", JSON.stringify(lineItems));
 

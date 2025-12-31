@@ -4,6 +4,13 @@ import { Store, CreditCard, Bell, Shield, Palette, Globe, Loader2 } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -20,14 +27,37 @@ interface SettingsData {
   dark_mode: boolean;
 }
 
+const currencies = [
+  { code: 'USD', name: 'US Dollar', symbol: '$' },
+  { code: 'EUR', name: 'Euro', symbol: '€' },
+  { code: 'GBP', name: 'British Pound', symbol: '£' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+  { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+  { code: 'MXN', name: 'Mexican Peso', symbol: '$' },
+  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+  { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
+  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+  { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+  { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+  { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+  { code: 'PLN', name: 'Polish Zloty', symbol: 'zł' },
+  { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
+];
+
 const AdminSettings = () => {
   const [settings, setSettings] = useState<SettingsData>({
     store_name: '',
     contact_email: '',
     support_phone: '',
     office_address: '',
-    currency: '',
-    tax_rate: '',
+    currency: 'USD',
+    tax_rate: '0',
     email_notifications: true,
     two_factor_auth: false,
     international_shipping: true,
@@ -59,8 +89,8 @@ const AdminSettings = () => {
           contact_email: settingsMap.contact_email || '',
           support_phone: settingsMap.support_phone || '',
           office_address: settingsMap.office_address || '',
-          currency: settingsMap.currency || '',
-          tax_rate: settingsMap.tax_rate || '',
+          currency: settingsMap.currency || 'USD',
+          tax_rate: settingsMap.tax_rate || '0',
           email_notifications: settingsMap.email_notifications === 'true',
           two_factor_auth: settingsMap.two_factor_auth === 'true',
           international_shipping: settingsMap.international_shipping === 'true',
@@ -77,12 +107,20 @@ const AdminSettings = () => {
 
   const updateSetting = async (key: string, value: string) => {
     try {
-      const { error } = await supabase
+      // First try to update
+      const { error: updateError } = await supabase
         .from('settings')
         .update({ value })
         .eq('key', key);
 
-      if (error) throw error;
+      if (updateError) {
+        // If update fails (no rows matched), insert instead
+        const { error: insertError } = await supabase
+          .from('settings')
+          .insert({ key, value });
+        
+        if (insertError) throw insertError;
+      }
     } catch (error) {
       console.error('Error updating setting:', error);
       throw error;
@@ -142,9 +180,9 @@ const AdminSettings = () => {
     {
       icon: CreditCard,
       title: 'Payment Settings',
-      description: 'Configure payment methods and currencies',
+      description: 'Configure payment methods, currency, and tax rates',
       fields: [
-        { key: 'currency' as const, label: 'Currency', type: 'text' },
+        { key: 'currency' as const, label: 'Currency', type: 'currency' },
         { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number' },
       ],
     },
@@ -190,11 +228,33 @@ const AdminSettings = () => {
                   <label className="block text-sm font-medium text-foreground mb-2">
                     {field.label}
                   </label>
-                  <Input 
-                    type={field.type} 
-                    value={settings[field.key] as string}
-                    onChange={(e) => handleInputChange(field.key, e.target.value)}
-                  />
+                  {field.type === 'currency' ? (
+                    <Select
+                      value={settings[field.key] as string}
+                      onValueChange={(value) => handleInputChange(field.key, value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currencies.map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.code} - {currency.name} ({currency.symbol})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input 
+                      type={field.type} 
+                      value={settings[field.key] as string}
+                      onChange={(e) => handleInputChange(field.key, e.target.value)}
+                      placeholder={field.type === 'number' ? '0' : undefined}
+                      min={field.type === 'number' ? '0' : undefined}
+                      max={field.type === 'number' ? '100' : undefined}
+                      step={field.type === 'number' ? '0.01' : undefined}
+                    />
+                  )}
                 </div>
               ))}
             </div>
