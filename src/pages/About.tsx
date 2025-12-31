@@ -1,39 +1,43 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Zap, MapPin, Heart, Mail, Phone, MapPinned, Loader2 } from 'lucide-react';
+import { Shield, Zap, Heart, Mail, Phone, MapPinned, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContactModal from '@/components/ContactModal';
 import { usePublicSettings } from '@/hooks/usePublicSettings';
+import { useContentSettings } from '@/hooks/useContentSettings';
 
 const About = () => {
   const [contactOpen, setContactOpen] = useState(false);
-  const { settings, isLoading } = usePublicSettings();
+  const { settings, isLoading: settingsLoading } = usePublicSettings();
+  const { content, isLoading: contentLoading } = useContentSettings();
+
+  const isLoading = settingsLoading || contentLoading;
 
   const values = [
     {
       icon: Shield,
-      title: 'Privacy First',
-      description: 'Your location data is end-to-end encrypted. Only you have access.',
+      title: content.about_value1_title,
+      description: content.about_value1_description,
     },
     {
       icon: Zap,
-      title: 'Innovation',
-      description: 'Cutting-edge technology that pushes the boundaries of what\'s possible.',
+      title: content.about_value2_title,
+      description: content.about_value2_description,
     },
     {
       icon: Heart,
-      title: 'Customer Focus',
-      description: 'Every product decision starts with our customers\' needs.',
+      title: content.about_value3_title,
+      description: content.about_value3_description,
     },
   ];
 
   const stats = [
-    { value: '500K+', label: 'Happy Customers' },
-    { value: '1M+', label: 'Items Found' },
-    { value: '99.9%', label: 'Success Rate' },
-    { value: '4.9', label: 'App Rating' },
+    { value: content.about_stat1_value, label: content.about_stat1_label },
+    { value: content.about_stat2_value, label: content.about_stat2_label },
+    { value: content.about_stat3_value, label: content.about_stat3_label },
+    { value: content.about_stat4_value, label: content.about_stat4_label },
   ];
 
   return (
@@ -51,13 +55,12 @@ const About = () => {
               className="max-w-3xl mx-auto text-center"
             >
               <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-                Our Mission is to
+                {content.about_hero_title_line1}
                 <br />
-                <span className="gradient-text">Bring Peace of Mind</span>
+                <span className="gradient-text">{content.about_hero_title_line2}</span>
               </h1>
               <p className="text-xl text-muted-foreground">
-                We believe no one should have to worry about losing their valuables. 
-                That's why we created iTag – the most reliable way to keep track of what matters most.
+                {content.about_hero_description}
               </p>
             </motion.div>
           </div>
@@ -97,23 +100,16 @@ const About = () => {
                 className="space-y-6"
               >
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                  Our Story
+                  {content.about_story_title}
                 </h2>
                 <p className="text-muted-foreground">
-                  iTag was born from a simple frustration – we've all been there, 
-                  frantically searching for keys when running late or worrying about 
-                  lost luggage while traveling.
+                  {content.about_story_paragraph1}
                 </p>
                 <p className="text-muted-foreground">
-                  Founded in 2020, our team of engineers and designers set out to 
-                  create the most reliable, user-friendly tracking device on the market. 
-                  Today, iTag helps hundreds of thousands of people keep track of their 
-                  most important items.
+                  {content.about_story_paragraph2}
                 </p>
                 <p className="text-muted-foreground">
-                  We're constantly innovating, pushing the boundaries of what's possible 
-                  with location technology while maintaining our commitment to privacy 
-                  and security.
+                  {content.about_story_paragraph3}
                 </p>
               </motion.div>
 
@@ -130,10 +126,10 @@ const About = () => {
                       <MapPin className="w-12 h-12 text-primary-foreground" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground mb-2">
-                      Never Lose Track
+                      {content.about_story_box_title}
                     </h3>
                     <p className="text-muted-foreground">
-                      Of what matters most to you
+                      {content.about_story_box_subtitle}
                     </p>
                   </div>
                 </div>
@@ -152,10 +148,10 @@ const About = () => {
               className="text-center mb-16"
             >
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Values
+                {content.about_values_title}
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                The principles that guide everything we do
+                {content.about_values_subtitle}
               </p>
             </motion.div>
 
@@ -192,10 +188,10 @@ const About = () => {
               className="text-center mb-16"
             >
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Get in Touch
+                {content.about_contact_title}
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Have questions? We'd love to hear from you.
+                {content.about_contact_subtitle}
               </p>
             </motion.div>
 
