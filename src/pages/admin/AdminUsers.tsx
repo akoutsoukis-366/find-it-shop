@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Mail, Ban, Trash2, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { Search, Mail, Ban, Trash2, CheckCircle, Clock, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +15,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+
+interface UserProfile {
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  phone: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  country: string | null;
+  created_at: string;
+}
 
 interface UserData {
   id: string;
@@ -35,7 +57,10 @@ const AdminUsers = () => {
     open: false,
     user: null,
   });
-
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedUserStats, setSelectedUserStats] = useState<{ orders_count: number; total_spent: number; email_confirmed_at: string | null } | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -91,6 +116,34 @@ const AdminUsers = () => {
       toast.error('Failed to load users');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleViewUser = async (user: UserData) => {
+    setDetailLoading(true);
+    setDetailDialogOpen(true);
+    setSelectedUserStats({
+      orders_count: user.orders_count,
+      total_spent: user.total_spent,
+      email_confirmed_at: user.email_confirmed_at,
+    });
+
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      setSelectedUser(profile);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      toast.error('Failed to load user details');
+      setDetailDialogOpen(false);
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -265,6 +318,14 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="View user details"
+                          onClick={() => handleViewUser(user)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         {!user.email_confirmed_at && (
                           <Button 
                             variant="ghost" 
@@ -325,6 +386,111 @@ const AdminUsers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+            <DialogDescription>
+              Complete profile information
+            </DialogDescription>
+          </DialogHeader>
+          
+          {detailLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : selectedUser && (
+            <div className="space-y-6">
+              {/* Status & Stats */}
+              <div className="flex items-center justify-between">
+                {selectedUserStats?.email_confirmed_at ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-success/20 text-success">
+                    <CheckCircle className="h-4 w-4" />
+                    Email Verified
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-warning/20 text-warning">
+                    <Clock className="h-4 w-4" />
+                    Email Pending Verification
+                  </span>
+                )}
+                <div className="text-sm text-muted-foreground">
+                  Joined: {formatDate(selectedUser.created_at)}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Basic Information */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Full Name</div>
+                    <div className="font-medium text-foreground">{selectedUser.full_name || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Email</div>
+                    <div className="font-medium text-foreground">{selectedUser.email || 'No email'}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Phone</div>
+                    <div className="font-medium text-foreground">{selectedUser.phone || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">User ID</div>
+                    <div className="font-medium text-foreground font-mono text-xs">{selectedUser.user_id}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Address */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Shipping Address</h3>
+                <div className="text-sm space-y-1">
+                  {selectedUser.address_line1 ? (
+                    <>
+                      <div className="font-medium text-foreground">{selectedUser.address_line1}</div>
+                      {selectedUser.address_line2 && (
+                        <div className="text-muted-foreground">{selectedUser.address_line2}</div>
+                      )}
+                      <div className="text-muted-foreground">
+                        {[selectedUser.city, selectedUser.state, selectedUser.postal_code]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </div>
+                      <div className="text-muted-foreground">{selectedUser.country}</div>
+                    </>
+                  ) : (
+                    <div className="text-muted-foreground">No address provided</div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Order Statistics */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Order Statistics</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-secondary/50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-foreground">{selectedUserStats?.orders_count || 0}</div>
+                    <div className="text-sm text-muted-foreground">Total Orders</div>
+                  </div>
+                  <div className="bg-secondary/50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-foreground">{formatCurrency(selectedUserStats?.total_spent || 0)}</div>
+                    <div className="text-sm text-muted-foreground">Total Spent</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
