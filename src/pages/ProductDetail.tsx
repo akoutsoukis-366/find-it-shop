@@ -28,6 +28,10 @@ const productImageMap: Record<string, string> = {
 };
 
 const getProductImage = (imagePath: string | undefined, productName: string): string => {
+  // If it's a full URL (uploaded image), use it directly
+  if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+    return imagePath;
+  }
   // Try to match by image path
   if (imagePath) {
     const key = imagePath.split('/').pop()?.replace('.png', '') || '';

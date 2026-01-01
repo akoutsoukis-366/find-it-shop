@@ -74,6 +74,10 @@ const productImageMap: Record<string, string> = {
 };
 
 const getProductImage = (imageUrl: string | null, productName: string): string => {
+  // If it's a full URL (uploaded image), use it directly
+  if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    return imageUrl;
+  }
   if (imageUrl) {
     const key = imageUrl.split('/').pop()?.replace('.png', '') || '';
     if (productImageMap[key]) return productImageMap[key];
