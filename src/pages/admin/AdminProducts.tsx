@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Pencil, Trash2, Search, Loader2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ImageUpload from '@/components/admin/ImageUpload';
 import {
   Dialog,
   DialogContent,
@@ -397,15 +398,13 @@ const AdminProducts = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="image_url">Image URL</Label>
-                <Input
-                  id="image_url"
-                  value={editingProduct.image_url || ''}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, image_url: e.target.value })}
-                  placeholder="/products/product-name.png"
-                />
-              </div>
+              <ImageUpload
+                value={editingProduct.image_url || ''}
+                onChange={(url) => setEditingProduct({ ...editingProduct, image_url: url })}
+                label="Product Image"
+                description="Upload a product image (PNG, JPG up to 5MB)"
+                folder="products"
+              />
 
               <div className="flex items-center justify-between">
                 <Label htmlFor="in_stock">In Stock</Label>
