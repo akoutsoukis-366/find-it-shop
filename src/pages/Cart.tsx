@@ -322,15 +322,8 @@ const Cart = () => {
                       {/* Details */}
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
-                          <div>
+                        <div>
                             <h3 className="font-semibold text-foreground">{item.product.name}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-sm text-muted-foreground">Color:</span>
-                              <div
-                                className="w-4 h-4 rounded-full border border-border"
-                                style={{ backgroundColor: item.selectedColor }}
-                              />
-                            </div>
                           </div>
                           <span className="font-semibold text-foreground">
                             {formatPrice(item.product.price * item.quantity)}
