@@ -115,22 +115,6 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 <ShoppingCart className="h-4 w-4" />
               </Button>
             </div>
-
-            {/* Colors */}
-            {product.colors.length > 0 && (
-              <div className="flex items-center gap-2">
-                {product.colors.slice(0, 4).map((color, i) => (
-                  <div
-                    key={i}
-                    className="w-4 h-4 rounded-full border border-border"
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-                {product.colors.length > 4 && (
-                  <span className="text-xs text-muted-foreground">+{product.colors.length - 4}</span>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </Link>
