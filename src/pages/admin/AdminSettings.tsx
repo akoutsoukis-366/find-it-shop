@@ -243,18 +243,12 @@ const AdminSettings = () => {
 
   const updateSetting = async (key: string, value: string) => {
     try {
-      const { error: updateError } = await supabase
+      // Use upsert to handle both insert and update cases
+      const { error } = await supabase
         .from('settings')
-        .update({ value })
-        .eq('key', key);
-
-      if (updateError) {
-        const { error: insertError } = await supabase
-          .from('settings')
-          .insert({ key, value });
-        
-        if (insertError) throw insertError;
-      }
+        .upsert({ key, value }, { onConflict: 'key' });
+      
+      if (error) throw error;
     } catch (error) {
       console.error('Error updating setting:', error);
       throw error;
