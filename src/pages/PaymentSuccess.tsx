@@ -107,7 +107,7 @@ const PaymentSuccess = () => {
                   <span className="text-lg font-medium text-foreground">Order Confirmed</span>
                 </div>
                 <p className="text-muted-foreground">
-                  Your order is being processed and will be shipped within 1-2 business days.
+                  Your order is being processed and will be shipped soon.
                   You'll receive tracking information via email once your order ships.
                 </p>
               </motion.div>
