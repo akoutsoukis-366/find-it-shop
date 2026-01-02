@@ -449,9 +449,6 @@ const Cart = () => {
                   )}
                 </Button>
 
-                <p className="text-xs text-muted-foreground text-center">
-                  Taxes calculated at checkout. Free returns within 30 days.
-                </p>
               </div>
             </div>
           </div>
