@@ -61,6 +61,8 @@ const AdminOrders = () => {
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
   const [pendingShipment, setPendingShipment] = useState<{ orderId: string; order: Order } | null>(null);
   const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingUrl, setTrackingUrl] = useState('');
+  const [estimatedDelivery, setEstimatedDelivery] = useState('');
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -103,6 +105,8 @@ const AdminOrders = () => {
     if (newStatus === 'shipped') {
       setPendingShipment({ orderId, order });
       setTrackingNumber(order.tracking_number || '');
+      setTrackingUrl('');
+      setEstimatedDelivery('');
       setTrackingDialogOpen(true);
       return;
     }
@@ -117,19 +121,25 @@ const AdminOrders = () => {
       pendingShipment.orderId, 
       'shipped', 
       pendingShipment.order, 
-      trackingNumber.trim() || undefined
+      trackingNumber.trim() || undefined,
+      trackingUrl.trim() || undefined,
+      estimatedDelivery.trim() || undefined
     );
     
     setTrackingDialogOpen(false);
     setPendingShipment(null);
     setTrackingNumber('');
+    setTrackingUrl('');
+    setEstimatedDelivery('');
   };
 
   const updateOrderStatus = async (
     orderId: string, 
     newStatus: string, 
     order: Order,
-    trackingNum?: string
+    trackingNum?: string,
+    trackingLink?: string,
+    estDelivery?: string
   ) => {
     try {
       const updateData: { status: string; tracking_number?: string } = { status: newStatus };
@@ -162,6 +172,8 @@ const AdminOrders = () => {
               status: newStatus,
               items: order.items,
               trackingNumber: trackingNum || order.tracking_number,
+              trackingUrl: trackingLink,
+              estimatedDelivery: estDelivery,
             },
           });
           toast.success('Customer notification sent');
@@ -345,19 +357,40 @@ const AdminOrders = () => {
 
       {/* Tracking Number Dialog */}
       <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Tracking Number</DialogTitle>
+            <DialogTitle>Shipping Details</DialogTitle>
             <DialogDescription>
-              Enter the tracking number for this shipment. This will be included in the customer's email notification.
+              Enter the shipping information. This will be included in the customer's email notification.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Enter tracking number (optional)"
-              value={trackingNumber}
-              onChange={(e) => setTrackingNumber(e.target.value)}
-            />
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Tracking Number</label>
+              <Input
+                placeholder="e.g., 1Z999AA10123456784"
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Tracking URL</label>
+              <Input
+                placeholder="e.g., https://track.carrier.com/..."
+                value={trackingUrl}
+                onChange={(e) => setTrackingUrl(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Link where customers can track their package</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Estimated Delivery</label>
+              <Input
+                placeholder="e.g., January 5-7, 2026"
+                value={estimatedDelivery}
+                onChange={(e) => setEstimatedDelivery(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">When the customer should expect their package</p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTrackingDialogOpen(false)}>
