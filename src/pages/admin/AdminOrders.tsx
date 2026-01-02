@@ -54,6 +54,78 @@ interface Order {
   stripe_session_id: string | null;
 }
 
+// Carrier detection patterns and tracking URL generators
+const detectCarrierAndGetUrl = (trackingNumber: string): { carrier: string; url: string } | null => {
+  const cleaned = trackingNumber.replace(/\s/g, '').toUpperCase();
+  
+  // UPS: 1Z followed by 16 alphanumeric characters
+  if (/^1Z[A-Z0-9]{16}$/i.test(cleaned)) {
+    return {
+      carrier: 'UPS',
+      url: `https://www.ups.com/track?tracknum=${cleaned}`
+    };
+  }
+  
+  // FedEx: 12, 15, 20, or 22 digits
+  if (/^[0-9]{12}$/.test(cleaned) || /^[0-9]{15}$/.test(cleaned) || 
+      /^[0-9]{20}$/.test(cleaned) || /^[0-9]{22}$/.test(cleaned)) {
+    return {
+      carrier: 'FedEx',
+      url: `https://www.fedex.com/fedextrack/?trknbr=${cleaned}`
+    };
+  }
+  
+  // USPS: 20-22 digits or starts with specific patterns
+  if (/^[0-9]{20,22}$/.test(cleaned) || /^(94|93|92|91)[0-9]{18,20}$/.test(cleaned)) {
+    return {
+      carrier: 'USPS',
+      url: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${cleaned}`
+    };
+  }
+  
+  // DHL: 10-11 digits
+  if (/^[0-9]{10,11}$/.test(cleaned)) {
+    return {
+      carrier: 'DHL',
+      url: `https://www.dhl.com/en/express/tracking.html?AWB=${cleaned}`
+    };
+  }
+  
+  // DHL Express: Starts with JD followed by 18 digits
+  if (/^JD[0-9]{18}$/i.test(cleaned)) {
+    return {
+      carrier: 'DHL Express',
+      url: `https://www.dhl.com/en/express/tracking.html?AWB=${cleaned}`
+    };
+  }
+  
+  // Amazon Logistics: TBA followed by digits
+  if (/^TBA[0-9]+$/i.test(cleaned)) {
+    return {
+      carrier: 'Amazon',
+      url: `https://track.amazon.com/tracking/${cleaned}`
+    };
+  }
+  
+  // Royal Mail (UK): 2 letters, 9 digits, 2 letters
+  if (/^[A-Z]{2}[0-9]{9}[A-Z]{2}$/i.test(cleaned)) {
+    return {
+      carrier: 'Royal Mail',
+      url: `https://www.royalmail.com/track-your-item#/tracking-results/${cleaned}`
+    };
+  }
+
+  // Canada Post: 16 digits
+  if (/^[0-9]{16}$/.test(cleaned)) {
+    return {
+      carrier: 'Canada Post',
+      url: `https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor=${cleaned}`
+    };
+  }
+  
+  return null;
+};
+
 const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -63,8 +135,22 @@ const AdminOrders = () => {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
   const [estimatedDelivery, setEstimatedDelivery] = useState('');
+  const [detectedCarrier, setDetectedCarrier] = useState<string | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  // Auto-detect carrier when tracking number changes
+  const handleTrackingNumberChange = (value: string) => {
+    setTrackingNumber(value);
+    const detected = detectCarrierAndGetUrl(value);
+    if (detected) {
+      setDetectedCarrier(detected.carrier);
+      setTrackingUrl(detected.url);
+    } else {
+      setDetectedCarrier(null);
+      // Don't clear the URL if user manually entered one
+    }
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -107,6 +193,7 @@ const AdminOrders = () => {
       setTrackingNumber(order.tracking_number || '');
       setTrackingUrl('');
       setEstimatedDelivery('');
+      setDetectedCarrier(null);
       setTrackingDialogOpen(true);
       return;
     }
@@ -131,6 +218,7 @@ const AdminOrders = () => {
     setTrackingNumber('');
     setTrackingUrl('');
     setEstimatedDelivery('');
+    setDetectedCarrier(null);
   };
 
   const updateOrderStatus = async (
@@ -370,11 +458,23 @@ const AdminOrders = () => {
               <Input
                 placeholder="e.g., 1Z999AA10123456784"
                 value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
+                onChange={(e) => handleTrackingNumberChange(e.target.value)}
               />
+              {detectedCarrier && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    ✓ {detectedCarrier} detected
+                  </span>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Tracking URL</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Tracking URL</label>
+                {detectedCarrier && (
+                  <span className="text-xs text-muted-foreground">Auto-filled from {detectedCarrier}</span>
+                )}
+              </div>
               <Input
                 placeholder="e.g., https://track.carrier.com/..."
                 value={trackingUrl}
