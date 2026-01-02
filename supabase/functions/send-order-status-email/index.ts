@@ -96,7 +96,7 @@ const getEmailContent = (
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
               <!-- Hero Section -->
               <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 32px; text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+                <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
                 <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Your Order Has Shipped!</h1>
                 <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Great news, ${customerName || 'there'}! Your package is on the move.</p>
               </div>
@@ -113,16 +113,8 @@ const getEmailContent = (
                 ${trackingSection}
                 ${deliverySection}
 
-                <!-- Items -->
-                <div style="margin-top: 24px;">
-                  <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">Items in Your Order</h3>
-                  <table style="width: 100%; border-collapse: collapse;">
-                    ${itemsList}
-                  </table>
-                </div>
-
                 <!-- Footer Message -->
-                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
                   <p style="color: #6b7280; font-size: 14px; margin: 0;">
                     Questions about your order? Just reply to this email and we'll help you out.
                   </p>
