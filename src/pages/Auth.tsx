@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Phone, MapPin, Loader2, AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -11,12 +11,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { countries } from '@/data/countries';
+import { countries, getCountryByCode } from '@/data/countries';
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('login');
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
   
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -27,7 +29,8 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState('US');
   const [addressLine1, setAddressLine1] = useState('');
   const [addressLine2, setAddressLine2] = useState('');
   const [city, setCity] = useState('');
@@ -35,12 +38,22 @@ const Auth = () => {
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('US');
   
+  // Real-time validation
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
+  
   // Forgot password
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
   const [justSignedUp, setJustSignedUp] = useState(false);
+  
+  // Debounce timers
+  const emailDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const phoneDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Check if already logged in
@@ -59,6 +72,109 @@ const Auth = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate, justSignedUp]);
+
+  // Real-time email validation
+  const checkEmailExists = useCallback(async (email: string) => {
+    if (!email || !email.includes('@')) {
+      setEmailError(null);
+      return;
+    }
+    
+    setIsCheckingEmail(true);
+    try {
+      const { data: existingEmail } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email.toLowerCase().trim())
+        .maybeSingle();
+
+      if (existingEmail) {
+        setEmailError('An account with this email already exists');
+      } else {
+        setEmailError(null);
+      }
+    } catch {
+      // Silently fail validation check
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  }, []);
+
+  // Real-time phone validation
+  const checkPhoneExists = useCallback(async (phone: string) => {
+    if (!phone || phone.length < 5) {
+      setPhoneError(null);
+      return;
+    }
+    
+    setIsCheckingPhone(true);
+    try {
+      const dialCode = getCountryByCode(phoneCountry)?.dialCode || '';
+      const fullPhone = dialCode + phone.replace(/\D/g, '');
+      
+      const { data: existingPhone } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('phone', fullPhone)
+        .maybeSingle();
+
+      if (existingPhone) {
+        setPhoneError('An account with this phone number already exists');
+      } else {
+        setPhoneError(null);
+      }
+    } catch {
+      // Silently fail validation check
+    } finally {
+      setIsCheckingPhone(false);
+    }
+  }, [phoneCountry]);
+
+  // Debounced email check
+  const handleEmailChange = (email: string) => {
+    setSignupEmail(email);
+    setEmailError(null);
+    
+    if (emailDebounceRef.current) {
+      clearTimeout(emailDebounceRef.current);
+    }
+    
+    emailDebounceRef.current = setTimeout(() => {
+      checkEmailExists(email);
+    }, 500);
+  };
+
+  // Debounced phone check
+  const handlePhoneChange = (phone: string) => {
+    setPhoneNumber(phone);
+    setPhoneError(null);
+    
+    if (phoneDebounceRef.current) {
+      clearTimeout(phoneDebounceRef.current);
+    }
+    
+    phoneDebounceRef.current = setTimeout(() => {
+      checkPhoneExists(phone);
+    }, 500);
+  };
+
+  // Re-check phone when country changes
+  useEffect(() => {
+    if (phoneNumber) {
+      if (phoneDebounceRef.current) {
+        clearTimeout(phoneDebounceRef.current);
+      }
+      phoneDebounceRef.current = setTimeout(() => {
+        checkPhoneExists(phoneNumber);
+      }, 500);
+    }
+  }, [phoneCountry, phoneNumber, checkPhoneExists]);
+
+  const getFullPhoneNumber = () => {
+    if (!phoneNumber) return '';
+    const dialCode = getCountryByCode(phoneCountry)?.dialCode || '';
+    return dialCode + phoneNumber.replace(/\D/g, '');
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +236,21 @@ const Auth = () => {
       return;
     }
 
+    // Check for existing validation errors
+    if (emailError) {
+      setError(emailError);
+      setIsLoading(false);
+      return;
+    }
+
+    if (phoneError) {
+      setError(phoneError);
+      setIsLoading(false);
+      return;
+    }
+
+    const fullPhone = getFullPhoneNumber();
+
     try {
       // Check if email already exists in profiles
       const { data: existingEmail } = await supabase
@@ -130,20 +261,22 @@ const Auth = () => {
 
       if (existingEmail) {
         setError('An account with this email already exists');
+        setEmailError('An account with this email already exists');
         setIsLoading(false);
         return;
       }
 
       // Check if phone already exists (only if phone provided)
-      if (phone.trim()) {
+      if (fullPhone) {
         const { data: existingPhone } = await supabase
           .from('profiles')
           .select('phone')
-          .eq('phone', phone.trim())
+          .eq('phone', fullPhone)
           .maybeSingle();
 
         if (existingPhone) {
           setError('An account with this phone number already exists');
+          setPhoneError('An account with this phone number already exists');
           setIsLoading(false);
           return;
         }
@@ -157,7 +290,7 @@ const Auth = () => {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName,
-            phone: phone.trim() || null,
+            phone: fullPhone || null,
             address_line1: addressLine1,
             address_line2: addressLine2,
             city,
@@ -182,7 +315,7 @@ const Auth = () => {
           .from('profiles')
           .update({
             full_name: fullName,
-            phone: phone.trim() || null,
+            phone: fullPhone || null,
             address_line1: addressLine1,
             address_line2: addressLine2,
             city,
@@ -199,30 +332,33 @@ const Auth = () => {
         // Sign out the user so they can verify their email first
         await supabase.auth.signOut();
         
-        // Show success message and switch to login tab
-        toast.success('Account created! Please check your email to verify your account before logging in.', {
-          duration: 6000,
-        });
-        
         // Reset form
         setSignupEmail('');
         setSignupPassword('');
         setConfirmPassword('');
         setFullName('');
-        setPhone('');
+        setPhoneNumber('');
+        setPhoneCountry('US');
         setAddressLine1('');
         setAddressLine2('');
         setCity('');
         setState('');
         setPostalCode('');
         setCountry('US');
+        setEmailError(null);
+        setPhoneError(null);
         setJustSignedUp(false);
+        
+        // Set verification message and switch to login tab
+        setVerificationMessage('Account created successfully! Please check your email to verify your account before logging in.');
+        setActiveTab('login');
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Signup failed';
       // Handle Supabase auth duplicate email error
       if (message.includes('already registered') || message.includes('already exists')) {
         setError('An account with this email already exists');
+        setEmailError('An account with this email already exists');
       } else {
         setError(message);
       }
@@ -313,11 +449,18 @@ const Auth = () => {
                 )}
               </div>
             ) : (
-              <Tabs defaultValue="login" className="w-full">
+              <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setError(null); setVerificationMessage(null); }} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8">
                   <TabsTrigger value="login">Login</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>
                 </TabsList>
+
+                {verificationMessage && (
+                  <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-green-600 dark:text-green-400">{verificationMessage}</p>
+                  </div>
+                )}
 
                 {error && (
                   <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3">
@@ -395,11 +538,20 @@ const Auth = () => {
                           type="email"
                           placeholder="you@example.com"
                           value={signupEmail}
-                          onChange={(e) => setSignupEmail(e.target.value)}
-                          className="pl-10"
+                          onChange={(e) => handleEmailChange(e.target.value)}
+                          className={`pl-10 ${emailError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                           required
                         />
+                        {isCheckingEmail && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                        )}
                       </div>
+                      {emailError && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {emailError}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -446,17 +598,42 @@ const Auth = () => {
 
                     <div className="col-span-2 space-y-2">
                       <Label htmlFor="phone">Phone</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="+1 (555) 000-0000"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="pl-10"
-                        />
+                      <div className="flex gap-2">
+                        <Select value={phoneCountry} onValueChange={setPhoneCountry}>
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue>
+                              {getCountryByCode(phoneCountry)?.dialCode || '+1'}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {countries.map((c) => (
+                              <SelectItem key={c.code} value={c.code}>
+                                {c.dialCode} {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="relative flex-1">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="phone"
+                            type="tel"
+                            placeholder="555 000 0000"
+                            value={phoneNumber}
+                            onChange={(e) => handlePhoneChange(e.target.value)}
+                            className={`pl-10 ${phoneError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                          />
+                          {isCheckingPhone && (
+                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                          )}
+                        </div>
                       </div>
+                      {phoneError && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {phoneError}
+                        </p>
+                      )}
                     </div>
 
                     <div className="col-span-2 space-y-2">
@@ -530,7 +707,11 @@ const Auth = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isLoading || !!emailError || !!phoneError}
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
