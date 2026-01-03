@@ -8,6 +8,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface ShippingAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+}
+
 interface OrderStatusEmailRequest {
   customerEmail: string;
   customerName: string;
@@ -17,6 +26,7 @@ interface OrderStatusEmailRequest {
   trackingNumber?: string;
   trackingUrl?: string;
   estimatedDelivery?: string;
+  shippingAddress?: ShippingAddress;
 }
 
 const getEmailContent = (
@@ -26,7 +36,8 @@ const getEmailContent = (
   items: Array<{ name: string; quantity: number; price?: number }>,
   trackingNumber?: string,
   trackingUrl?: string,
-  estimatedDelivery?: string
+  estimatedDelivery?: string,
+  shippingAddress?: ShippingAddress
 ) => {
   const itemsList = items.map(item => `
     <tr>
@@ -38,6 +49,30 @@ const getEmailContent = (
       </td>
     </tr>
   `).join('');
+
+  const formatAddress = (addr: ShippingAddress): string => {
+    const parts = [
+      addr.line1,
+      addr.line2,
+      [addr.city, addr.state, addr.postal_code].filter(Boolean).join(', '),
+      addr.country
+    ].filter(Boolean);
+    return parts.join('<br>');
+  };
+
+  const addressSection = shippingAddress
+    ? `
+      <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 16px; border-radius: 12px; margin: 24px 0;">
+        <div style="display: flex; align-items: flex-start;">
+          <span style="font-size: 20px; margin-right: 12px;">📍</span>
+          <div>
+            <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Shipping To</div>
+            <div style="font-size: 14px; color: #1a1a1a; line-height: 1.6;">${formatAddress(shippingAddress)}</div>
+          </div>
+        </div>
+      </div>
+    `
+    : '';
 
   const trackingSection = trackingNumber 
     ? `
@@ -112,6 +147,16 @@ const getEmailContent = (
 
                 ${trackingSection}
                 ${deliverySection}
+
+                <!-- Items -->
+                <div style="margin-top: 24px;">
+                  <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">Items Being Shipped</h3>
+                  <table style="width: 100%; border-collapse: collapse;">
+                    ${itemsList}
+                  </table>
+                </div>
+
+                ${addressSection}
 
                 <!-- Footer Message -->
                 <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
@@ -230,7 +275,8 @@ const handler = async (req: Request): Promise<Response> => {
       items, 
       trackingNumber,
       trackingUrl,
-      estimatedDelivery 
+      estimatedDelivery,
+      shippingAddress
     }: OrderStatusEmailRequest = await req.json();
 
     console.log(`Processing email for order ${orderId}, status: ${status}, email: ${customerEmail}`);
@@ -250,7 +296,8 @@ const handler = async (req: Request): Promise<Response> => {
       items, 
       trackingNumber,
       trackingUrl,
-      estimatedDelivery
+      estimatedDelivery,
+      shippingAddress
     );
     
     if (!emailContent) {

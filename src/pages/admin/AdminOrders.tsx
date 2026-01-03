@@ -262,6 +262,7 @@ const AdminOrders = () => {
               trackingNumber: trackingNum || order.tracking_number,
               trackingUrl: trackingLink,
               estimatedDelivery: estDelivery,
+              shippingAddress: order.shipping_address,
             },
           });
           toast.success('Customer notification sent');
