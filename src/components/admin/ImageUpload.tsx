@@ -57,12 +57,14 @@ const ImageUpload = ({
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
+      // Get public URL with cache-busting parameter
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
         .getPublicUrl(fileName);
 
-      onChange(publicUrl);
+      // Add cache-busting query param to prevent browser showing old cached image
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+      onChange(urlWithCacheBust);
       toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Upload error:', error);
@@ -111,13 +113,14 @@ const ImageUpload = ({
         )}
       </div>
 
-      {value ? (
+      {value && !isUploading ? (
         <div className="relative group">
           <div className="relative aspect-video w-full max-w-sm rounded-lg overflow-hidden border border-border bg-card">
             <img
               src={value}
               alt={label}
               className="w-full h-full object-cover"
+              key={value}
             />
             <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
@@ -127,11 +130,7 @@ const ImageUpload = ({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
               >
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
+                <Upload className="h-4 w-4" />
                 Replace
               </Button>
               <Button
@@ -145,6 +144,10 @@ const ImageUpload = ({
               </Button>
             </div>
           </div>
+        </div>
+      ) : isUploading ? (
+        <div className="relative aspect-video w-full max-w-sm rounded-lg border border-border bg-card flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
         <div
