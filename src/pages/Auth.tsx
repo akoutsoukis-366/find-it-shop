@@ -30,7 +30,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneCountry, setPhoneCountry] = useState('US');
+  const [phoneCountry, setPhoneCountry] = useState('GR');
   const [addressLine1, setAddressLine1] = useState('');
   const [addressLine2, setAddressLine2] = useState('');
   const [city, setCity] = useState('');
