@@ -73,7 +73,7 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, justSignedUp]);
 
-  // Real-time email validation
+  // Real-time email validation using RPC function
   const checkEmailExists = useCallback(async (email: string) => {
     if (!email || !email.includes('@')) {
       setEmailError(null);
@@ -82,25 +82,27 @@ const Auth = () => {
     
     setIsCheckingEmail(true);
     try {
-      const { data: existingEmail } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('email', email.toLowerCase().trim())
-        .maybeSingle();
+      const { data: exists, error } = await supabase
+        .rpc('check_email_exists', { check_email: email.toLowerCase().trim() });
 
-      if (existingEmail) {
+      if (error) {
+        console.error('Email check error:', error);
+        return;
+      }
+
+      if (exists) {
         setEmailError('An account with this email already exists');
       } else {
         setEmailError(null);
       }
-    } catch {
-      // Silently fail validation check
+    } catch (err) {
+      console.error('Email check failed:', err);
     } finally {
       setIsCheckingEmail(false);
     }
   }, []);
 
-  // Real-time phone validation
+  // Real-time phone validation using RPC function
   const checkPhoneExists = useCallback(async (phone: string) => {
     if (!phone || phone.length < 5) {
       setPhoneError(null);
@@ -112,19 +114,21 @@ const Auth = () => {
       const dialCode = getCountryByCode(phoneCountry)?.dialCode || '';
       const fullPhone = dialCode + phone.replace(/\D/g, '');
       
-      const { data: existingPhone } = await supabase
-        .from('profiles')
-        .select('phone')
-        .eq('phone', fullPhone)
-        .maybeSingle();
+      const { data: exists, error } = await supabase
+        .rpc('check_phone_exists', { check_phone: fullPhone });
 
-      if (existingPhone) {
+      if (error) {
+        console.error('Phone check error:', error);
+        return;
+      }
+
+      if (exists) {
         setPhoneError('An account with this phone number already exists');
       } else {
         setPhoneError(null);
       }
-    } catch {
-      // Silently fail validation check
+    } catch (err) {
+      console.error('Phone check failed:', err);
     } finally {
       setIsCheckingPhone(false);
     }
@@ -252,14 +256,11 @@ const Auth = () => {
     const fullPhone = getFullPhoneNumber();
 
     try {
-      // Check if email already exists in profiles
-      const { data: existingEmail } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('email', signupEmail.toLowerCase().trim())
-        .maybeSingle();
+      // Check if email already exists using RPC function
+      const { data: emailExists } = await supabase
+        .rpc('check_email_exists', { check_email: signupEmail.toLowerCase().trim() });
 
-      if (existingEmail) {
+      if (emailExists) {
         setError('An account with this email already exists');
         setEmailError('An account with this email already exists');
         setIsLoading(false);
@@ -268,13 +269,10 @@ const Auth = () => {
 
       // Check if phone already exists (only if phone provided)
       if (fullPhone) {
-        const { data: existingPhone } = await supabase
-          .from('profiles')
-          .select('phone')
-          .eq('phone', fullPhone)
-          .maybeSingle();
+        const { data: phoneExists } = await supabase
+          .rpc('check_phone_exists', { check_phone: fullPhone });
 
-        if (existingPhone) {
+        if (phoneExists) {
           setError('An account with this phone number already exists');
           setPhoneError('An account with this phone number already exists');
           setIsLoading(false);
