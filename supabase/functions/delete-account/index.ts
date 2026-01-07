@@ -38,7 +38,17 @@ serve(async (req) => {
     const userId = userData.user.id;
     console.log("[DELETE-ACCOUNT] Deleting user:", userId);
 
-    // Delete user's profile (this should cascade, but explicit is safer)
+    // Nullify user_id in orders to preserve order history for analytics
+    const { error: ordersError } = await supabaseAdmin
+      .from('orders')
+      .update({ user_id: null })
+      .eq('user_id', userId);
+
+    if (ordersError) {
+      console.error("[DELETE-ACCOUNT] Error updating orders:", ordersError);
+    }
+
+    // Delete user's profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .delete()
