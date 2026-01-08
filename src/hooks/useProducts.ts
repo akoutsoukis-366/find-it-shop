@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface ProductSpec {
+  label: string;
+  value: string;
+}
+
 export interface DbProduct {
   id: string;
   name: string;
@@ -14,6 +19,7 @@ export interface DbProduct {
   featured: boolean;
   rating: number;
   reviews_count: number;
+  specs: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -32,7 +38,19 @@ export interface Product {
   featured?: boolean;
   rating: number;
   reviews: number;
+  specs?: ProductSpec[];
 }
+
+const parseSpecs = (specs: unknown): ProductSpec[] | undefined => {
+  if (!specs || !Array.isArray(specs)) return undefined;
+  return specs.filter(
+    (spec): spec is ProductSpec =>
+      typeof spec === 'object' &&
+      spec !== null &&
+      typeof spec.label === 'string' &&
+      typeof spec.value === 'string'
+  );
+};
 
 export const dbProductToProduct = (dbProduct: DbProduct): Product => ({
   id: dbProduct.id,
@@ -47,6 +65,7 @@ export const dbProductToProduct = (dbProduct: DbProduct): Product => ({
   featured: dbProduct.featured,
   rating: Number(dbProduct.rating),
   reviews: dbProduct.reviews_count,
+  specs: parseSpecs(dbProduct.specs),
 });
 
 export const useProducts = () => {
