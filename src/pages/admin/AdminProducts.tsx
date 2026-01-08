@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/admin/ImageUpload';
 import {
@@ -33,6 +34,11 @@ import itagSlim from '@/assets/itag-slim.png';
 import itagPet from '@/assets/itag-pet.png';
 import itagPack from '@/assets/itag-pack.png';
 
+interface ProductSpec {
+  label: string;
+  value: string;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -46,9 +52,21 @@ interface Product {
   featured: boolean;
   rating: number;
   reviews_count: number;
+  specs: ProductSpec[];
   created_at: string;
   updated_at: string;
 }
+
+const parseSpecs = (specs: unknown): ProductSpec[] => {
+  if (!specs || !Array.isArray(specs)) return [];
+  return specs.filter(
+    (spec): spec is ProductSpec =>
+      typeof spec === 'object' &&
+      spec !== null &&
+      typeof spec.label === 'string' &&
+      typeof spec.value === 'string'
+  );
+};
 
 const defaultProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'> = {
   name: '',
@@ -62,6 +80,7 @@ const defaultProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'> = {
   featured: false,
   rating: 0,
   reviews_count: 0,
+  specs: [],
 };
 
 const productImageMap: Record<string, string> = {
@@ -108,7 +127,12 @@ const AdminProducts = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      // Transform specs from unknown JSON to ProductSpec[]
+      const transformedProducts = (data || []).map(product => ({
+        ...product,
+        specs: parseSpecs(product.specs),
+      }));
+      setProducts(transformedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -133,6 +157,11 @@ const AdminProducts = () => {
       return;
     }
 
+    // Filter out empty specs
+    const validSpecs = (editingProduct.specs || []).filter(
+      spec => spec.label.trim() && spec.value.trim()
+    );
+
     setIsSaving(true);
     try {
       if (editingProduct.id) {
@@ -149,6 +178,7 @@ const AdminProducts = () => {
             colors: editingProduct.colors || [],
             in_stock: editingProduct.in_stock,
             featured: editingProduct.featured,
+            specs: validSpecs as unknown as Json,
           })
           .eq('id', editingProduct.id);
 
@@ -168,6 +198,7 @@ const AdminProducts = () => {
             colors: editingProduct.colors || [],
             in_stock: editingProduct.in_stock ?? true,
             featured: editingProduct.featured ?? false,
+            specs: validSpecs as unknown as Json,
           });
 
         if (error) throw error;
@@ -426,6 +457,64 @@ const AdminProducts = () => {
                   checked={editingProduct.featured ?? false}
                   onCheckedChange={(checked) => setEditingProduct({ ...editingProduct, featured: checked })}
                 />
+              </div>
+
+              {/* Specifications */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>Specifications</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const currentSpecs = editingProduct.specs || [];
+                      setEditingProduct({
+                        ...editingProduct,
+                        specs: [...currentSpecs, { label: '', value: '' }],
+                      });
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Spec
+                  </Button>
+                </div>
+                {(editingProduct.specs || []).map((spec, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <Input
+                      placeholder="Label (e.g., Battery)"
+                      value={spec.label}
+                      onChange={(e) => {
+                        const newSpecs = [...(editingProduct.specs || [])];
+                        newSpecs[index] = { ...newSpecs[index], label: e.target.value };
+                        setEditingProduct({ ...editingProduct, specs: newSpecs });
+                      }}
+                      className="flex-1"
+                    />
+                    <Input
+                      placeholder="Value (e.g., 1 year)"
+                      value={spec.value}
+                      onChange={(e) => {
+                        const newSpecs = [...(editingProduct.specs || [])];
+                        newSpecs[index] = { ...newSpecs[index], value: e.target.value };
+                        setEditingProduct({ ...editingProduct, specs: newSpecs });
+                      }}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive shrink-0"
+                      onClick={() => {
+                        const newSpecs = (editingProduct.specs || []).filter((_, i) => i !== index);
+                        setEditingProduct({ ...editingProduct, specs: newSpecs });
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

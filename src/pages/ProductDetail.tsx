@@ -266,6 +266,21 @@ const ProductDetail = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Specifications */}
+              {product.specs && product.specs.length > 0 && (
+                <div className="pt-6 border-t border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Specifications</h3>
+                  <div className="space-y-3">
+                    {product.specs.map((spec, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
+                        <span className="text-muted-foreground">{spec.label}</span>
+                        <span className="font-medium text-foreground">{spec.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
