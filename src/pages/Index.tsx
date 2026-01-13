@@ -68,104 +68,96 @@ const Index = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex flex-col overflow-hidden pt-16">
         {/* Background Glow */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px]" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px]" />
         </div>
 
-        <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="flex flex-col items-center text-center gap-12">
-            {/* Content */}
-            <motion.div
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="space-y-8 max-w-3xl"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm mx-auto">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                <span className="text-muted-foreground">{content.hero_badge_text}</span>
+        {/* Content */}
+        <div className="container mx-auto px-4 pt-12 pb-8 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
+              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+              <span className="text-muted-foreground">{content.hero_badge_text}</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight whitespace-nowrap">
+              {content.hero_title_line1} <span className="gradient-text">{content.hero_title_line2}</span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+              {content.hero_description}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+              <Link to="/products">
+                <Button variant="hero" size="xl">
+                  Shop Now
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/about">
+                <Button variant="glass" size="xl">
+                  Learn More
+                </Button>
+              </Link>
+            </div>
+
+            <div className="flex items-center justify-center gap-8 pt-4">
+              <div>
+                <div className="text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
+                <div className="text-sm text-muted-foreground">{content.hero_stat1_label}</div>
               </div>
-
-              <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-                {content.hero_title_line1}
-                <br />
-                <span className="gradient-text">{content.hero_title_line2}</span>
-              </h1>
-
-              <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-                {content.hero_description}
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/products">
-                  <Button variant="hero" size="xl">
-                    Shop Now
-                    <ArrowRight className="h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/about">
-                  <Button variant="glass" size="xl">
-                    Learn More
-                  </Button>
-                </Link>
+              <div className="w-px h-12 bg-border" />
+              <div>
+                <div className="text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>
+                <div className="text-sm text-muted-foreground">{content.hero_stat2_label}</div>
               </div>
-
-              <div className="flex items-center justify-center gap-8 pt-4">
-                <div>
-                  <div className="text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
-                  <div className="text-sm text-muted-foreground">{content.hero_stat1_label}</div>
-                </div>
-                <div className="w-px h-12 bg-border" />
-                <div>
-                  <div className="text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>
-                  <div className="text-sm text-muted-foreground">{content.hero_stat2_label}</div>
-                </div>
-                <div className="w-px h-12 bg-border" />
-                <div>
-                  <div className="text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>
-                  <div className="text-sm text-muted-foreground">{content.hero_stat3_label}</div>
-                </div>
+              <div className="w-px h-12 bg-border" />
+              <div>
+                <div className="text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>
+                <div className="text-sm text-muted-foreground">{content.hero_stat3_label}</div>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
+        </div>
 
-            {/* Hero Image - Full Width */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative flex items-center justify-center w-full"
-            >
-              {/* Outer glow ring */}
-              <div className="absolute w-full max-w-4xl h-[300px] bg-gradient-radial from-primary/30 via-primary/5 to-transparent rounded-full blur-[100px]" />
-              
-              {/* Inner accent glow */}
-              <div className="absolute w-[60%] h-[200px] bg-accent/20 rounded-full blur-[80px] animate-pulse" />
-              
-              {/* Image container - full width */}
-              <div className="relative w-full">
-                {displayHeroSrc ? (
-                  <motion.img
-                    src={displayHeroSrc}
-                    alt="iTag Pro"
-                    className="relative w-full max-h-[500px] object-contain animate-float mix-blend-screen"
-                    style={{
-                      filter: 'drop-shadow(0 0 60px hsl(var(--primary) / 0.4))',
-                      maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-[400px] rounded-xl bg-muted animate-pulse" />
-                )}
-              </div>
-              
-              {/* Subtle reflection */}
-              <div className="absolute -bottom-10 w-full max-w-2xl h-[80px] bg-primary/10 rounded-full blur-[40px]" />
-            </motion.div>
+        {/* Hero Image - Full Screen Width */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative flex-1 w-full flex items-end justify-center"
+        >
+          {/* Glow effects */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-full h-[400px] bg-gradient-radial from-primary/20 via-primary/5 to-transparent blur-[100px]" />
           </div>
-        </div>
+          
+          {/* Image - edge to edge */}
+          <div className="relative w-full">
+            {displayHeroSrc ? (
+              <img
+                src={displayHeroSrc}
+                alt="iTag Pro"
+                className="w-full h-auto object-cover object-top"
+                style={{
+                  maxHeight: '60vh',
+                  maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                }}
+              />
+            ) : (
+              <div className="w-full h-[50vh] bg-muted animate-pulse" />
+            )}
+          </div>
+        </motion.div>
       </section>
 
       {/* Features Section */}
