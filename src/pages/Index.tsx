@@ -140,21 +140,20 @@ const Index = () => {
             <div className="w-full h-[400px] bg-gradient-radial from-primary/20 via-primary/5 to-transparent blur-[100px]" />
           </div>
           
-          {/* Image - edge to edge */}
+          {/* Image - edge to edge, full image visible */}
           <div className="relative w-full">
             {displayHeroSrc ? (
               <img
                 src={displayHeroSrc}
                 alt="iTag Pro"
-                className="w-full h-auto object-cover object-top"
+                className="w-full h-auto object-contain"
                 style={{
-                  maxHeight: '60vh',
-                  maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
                 }}
               />
             ) : (
-              <div className="w-full h-[50vh] bg-muted animate-pulse" />
+              <div className="w-full h-[400px] bg-muted animate-pulse" />
             )}
           </div>
         </motion.div>
