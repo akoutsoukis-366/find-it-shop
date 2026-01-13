@@ -75,15 +75,15 @@ const Index = () => {
         </div>
 
         <div className="container mx-auto px-4 py-20 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="flex flex-col items-center text-center gap-12">
             {/* Content */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="space-y-8"
+              className="space-y-8 max-w-3xl"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm mx-auto">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                 <span className="text-muted-foreground">{content.hero_badge_text}</span>
               </div>
@@ -94,11 +94,11 @@ const Index = () => {
                 <span className="gradient-text">{content.hero_title_line2}</span>
               </h1>
 
-              <p className="text-xl text-muted-foreground max-w-md">
+              <p className="text-xl text-muted-foreground max-w-xl mx-auto">
                 {content.hero_description}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/products">
                   <Button variant="hero" size="xl">
                     Shop Now
@@ -112,7 +112,7 @@ const Index = () => {
                 </Link>
               </div>
 
-              <div className="flex items-center gap-8 pt-4">
+              <div className="flex items-center justify-center gap-8 pt-4">
                 <div>
                   <div className="text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
                   <div className="text-sm text-muted-foreground">{content.hero_stat1_label}</div>
@@ -135,16 +135,16 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative flex items-center justify-center"
+              className="relative flex items-center justify-center w-full max-w-2xl"
             >
               {/* Outer glow ring */}
-              <div className="absolute w-[500px] h-[500px] bg-gradient-radial from-primary/30 via-primary/5 to-transparent rounded-full blur-[80px]" />
+              <div className="absolute w-[400px] h-[400px] bg-gradient-radial from-primary/30 via-primary/5 to-transparent rounded-full blur-[80px]" />
               
               {/* Inner accent glow */}
-              <div className="absolute w-[300px] h-[300px] bg-accent/20 rounded-full blur-[60px] animate-pulse" />
+              <div className="absolute w-[250px] h-[250px] bg-accent/20 rounded-full blur-[60px] animate-pulse" />
               
               {/* Image container with mask for seamless blend */}
-              <div className="relative w-full max-w-lg">
+              <div className="relative w-full max-w-md">
                 {displayHeroSrc ? (
                   <motion.img
                     src={displayHeroSrc}
@@ -163,7 +163,7 @@ const Index = () => {
               </div>
               
               {/* Subtle reflection */}
-              <div className="absolute -bottom-20 w-[300px] h-[100px] bg-primary/10 rounded-full blur-[40px]" />
+              <div className="absolute -bottom-10 w-[200px] h-[60px] bg-primary/10 rounded-full blur-[30px]" />
             </motion.div>
           </div>
         </div>
