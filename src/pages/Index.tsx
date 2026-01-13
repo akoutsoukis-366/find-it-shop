@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, Shield, Zap, Loader2 } from 'lucide-react';
@@ -15,8 +16,31 @@ const Index = () => {
   const { content, isLoading: contentLoading } = useContentSettings();
   const featuredProducts = products.filter((p) => p.featured);
 
-  // Use uploaded hero image or fall back to default
-  const heroImage = content.hero_image_url || defaultHeroImage;
+  // Avoid flashing the bundled default hero image while content is still loading.
+  const targetHeroSrc = useMemo(() => {
+    if (content.hero_image_url) return content.hero_image_url;
+    if (contentLoading) return '';
+    return defaultHeroImage;
+  }, [content.hero_image_url, contentLoading]);
+
+  const [displayHeroSrc, setDisplayHeroSrc] = useState<string>('');
+
+  useEffect(() => {
+    if (!targetHeroSrc) {
+      setDisplayHeroSrc('');
+      return;
+    }
+
+    const img = new Image();
+    img.src = targetHeroSrc;
+    img.onload = () => setDisplayHeroSrc(targetHeroSrc);
+    img.onerror = () => setDisplayHeroSrc(targetHeroSrc);
+
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [targetHeroSrc]);
 
   const features = [
     {
@@ -121,16 +145,21 @@ const Index = () => {
               
               {/* Image container with mask for seamless blend */}
               <div className="relative w-full max-w-lg">
-                <motion.img
-                  src={heroImage}
-                  alt="iTag Pro"
-                  className="relative w-full animate-float mix-blend-screen"
-                  style={{ 
-                    filter: 'drop-shadow(0 0 40px hsl(var(--primary) / 0.4))',
-                    maskImage: 'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
-                  }}
-                />
+                {displayHeroSrc ? (
+                  <motion.img
+                    src={displayHeroSrc}
+                    alt="iTag Pro"
+                    className="relative w-full animate-float mix-blend-screen"
+                    style={{
+                      filter: 'drop-shadow(0 0 40px hsl(var(--primary) / 0.4))',
+                      maskImage: 'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
+                      WebkitMaskImage:
+                        'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
+                    }}
+                  />
+                ) : (
+                  <div className="w-full aspect-[4/3] rounded-xl bg-muted animate-pulse" />
+                )}
               </div>
               
               {/* Subtle reflection */}
