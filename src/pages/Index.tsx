@@ -130,40 +130,39 @@ const Index = () => {
               </div>
             </motion.div>
 
-            {/* Hero Image */}
+            {/* Hero Image - Full Width */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative flex items-center justify-center w-full max-w-2xl"
+              className="relative flex items-center justify-center w-full"
             >
               {/* Outer glow ring */}
-              <div className="absolute w-[400px] h-[400px] bg-gradient-radial from-primary/30 via-primary/5 to-transparent rounded-full blur-[80px]" />
+              <div className="absolute w-full max-w-4xl h-[300px] bg-gradient-radial from-primary/30 via-primary/5 to-transparent rounded-full blur-[100px]" />
               
               {/* Inner accent glow */}
-              <div className="absolute w-[250px] h-[250px] bg-accent/20 rounded-full blur-[60px] animate-pulse" />
+              <div className="absolute w-[60%] h-[200px] bg-accent/20 rounded-full blur-[80px] animate-pulse" />
               
-              {/* Image container with mask for seamless blend */}
-              <div className="relative w-full max-w-md">
+              {/* Image container - full width */}
+              <div className="relative w-full">
                 {displayHeroSrc ? (
                   <motion.img
                     src={displayHeroSrc}
                     alt="iTag Pro"
-                    className="relative w-full animate-float mix-blend-screen"
+                    className="relative w-full max-h-[500px] object-contain animate-float mix-blend-screen"
                     style={{
-                      filter: 'drop-shadow(0 0 40px hsl(var(--primary) / 0.4))',
-                      maskImage: 'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
-                      WebkitMaskImage:
-                        'radial-gradient(ellipse 80% 80% at center, black 40%, transparent 100%)',
+                      filter: 'drop-shadow(0 0 60px hsl(var(--primary) / 0.4))',
+                      maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
                     }}
                   />
                 ) : (
-                  <div className="w-full aspect-[4/3] rounded-xl bg-muted animate-pulse" />
+                  <div className="w-full h-[400px] rounded-xl bg-muted animate-pulse" />
                 )}
               </div>
               
               {/* Subtle reflection */}
-              <div className="absolute -bottom-10 w-[200px] h-[60px] bg-primary/10 rounded-full blur-[30px]" />
+              <div className="absolute -bottom-10 w-full max-w-2xl h-[80px] bg-primary/10 rounded-full blur-[40px]" />
             </motion.div>
           </div>
         </div>
