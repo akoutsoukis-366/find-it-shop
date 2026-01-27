@@ -120,20 +120,25 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Hero Image - Full Screen Width */}
+        {/* Hero Video Section */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative flex-1 w-full flex items-end justify-center"
+          className="relative flex-1 w-full flex items-center justify-center px-4 pb-8"
         >
-          {/* Glow effects */}
+          {/* Background glow */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-full h-[400px] bg-gradient-radial from-primary/20 via-primary/5 to-transparent blur-[100px]" />
+            <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
           </div>
           
-          {/* Video - edge to edge, full video visible */}
-          <div className="relative w-full">
+          {/* Video container with gradients */}
+          <div className="relative max-w-4xl w-full mx-auto">
+            {/* Gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50 pointer-events-none z-10 rounded-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
+            
+            {/* Video */}
             {displayVideoSrc ? (
               <video
                 src={displayVideoSrc}
@@ -141,15 +146,17 @@ const Index = () => {
                 loop
                 muted
                 playsInline
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain rounded-2xl"
                 style={{
-                  maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                  maxHeight: '500px',
                 }}
               />
             ) : (
-              <div className="w-full h-[400px] bg-muted animate-pulse" />
+              <div className="w-full h-[400px] bg-muted animate-pulse rounded-2xl" />
             )}
+            
+            {/* Bottom fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10 rounded-b-2xl" />
           </div>
         </motion.div>
       </section>
