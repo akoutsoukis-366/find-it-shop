@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ProductGallery from '@/components/ProductGallery';
 import { toast } from 'sonner';
 import itagPro from '@/assets/itag-pro.png';
 import itagMini from '@/assets/itag-mini.png';
@@ -137,23 +138,16 @@ const ProductDetail = () => {
           </Link>
 
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Product Image */}
+            {/* Product Gallery */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="relative"
             >
-              <div className="aspect-square bg-card rounded-3xl border border-border overflow-hidden flex items-center justify-center p-12">
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-                <motion.img
-                  src={getProductImage(product.image, product.name)}
-                  alt={product.name}
-                  className="relative w-full h-full object-contain"
-                  initial={{ scale: 0.9 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                />
-              </div>
+              <ProductGallery
+                images={product.mediaUrls || []}
+                productName={product.name}
+                mainImage={getProductImage(product.image, product.name)}
+              />
             </motion.div>
 
             {/* Product Info */}
