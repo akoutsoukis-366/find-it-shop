@@ -45,7 +45,6 @@ const getProductImage = (imagePath: string | undefined, productName: string): st
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { product, isLoading, error } = useProduct(id);
-  const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
   const { formatPrice } = useCurrency();
@@ -83,10 +82,6 @@ const ProductDetail = () => {
     fetchBenefitSettings();
   }, []);
 
-  // Set default color when product loads
-  if (product && !selectedColor && product.colors.length > 0) {
-    setSelectedColor(product.colors[0]);
-  }
 
   if (isLoading) {
     return (
@@ -111,7 +106,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addItem(product, selectedColor || product.colors[0]);
+      addItem(product, product.colors[0] || '#1a1a1a');
     }
     toast.success(`${quantity} x ${product.name} added to cart!`);
   };
@@ -186,29 +181,6 @@ const ProductDetail = () => {
                   </span>
                 )}
               </div>
-
-              {/* Color Selection */}
-              {product.colors.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-3">
-                    Color
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {product.colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`w-10 h-10 rounded-full border-2 transition-all ${
-                          selectedColor === color
-                            ? 'border-primary scale-110'
-                            : 'border-border hover:border-muted-foreground'
-                        }`}
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Quantity */}
               <div>
