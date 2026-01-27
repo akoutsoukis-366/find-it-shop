@@ -184,7 +184,7 @@ serve(async (req) => {
     const { data: settingsData } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['currency', 'tax_rate', 'shipping_cost', 'free_shipping_threshold']);
+      .in('key', ['currency', 'shipping_cost', 'free_shipping_threshold']);
 
     const settingsMap: Record<string, string> = {};
     settingsData?.forEach((item: { key: string; value: string | null }) => {
@@ -192,11 +192,10 @@ serve(async (req) => {
     });
 
     const currency = (settingsMap.currency || 'USD').toLowerCase();
-    const taxRate = parseFloat(settingsMap.tax_rate || '0');
     const shippingCost = parseFloat(settingsMap.shipping_cost || '0');
     const freeShippingThreshold = parseFloat(settingsMap.free_shipping_threshold || '0');
     
-    console.log("[CREATE-CHECKOUT] Settings - Currency:", currency, "Tax:", taxRate, "Shipping:", shippingCost, "Free threshold:", freeShippingThreshold);
+    console.log("[CREATE-CHECKOUT] Settings - Currency:", currency, "Shipping:", shippingCost, "Free threshold:", freeShippingThreshold);
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -228,21 +227,6 @@ serve(async (req) => {
       };
     });
 
-    // Add tax as a separate line item if tax rate > 0
-    if (taxRate > 0) {
-      const taxAmount = Math.round(subtotalInCents * (taxRate / 100));
-      
-      lineItems.push({
-        price_data: {
-          currency: currency,
-          product_data: {
-            name: `Tax (${taxRate}%)`,
-          },
-          unit_amount: taxAmount,
-        },
-        quantity: 1,
-      });
-    }
 
     // Add shipping as a separate line item if applicable
     const qualifiesForFreeShipping = freeShippingThreshold > 0 && subtotalInDollars >= freeShippingThreshold;
