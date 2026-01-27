@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/admin/ImageUpload';
+import MediaGalleryUpload from '@/components/admin/MediaGalleryUpload';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ interface Product {
   price: number;
   original_price: number | null;
   image_url: string | null;
+  media_urls: string[];
   category: string;
   colors: string[];
   in_stock: boolean;
@@ -74,6 +76,7 @@ const defaultProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'> = {
   price: 0,
   original_price: null,
   image_url: '',
+  media_urls: [],
   category: 'essential',
   colors: [],
   in_stock: true,
@@ -131,6 +134,7 @@ const AdminProducts = () => {
       const transformedProducts = (data || []).map(product => ({
         ...product,
         specs: parseSpecs(product.specs),
+        media_urls: product.media_urls || [],
       }));
       setProducts(transformedProducts);
     } catch (error) {
@@ -174,6 +178,7 @@ const AdminProducts = () => {
             price: editingProduct.price,
             original_price: editingProduct.original_price || null,
             image_url: editingProduct.image_url,
+            media_urls: editingProduct.media_urls || [],
             category: editingProduct.category,
             colors: editingProduct.colors || [],
             in_stock: editingProduct.in_stock,
@@ -194,6 +199,7 @@ const AdminProducts = () => {
             price: editingProduct.price,
             original_price: editingProduct.original_price || null,
             image_url: editingProduct.image_url,
+            media_urls: editingProduct.media_urls || [],
             category: editingProduct.category || 'essential',
             colors: editingProduct.colors || [],
             in_stock: editingProduct.in_stock ?? true,
@@ -436,8 +442,16 @@ const AdminProducts = () => {
               <ImageUpload
                 value={editingProduct.image_url || ''}
                 onChange={(url) => setEditingProduct({ ...editingProduct, image_url: url })}
-                label="Product Image"
-                description="Upload a product image (PNG, JPG up to 5MB)"
+                label="Main Product Image"
+                description="Primary image shown in listings"
+                folder="products"
+              />
+
+              <MediaGalleryUpload
+                value={editingProduct.media_urls || []}
+                onChange={(urls) => setEditingProduct({ ...editingProduct, media_urls: urls })}
+                label="Additional Media"
+                description="Add more images and videos for the product gallery"
                 folder="products"
               />
 

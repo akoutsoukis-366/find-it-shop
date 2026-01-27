@@ -13,6 +13,7 @@ export interface DbProduct {
   price: number;
   original_price: number | null;
   image_url: string | null;
+  media_urls: string[] | null;
   category: string;
   colors: string[];
   in_stock: boolean;
@@ -24,7 +25,6 @@ export interface DbProduct {
   updated_at: string;
 }
 
-// Convert DB product to cart-compatible product format
 export interface Product {
   id: string;
   name: string;
@@ -32,6 +32,7 @@ export interface Product {
   price: number;
   originalPrice?: number;
   image: string;
+  mediaUrls: string[];
   category: string;
   colors: string[];
   inStock: boolean;
@@ -59,6 +60,7 @@ export const dbProductToProduct = (dbProduct: DbProduct): Product => ({
   price: Number(dbProduct.price),
   originalPrice: dbProduct.original_price ? Number(dbProduct.original_price) : undefined,
   image: dbProduct.image_url || '',
+  mediaUrls: dbProduct.media_urls || [],
   category: dbProduct.category,
   colors: dbProduct.colors || [],
   inStock: dbProduct.in_stock,
