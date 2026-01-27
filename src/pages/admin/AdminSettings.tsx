@@ -24,7 +24,6 @@ interface SettingsData {
   support_phone: string;
   office_address: string;
   currency: string;
-  tax_rate: string;
   shipping_cost: string;
   free_shipping_threshold: string;
   standard_shipping_days_min: string;
@@ -126,7 +125,6 @@ const defaultSettings: SettingsData = {
   support_phone: '',
   office_address: '',
   currency: 'EUR',
-  tax_rate: '24',
   shipping_cost: '9.99',
   free_shipping_threshold: '50',
   standard_shipping_days_min: '5',
@@ -311,10 +309,9 @@ const AdminSettings = () => {
     {
       icon: CreditCard,
       title: 'Payment & Shipping',
-      description: 'Configure currency, tax rates, and shipping options',
+      description: 'Configure currency and shipping options',
       fields: [
         { key: 'currency' as const, label: 'Currency', type: 'currency' },
-        { key: 'tax_rate' as const, label: 'Tax Rate (%)', type: 'number', placeholder: '24', hint: 'Applied to subtotal' },
         { key: 'shipping_cost' as const, label: 'Standard Shipping Cost', type: 'price', placeholder: '9.99', hint: 'Flat rate for standard shipping' },
         { key: 'free_shipping_threshold' as const, label: 'Free Shipping Threshold', type: 'price', placeholder: '50', hint: 'Orders above this amount get free shipping (0 = disabled)' },
         { key: 'standard_shipping_days_min' as const, label: 'Standard Shipping (Min Days)', type: 'number', placeholder: '5' },
