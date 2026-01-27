@@ -79,8 +79,9 @@ const Index = () => {
               <span className="text-muted-foreground">{content.hero_badge_text}</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight whitespace-nowrap">
-              {content.hero_title_line1} <span className="gradient-text">{content.hero_title_line2}</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight">
+              <span className="block sm:inline">{content.hero_title_line1}</span>{' '}
+              <span className="gradient-text block sm:inline">{content.hero_title_line2}</span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
@@ -101,20 +102,20 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="flex items-center justify-center gap-8 pt-4">
-              <div>
-                <div className="text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
-                <div className="text-sm text-muted-foreground">{content.hero_stat1_label}</div>
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4">
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat1_label}</div>
               </div>
-              <div className="w-px h-12 bg-border" />
-              <div>
-                <div className="text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>
-                <div className="text-sm text-muted-foreground">{content.hero_stat2_label}</div>
+              <div className="hidden sm:block w-px h-12 bg-border" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat2_label}</div>
               </div>
-              <div className="w-px h-12 bg-border" />
-              <div>
-                <div className="text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>
-                <div className="text-sm text-muted-foreground">{content.hero_stat3_label}</div>
+              <div className="hidden sm:block w-px h-12 bg-border" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat3_label}</div>
               </div>
             </div>
           </motion.div>
