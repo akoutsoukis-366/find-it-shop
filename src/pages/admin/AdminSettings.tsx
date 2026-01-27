@@ -16,6 +16,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/admin/ImageUpload';
+import VideoUpload from '@/components/admin/VideoUpload';
 
 interface SettingsData {
   store_name: string;
@@ -37,8 +38,9 @@ interface SettingsData {
   two_factor_auth: boolean;
   international_shipping: boolean;
   dark_mode: boolean;
-  // Image URLs
+  // Image & Video URLs
   hero_image_url: string;
+  hero_video_url: string;
   logo_url: string;
   // Homepage content
   hero_badge_text: string;
@@ -138,8 +140,9 @@ const defaultSettings: SettingsData = {
   two_factor_auth: false,
   international_shipping: true,
   dark_mode: true,
-  // Image URLs
+  // Image & Video URLs
   hero_image_url: '',
+  hero_video_url: '',
   logo_url: '',
   // Homepage content
   hero_badge_text: 'New: iTag Ultra now available',
@@ -615,6 +618,22 @@ const AdminSettings = () => {
                 }}
                 label="Hero Image"
                 description="Main hero image displayed on the homepage (recommended: 800x800px)"
+                folder="hero"
+              />
+
+              <VideoUpload
+                value={settings.hero_video_url}
+                onChange={async (url) => {
+                  handleInputChange('hero_video_url', url);
+                  try {
+                    await updateSetting('hero_video_url', url);
+                    toast.success('Hero video saved');
+                  } catch {
+                    toast.error('Failed to save hero video');
+                  }
+                }}
+                label="Hero Video"
+                description="Main hero video/animation displayed on the homepage (MP4/WebM recommended)"
                 folder="hero"
               />
 

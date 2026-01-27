@@ -9,38 +9,30 @@ import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
-import defaultHeroImage from '@/assets/itag-hero.png';
+import defaultHeroVideo from '@/assets/hologram-fan-hero.mp4';
 
 const Index = () => {
   const { products, isLoading: productsLoading } = useProducts();
   const { content, isLoading: contentLoading } = useContentSettings();
   const featuredProducts = products.filter((p) => p.featured);
 
-  // Avoid flashing the bundled default hero image while content is still loading.
-  const targetHeroSrc = useMemo(() => {
-    if (content.hero_image_url) return content.hero_image_url;
+  // Use video instead of image for hologram fan showcase
+  const targetVideoSrc = useMemo(() => {
+    if (content.hero_video_url) return content.hero_video_url;
     if (contentLoading) return '';
-    return defaultHeroImage;
-  }, [content.hero_image_url, contentLoading]);
+    return defaultHeroVideo;
+  }, [content.hero_video_url, contentLoading]);
 
-  const [displayHeroSrc, setDisplayHeroSrc] = useState<string>('');
+  const [displayVideoSrc, setDisplayVideoSrc] = useState<string>('');
 
   useEffect(() => {
-    if (!targetHeroSrc) {
-      setDisplayHeroSrc('');
+    if (!targetVideoSrc) {
+      setDisplayVideoSrc('');
       return;
     }
-
-    const img = new Image();
-    img.src = targetHeroSrc;
-    img.onload = () => setDisplayHeroSrc(targetHeroSrc);
-    img.onerror = () => setDisplayHeroSrc(targetHeroSrc);
-
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [targetHeroSrc]);
+    // For videos, we just set the source directly
+    setDisplayVideoSrc(targetVideoSrc);
+  }, [targetVideoSrc]);
 
   const features = [
     {
@@ -140,12 +132,15 @@ const Index = () => {
             <div className="w-full h-[400px] bg-gradient-radial from-primary/20 via-primary/5 to-transparent blur-[100px]" />
           </div>
           
-          {/* Image - edge to edge, full image visible */}
+          {/* Video - edge to edge, full video visible */}
           <div className="relative w-full">
-            {displayHeroSrc ? (
-              <img
-                src={displayHeroSrc}
-                alt="iTag Pro"
+            {displayVideoSrc ? (
+              <video
+                src={displayVideoSrc}
+                autoPlay
+                loop
+                muted
+                playsInline
                 className="w-full h-auto object-contain"
                 style={{
                   maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
