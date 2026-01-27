@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ContentSettings {
+  // Store info
+  store_name: string;
   // Images & Videos
   hero_image_url: string;
   hero_video_url: string;
@@ -69,6 +71,8 @@ export interface ContentSettings {
 }
 
 const defaultContent: ContentSettings = {
+  // Store info
+  store_name: 'HoloFan',
   // Images & Videos
   hero_image_url: '',
   hero_video_url: '',
