@@ -11,21 +11,20 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductGallery from '@/components/ProductGallery';
 import { toast } from 'sonner';
-import itagPro from '@/assets/itag-pro.png';
-import itagMini from '@/assets/itag-mini.png';
-import itagUltra from '@/assets/itag-ultra.png';
-import itagSlim from '@/assets/itag-slim.png';
-import itagPet from '@/assets/itag-pet.png';
-import itagPack from '@/assets/itag-pack.png';
+import holofanPro65 from '@/assets/holofan-pro-65.png';
+import holofanMini42 from '@/assets/holofan-mini-42.png';
+import holofanUltra100 from '@/assets/holofan-ultra-100.png';
+import holofanSlim30 from '@/assets/holofan-slim-30.png';
+import holofanWallMount from '@/assets/holofan-wall-mount.png';
+import holofanContentPack from '@/assets/holofan-content-pack.png';
 
 const productImageMap: Record<string, string> = {
-  'itag-pro': itagPro,
-  'itag-mini': itagMini,
-  'itag-ultra': itagUltra,
-  'itag-slim': itagSlim,
-  'itag-pet': itagPet,
-  'itag-pack': itagPack,
-  'itag-4-pack': itagPack,
+  'holofan-pro-65': holofanPro65,
+  'holofan-mini-42': holofanMini42,
+  'holofan-ultra-100': holofanUltra100,
+  'holofan-slim-30': holofanSlim30,
+  'holofan-wall-mount': holofanWallMount,
+  'holofan-content-pack': holofanContentPack,
 };
 
 const getProductImage = (imagePath: string | undefined, productName: string): string => {
@@ -40,7 +39,7 @@ const getProductImage = (imagePath: string | undefined, productName: string): st
   }
   // Try to match by product name
   const nameKey = productName.toLowerCase().replace(/\s+/g, '-');
-  return productImageMap[nameKey] || itagPro;
+  return productImageMap[nameKey] || holofanPro65;
 };
 
 const ProductDetail = () => {
