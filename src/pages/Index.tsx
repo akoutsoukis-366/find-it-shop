@@ -104,8 +104,8 @@ const Index = () => {
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4">
                 {(content.hero_stat1_value || content.hero_stat1_label) && (
                   <div className="text-center">
-                    {content.hero_stat1_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>}
-                    {content.hero_stat1_label && <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">{content.hero_stat1_label}</div>}
+                    {content.hero_stat1_value && <div className="text-sm sm:text-base font-semibold text-foreground">{content.hero_stat1_value}</div>}
+                    {content.hero_stat1_label && <div className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{content.hero_stat1_label}</div>}
                   </div>
                 )}
                 {(content.hero_stat1_value || content.hero_stat1_label) && (content.hero_stat2_value || content.hero_stat2_label) && (
@@ -113,8 +113,8 @@ const Index = () => {
                 )}
                 {(content.hero_stat2_value || content.hero_stat2_label) && (
                   <div className="text-center">
-                    {content.hero_stat2_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>}
-                    {content.hero_stat2_label && <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">{content.hero_stat2_label}</div>}
+                    {content.hero_stat2_value && <div className="text-sm sm:text-base font-semibold text-foreground">{content.hero_stat2_value}</div>}
+                    {content.hero_stat2_label && <div className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{content.hero_stat2_label}</div>}
                   </div>
                 )}
                 {(content.hero_stat2_value || content.hero_stat2_label) && (content.hero_stat3_value || content.hero_stat3_label) && (
@@ -122,8 +122,8 @@ const Index = () => {
                 )}
                 {(content.hero_stat3_value || content.hero_stat3_label) && (
                   <div className="text-center">
-                    {content.hero_stat3_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>}
-                    {content.hero_stat3_label && <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">{content.hero_stat3_label}</div>}
+                    {content.hero_stat3_value && <div className="text-sm sm:text-base font-semibold text-foreground">{content.hero_stat3_value}</div>}
+                    {content.hero_stat3_label && <div className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{content.hero_stat3_label}</div>}
                   </div>
                 )}
               </div>
