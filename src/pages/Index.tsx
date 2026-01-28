@@ -9,7 +9,7 @@ import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
-import defaultHeroVideo from '@/assets/hologram-sale-bag.mp4';
+const defaultHeroVideo = '/hologram-sale-bag.mp4';
 
 const Index = () => {
   const { products, isLoading: productsLoading } = useProducts();
