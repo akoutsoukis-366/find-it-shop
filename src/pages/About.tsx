@@ -196,71 +196,65 @@ const About = () => {
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="p-6 rounded-2xl bg-card border border-border text-center"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-2">Email</h3>
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
-                ) : (
+              {settings.contact_email && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="p-6 rounded-2xl bg-card border border-border text-center"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">Email</h3>
                   <a 
                     href={`mailto:${settings.contact_email}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     {settings.contact_email}
                   </a>
-                )}
-              </motion.div>
+                </motion.div>
+              )}
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className="p-6 rounded-2xl bg-card border border-border text-center"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-2">Phone</h3>
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
-                ) : (
+              {settings.support_phone && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  className="p-6 rounded-2xl bg-card border border-border text-center"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                    <Phone className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">Phone</h3>
                   <a 
                     href={`tel:${settings.support_phone.replace(/[^\d+]/g, '')}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     {settings.support_phone}
                   </a>
-                )}
-              </motion.div>
+                </motion.div>
+              )}
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-                className="p-6 rounded-2xl bg-card border border-border text-center"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
-                  <MapPinned className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-2">Office</h3>
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
-                ) : (
+              {settings.office_address && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="p-6 rounded-2xl bg-card border border-border text-center"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                    <MapPinned className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">Office</h3>
                   <p className="text-muted-foreground">
                     {settings.office_address}
                   </p>
-                )}
-              </motion.div>
+                </motion.div>
+              )}
             </div>
 
             <motion.div
@@ -270,14 +264,16 @@ const About = () => {
               transition={{ delay: 0.4 }}
               className="text-center mt-12"
             >
-              <Button 
-                variant="hero" 
-                size="lg"
-                onClick={() => setContactOpen(true)}
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Send us a Message
-              </Button>
+              {(content.about_contact_title || content.about_contact_subtitle) && (
+                <Button 
+                  variant="hero" 
+                  size="lg"
+                  onClick={() => setContactOpen(true)}
+                >
+                  <Mail className="w-5 h-5 mr-2" />
+                  {content.cta_button_text || 'Contact Us'}
+                </Button>
+              )}
             </motion.div>
           </div>
         </section>

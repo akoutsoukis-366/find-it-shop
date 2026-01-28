@@ -10,11 +10,11 @@ export interface PublicSettings {
 }
 
 const defaultSettings: PublicSettings = {
-  store_name: 'iTag Store',
-  contact_email: 'support@itag.com',
-  support_phone: '+1 (555) 123-4567',
+  store_name: '',
+  contact_email: '',
+  support_phone: '',
   currency: 'USD',
-  office_address: 'San Francisco, CA',
+  office_address: '',
 };
 
 export const usePublicSettings = () => {
@@ -38,11 +38,11 @@ export const usePublicSettings = () => {
           });
 
           setSettings({
-            store_name: settingsMap.store_name || defaultSettings.store_name,
-            contact_email: settingsMap.contact_email || defaultSettings.contact_email,
-            support_phone: settingsMap.support_phone || defaultSettings.support_phone,
-            currency: settingsMap.currency || defaultSettings.currency,
-            office_address: settingsMap.office_address || defaultSettings.office_address,
+            store_name: settingsMap.store_name || '',
+            contact_email: settingsMap.contact_email || '',
+            support_phone: settingsMap.support_phone || '',
+            currency: settingsMap.currency || 'USD',
+            office_address: settingsMap.office_address || '',
           });
         }
       } catch (error) {
