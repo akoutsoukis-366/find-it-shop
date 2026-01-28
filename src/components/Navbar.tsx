@@ -74,12 +74,8 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            {content.logo_url ? (
+            {content.logo_url && (
               <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
-            ) : (
-              <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">iT</span>
-              </div>
             )}
             {content.store_name && <span className="text-xl font-bold text-foreground">{content.store_name}</span>}
           </Link>
