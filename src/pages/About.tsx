@@ -89,7 +89,7 @@ const About = () => {
                         <div className="text-2xl sm:text-3xl font-bold gradient-text mb-3 leading-tight">
                           {stat.value}
                         </div>
-                        <div className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
+                        <div className="text-sm text-muted-foreground">
                           {stat.label}
                         </div>
                       </div>
