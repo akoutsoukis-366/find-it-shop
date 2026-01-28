@@ -28,13 +28,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import itagPro from '@/assets/itag-pro.png';
-import itagMini from '@/assets/itag-mini.png';
-import itagUltra from '@/assets/itag-ultra.png';
-import itagSlim from '@/assets/itag-slim.png';
-import itagPet from '@/assets/itag-pet.png';
-import itagPack from '@/assets/itag-pack.png';
-
 interface ProductSpec {
   label: string;
   value: string;
@@ -86,26 +79,11 @@ const defaultProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'> = {
   specs: [],
 };
 
-const productImageMap: Record<string, string> = {
-  'itag-pro': itagPro,
-  'itag-mini': itagMini,
-  'itag-ultra': itagUltra,
-  'itag-slim': itagSlim,
-  'itag-pet': itagPet,
-  'itag-pack': itagPack,
-};
-
-const getProductImage = (imageUrl: string | null, productName: string): string => {
-  // If it's a full URL (uploaded image), use it directly
+const getProductImage = (imageUrl: string | null): string => {
   if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
     return imageUrl;
   }
-  if (imageUrl) {
-    const key = imageUrl.split('/').pop()?.replace('.png', '') || '';
-    if (productImageMap[key]) return productImageMap[key];
-  }
-  const nameKey = productName.toLowerCase().replace(/\s+/g, '-');
-  return productImageMap[nameKey] || itagPro;
+  return '/placeholder.svg';
 };
 
 const AdminProducts = () => {
@@ -312,7 +290,7 @@ const AdminProducts = () => {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex items-center justify-center">
                           <img
-                            src={getProductImage(product.image_url, product.name)}
+                            src={getProductImage(product.image_url)}
                             alt={product.name}
                             className="w-full h-full object-contain p-1"
                           />
