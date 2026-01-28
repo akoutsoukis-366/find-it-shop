@@ -71,9 +71,9 @@ const About = () => {
 
         {/* Stats */}
         {stats.length > 0 && (
-          <section className="py-16 bg-card/50">
+          <section className="py-20 bg-gradient-to-b from-card/80 to-background">
             <div className="container mx-auto px-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, index) => (
                   <motion.div
                     key={stat.id}
@@ -81,12 +81,19 @@ const About = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="text-center"
+                    className="relative group"
                   >
-                    <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
-                      {stat.value}
+                    <div className="p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-300 h-full">
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative">
+                        <div className="text-2xl sm:text-3xl font-bold gradient-text mb-3 leading-tight">
+                          {stat.value}
+                        </div>
+                        <div className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
+                          {stat.label}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-muted-foreground">{stat.label}</div>
                   </motion.div>
                 ))}
               </div>
