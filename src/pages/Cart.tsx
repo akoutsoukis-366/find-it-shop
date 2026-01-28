@@ -11,30 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import itagPro from '@/assets/itag-pro.png';
-import itagMini from '@/assets/itag-mini.png';
-import itagUltra from '@/assets/itag-ultra.png';
-import itagSlim from '@/assets/itag-slim.png';
-import itagPet from '@/assets/itag-pet.png';
-import itagPack from '@/assets/itag-pack.png';
-
-// Fallback image mapping by product name
+// Get product image from database or fallback to placeholder
 const getProductImage = (product: { name: string; image: string }): string => {
-  // Use the image from the database if available
   if (product.image && product.image.startsWith('http')) {
     return product.image;
   }
-  
-  // Fallback to local assets based on product name
-  const nameLower = product.name.toLowerCase();
-  if (nameLower.includes('pro')) return itagPro;
-  if (nameLower.includes('mini')) return itagMini;
-  if (nameLower.includes('ultra')) return itagUltra;
-  if (nameLower.includes('slim')) return itagSlim;
-  if (nameLower.includes('pet')) return itagPet;
-  if (nameLower.includes('pack') || nameLower.includes('bundle')) return itagPack;
-  
-  return itagPro; // Default fallback
+  return '/placeholder.svg';
 };
 
 interface ShippingSettings {
