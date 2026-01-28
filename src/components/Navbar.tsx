@@ -81,7 +81,7 @@ const Navbar = () => {
                 <span className="text-primary-foreground font-bold text-sm">iT</span>
               </div>
             )}
-            <span className="text-xl font-bold text-foreground">{content.store_name || 'HoloFan'}</span>
+            {content.store_name && <span className="text-xl font-bold text-foreground">{content.store_name}</span>}
           </Link>
 
           {/* Desktop Navigation */}
