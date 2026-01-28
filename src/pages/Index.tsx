@@ -105,7 +105,7 @@ const Index = () => {
                 {(content.hero_stat1_value || content.hero_stat1_label) && (
                   <div className="text-center">
                     {content.hero_stat1_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>}
-                    {content.hero_stat1_label && <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat1_label}</div>}
+                    {content.hero_stat1_label && <div className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">{content.hero_stat1_label}</div>}
                   </div>
                 )}
                 {(content.hero_stat1_value || content.hero_stat1_label) && (content.hero_stat2_value || content.hero_stat2_label) && (
@@ -114,7 +114,7 @@ const Index = () => {
                 {(content.hero_stat2_value || content.hero_stat2_label) && (
                   <div className="text-center">
                     {content.hero_stat2_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>}
-                    {content.hero_stat2_label && <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat2_label}</div>}
+                    {content.hero_stat2_label && <div className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">{content.hero_stat2_label}</div>}
                   </div>
                 )}
                 {(content.hero_stat2_value || content.hero_stat2_label) && (content.hero_stat3_value || content.hero_stat3_label) && (
@@ -123,7 +123,7 @@ const Index = () => {
                 {(content.hero_stat3_value || content.hero_stat3_label) && (
                   <div className="text-center">
                     {content.hero_stat3_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>}
-                    {content.hero_stat3_label && <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat3_label}</div>}
+                    {content.hero_stat3_label && <div className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">{content.hero_stat3_label}</div>}
                   </div>
                 )}
               </div>
