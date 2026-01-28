@@ -19,9 +19,11 @@ const Footer = () => {
                 )}
                 {content.store_name && <span className="text-xl font-bold text-foreground">{content.store_name}</span>}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Never lose what matters most. Premium tracking devices for your everyday essentials.
-              </p>
+              {content.footer_description && (
+                <p className="text-sm text-muted-foreground">
+                  {content.footer_description}
+                </p>
+              )}
             </div>
 
             {/* Shop */}

@@ -68,8 +68,9 @@ export interface ContentSettings {
   // About page contact section
   about_contact_title: string;
   about_contact_subtitle: string;
+  // Footer
+  footer_description: string;
 }
-
 const defaultContent: ContentSettings = {
   // Store info
   store_name: '',
@@ -137,6 +138,8 @@ const defaultContent: ContentSettings = {
   // About page contact section
   about_contact_title: '',
   about_contact_subtitle: '',
+  // Footer
+  footer_description: '',
 };
 
 export const useContentSettings = () => {
