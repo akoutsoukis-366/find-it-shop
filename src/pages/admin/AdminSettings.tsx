@@ -94,6 +94,8 @@ interface SettingsData {
   about_value3_description: string;
   about_contact_title: string;
   about_contact_subtitle: string;
+  // Footer
+  footer_description: string;
 }
 
 const currencies = [
@@ -195,6 +197,8 @@ const defaultSettings: SettingsData = {
   about_value3_description: "Every product decision starts with our customers' needs.",
   about_contact_title: 'Get in Touch',
   about_contact_subtitle: "Have questions? We'd love to hear from you.",
+  // Footer
+  footer_description: '',
 };
 
 const AdminSettings = () => {
@@ -376,6 +380,14 @@ const AdminSettings = () => {
         { key: 'cta_title_line2' as const, label: 'Title Line 2 (Gradient)', type: 'text' },
         { key: 'cta_description' as const, label: 'Description', type: 'textarea' },
         { key: 'cta_button_text' as const, label: 'Button Text', type: 'text' },
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Footer',
+      description: 'Footer content displayed at the bottom of every page',
+      fields: [
+        { key: 'footer_description' as const, label: 'Footer Description', type: 'textarea' },
       ],
     },
   ];
