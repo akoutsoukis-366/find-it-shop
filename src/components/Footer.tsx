@@ -14,14 +14,10 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                {content.logo_url ? (
+                {content.logo_url && (
                   <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold text-sm">iT</span>
-                  </div>
                 )}
-                <span className="text-xl font-bold text-foreground">iTag</span>
+                {content.store_name && <span className="text-xl font-bold text-foreground">{content.store_name}</span>}
               </div>
               <p className="text-sm text-muted-foreground">
                 Never lose what matters most. Premium tracking devices for your everyday essentials.
@@ -68,7 +64,7 @@ const Footer = () => {
 
           <div className="border-t border-border mt-8 pt-8 text-center">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} iTag. All rights reserved.
+              © {new Date().getFullYear()}{content.store_name ? ` ${content.store_name}.` : ''} All rights reserved.
             </p>
           </div>
         </div>
