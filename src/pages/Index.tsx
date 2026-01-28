@@ -65,19 +65,26 @@ const Index = () => {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              <span className="text-muted-foreground">{content.hero_badge_text}</span>
-            </div>
+            {content.hero_badge_text && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                <span className="text-muted-foreground">{content.hero_badge_text}</span>
+              </div>
+            )}
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight">
-              <span className="block sm:inline">{content.hero_title_line1}</span>{' '}
-              <span className="gradient-text block sm:inline">{content.hero_title_line2}</span>
-            </h1>
+            {(content.hero_title_line1 || content.hero_title_line2) && (
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight">
+                {content.hero_title_line1 && <span className="block sm:inline">{content.hero_title_line1}</span>}
+                {content.hero_title_line1 && content.hero_title_line2 && ' '}
+                {content.hero_title_line2 && <span className="gradient-text block sm:inline">{content.hero_title_line2}</span>}
+              </h1>
+            )}
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              {content.hero_description}
-            </p>
+            {content.hero_description && (
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+                {content.hero_description}
+              </p>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
               <Link to="/products">
@@ -93,22 +100,34 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4">
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat1_label}</div>
+            {(content.hero_stat1_value || content.hero_stat2_value || content.hero_stat3_value) && (
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4">
+                {(content.hero_stat1_value || content.hero_stat1_label) && (
+                  <div className="text-center">
+                    {content.hero_stat1_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat1_value}</div>}
+                    {content.hero_stat1_label && <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat1_label}</div>}
+                  </div>
+                )}
+                {(content.hero_stat1_value || content.hero_stat1_label) && (content.hero_stat2_value || content.hero_stat2_label) && (
+                  <div className="hidden sm:block w-px h-12 bg-border" />
+                )}
+                {(content.hero_stat2_value || content.hero_stat2_label) && (
+                  <div className="text-center">
+                    {content.hero_stat2_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>}
+                    {content.hero_stat2_label && <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat2_label}</div>}
+                  </div>
+                )}
+                {(content.hero_stat2_value || content.hero_stat2_label) && (content.hero_stat3_value || content.hero_stat3_label) && (
+                  <div className="hidden sm:block w-px h-12 bg-border" />
+                )}
+                {(content.hero_stat3_value || content.hero_stat3_label) && (
+                  <div className="text-center">
+                    {content.hero_stat3_value && <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>}
+                    {content.hero_stat3_label && <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat3_label}</div>}
+                  </div>
+                )}
               </div>
-              <div className="hidden sm:block w-px h-12 bg-border" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat2_value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat2_label}</div>
-              </div>
-              <div className="hidden sm:block w-px h-12 bg-border" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-foreground">{content.hero_stat3_value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">{content.hero_stat3_label}</div>
-              </div>
-            </div>
+            )}
           </motion.div>
         </div>
 
@@ -156,109 +175,131 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 relative">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {content.features_title}
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {content.features_subtitle}
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
+      {(content.features_title || content.features_subtitle || features.some(f => f.title || f.description)) && (
+        <section className="py-24 relative">
+          <div className="container mx-auto px-4">
+            {(content.features_title || content.features_subtitle) && (
               <motion.div
-                key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-300"
+                className="text-center mb-16"
               >
-                <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center mb-6 group-hover:shadow-button transition-shadow">
-                  <feature.icon className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                {content.features_title && (
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                    {content.features_title}
+                  </h2>
+                )}
+                {content.features_subtitle && (
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    {content.features_subtitle}
+                  </p>
+                )}
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+            )}
 
-      {/* Featured Products */}
-      <section className="py-24 bg-card/50">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center justify-between mb-12"
-          >
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                {content.featured_products_title}
-              </h2>
-              <p className="text-muted-foreground">
-                {content.featured_products_subtitle}
-              </p>
-            </div>
-            <Link to="/products">
-              <Button variant="outline">
-                View All
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </motion.div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
+            <div className="grid md:grid-cols-3 gap-8">
+              {features.filter(f => f.title || f.description).map((feature, index) => (
+                <motion.div
+                  key={feature.title || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-300"
+                >
+                  <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center mb-6 group-hover:shadow-button transition-shadow">
+                    <feature.icon className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  {feature.title && <h3 className="text-xl font-semibold text-foreground mb-3">{feature.title}</h3>}
+                  {feature.description && <p className="text-muted-foreground">{feature.description}</p>}
+                </motion.div>
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Products */}
+      {featuredProducts.length > 0 && (
+        <section className="py-24 bg-card/50">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex items-center justify-between mb-12"
+            >
+              <div>
+                {content.featured_products_title && (
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                    {content.featured_products_title}
+                  </h2>
+                )}
+                {content.featured_products_subtitle && (
+                  <p className="text-muted-foreground">
+                    {content.featured_products_subtitle}
+                  </p>
+                )}
+              </div>
+              <Link to="/products">
+                <Button variant="outline">
+                  View All
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {featuredProducts.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              {content.cta_title_line1}
-              <br />
-              <span className="gradient-text">{content.cta_title_line2}</span>
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              {content.cta_description}
-            </p>
-            <Link to="/products">
-              <Button variant="hero" size="xl">
-                {content.cta_button_text}
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+      {(content.cta_title_line1 || content.cta_title_line2 || content.cta_description || content.cta_button_text) && (
+        <section className="py-24 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10" />
+          <div className="container mx-auto px-4 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              {(content.cta_title_line1 || content.cta_title_line2) && (
+                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+                  {content.cta_title_line1}
+                  {content.cta_title_line1 && content.cta_title_line2 && <br />}
+                  {content.cta_title_line2 && <span className="gradient-text">{content.cta_title_line2}</span>}
+                </h2>
+              )}
+              {content.cta_description && (
+                <p className="text-xl text-muted-foreground mb-8">
+                  {content.cta_description}
+                </p>
+              )}
+              {content.cta_button_text && (
+                <Link to="/products">
+                  <Button variant="hero" size="xl">
+                    {content.cta_button_text}
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
