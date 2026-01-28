@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, Shield, Zap, Loader2 } from 'lucide-react';
@@ -9,30 +8,13 @@ import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
-const defaultHeroVideo = '/hologram-sale-bag.mp4';
-
 const Index = () => {
   const { products, isLoading: productsLoading } = useProducts();
   const { content, isLoading: contentLoading } = useContentSettings();
   const featuredProducts = products.filter((p) => p.featured);
 
-  // Use video instead of image for hologram fan showcase
-  const targetVideoSrc = useMemo(() => {
-    if (content.hero_video_url) return content.hero_video_url;
-    if (contentLoading) return '';
-    return defaultHeroVideo;
-  }, [content.hero_video_url, contentLoading]);
-
-  const [displayVideoSrc, setDisplayVideoSrc] = useState<string>('');
-
-  useEffect(() => {
-    if (!targetVideoSrc) {
-      setDisplayVideoSrc('');
-      return;
-    }
-    // For videos, we just set the source directly
-    setDisplayVideoSrc(targetVideoSrc);
-  }, [targetVideoSrc]);
+  // Hero video comes entirely from database
+  const heroVideoUrl = content.hero_video_url || '';
 
   const features = [
     {
@@ -140,9 +122,9 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
             
             {/* Video */}
-            {displayVideoSrc ? (
+            {heroVideoUrl ? (
               <video
-                src={displayVideoSrc}
+                src={heroVideoUrl}
                 autoPlay
                 loop
                 muted
@@ -153,7 +135,9 @@ const Index = () => {
                 }}
               />
             ) : (
-              <div className="w-full h-[400px] bg-muted animate-pulse rounded-2xl" />
+              <div className="w-full h-[400px] bg-muted/50 rounded-2xl flex items-center justify-center">
+                <p className="text-muted-foreground">No hero video configured</p>
+              </div>
             )}
             
             {/* Bottom fade */}
