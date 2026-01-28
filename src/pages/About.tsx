@@ -17,28 +17,31 @@ const About = () => {
 
   const values = [
     {
+      id: 'value1',
       icon: Shield,
       title: content.about_value1_title,
       description: content.about_value1_description,
     },
     {
+      id: 'value2',
       icon: Zap,
       title: content.about_value2_title,
       description: content.about_value2_description,
     },
     {
+      id: 'value3',
       icon: Heart,
       title: content.about_value3_title,
       description: content.about_value3_description,
     },
-  ];
+  ].filter(value => value.title || value.description);
 
   const stats = [
-    { value: content.about_stat1_value, label: content.about_stat1_label },
-    { value: content.about_stat2_value, label: content.about_stat2_label },
-    { value: content.about_stat3_value, label: content.about_stat3_label },
-    { value: content.about_stat4_value, label: content.about_stat4_label },
-  ];
+    { id: 'stat1', value: content.about_stat1_value, label: content.about_stat1_label },
+    { id: 'stat2', value: content.about_stat2_value, label: content.about_stat2_label },
+    { id: 'stat3', value: content.about_stat3_value, label: content.about_stat3_label },
+    { id: 'stat4', value: content.about_stat4_value, label: content.about_stat4_label },
+  ].filter(stat => stat.value || stat.label);
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,27 +70,29 @@ const About = () => {
         </section>
 
         {/* Stats */}
-        <section className="py-16 bg-card/50">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-muted-foreground">{stat.label}</div>
-                </motion.div>
-              ))}
+        {stats.length > 0 && (
+          <section className="py-16 bg-card/50">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {stats.map((stat, index) => (
+                  <motion.div
+                    key={stat.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="text-center"
+                  >
+                    <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
+                      {stat.value}
+                    </div>
+                    <div className="text-muted-foreground">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Story */}
         <section className="py-24">
@@ -139,44 +144,48 @@ const About = () => {
         </section>
 
         {/* Values */}
-        <section className="py-24 bg-card/50">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                {content.about_values_title}
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                {content.about_values_subtitle}
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {values.map((value, index) => (
+        {values.length > 0 && (
+          <section className="py-24 bg-card/50">
+            <div className="container mx-auto px-4">
+              {(content.about_values_title || content.about_values_subtitle) && (
                 <motion.div
-                  key={value.title}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="p-8 rounded-2xl bg-card border border-border text-center"
+                  className="text-center mb-16"
                 >
-                  <div className="w-16 h-16 rounded-2xl gradient-primary mx-auto mb-6 flex items-center justify-center">
-                    <value.icon className="w-8 h-8 text-primary-foreground" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">
-                    {value.title}
-                  </h3>
-                  <p className="text-muted-foreground">{value.description}</p>
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                    {content.about_values_title}
+                  </h2>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    {content.about_values_subtitle}
+                  </p>
                 </motion.div>
-              ))}
+              )}
+
+              <div className="grid md:grid-cols-3 gap-8">
+                {values.map((value, index) => (
+                  <motion.div
+                    key={value.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="p-8 rounded-2xl bg-card border border-border text-center"
+                  >
+                    <div className="w-16 h-16 rounded-2xl gradient-primary mx-auto mb-6 flex items-center justify-center">
+                      <value.icon className="w-8 h-8 text-primary-foreground" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground mb-3">
+                      {value.title}
+                    </h3>
+                    <p className="text-muted-foreground">{value.description}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Contact Section */}
         <section className="py-24">
