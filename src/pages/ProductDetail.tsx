@@ -11,35 +11,11 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductGallery from '@/components/ProductGallery';
 import { toast } from 'sonner';
-import holofanPro65 from '@/assets/holofan-pro-65.png';
-import holofanMini42 from '@/assets/holofan-mini-42.png';
-import holofanUltra100 from '@/assets/holofan-ultra-100.png';
-import holofanSlim30 from '@/assets/holofan-slim-30.png';
-import holofanWallMount from '@/assets/holofan-wall-mount.png';
-import holofanContentPack from '@/assets/holofan-content-pack.png';
-
-const productImageMap: Record<string, string> = {
-  'holofan-pro-65': holofanPro65,
-  'holofan-mini-42': holofanMini42,
-  'holofan-ultra-100': holofanUltra100,
-  'holofan-slim-30': holofanSlim30,
-  'holofan-wall-mount': holofanWallMount,
-  'holofan-content-pack': holofanContentPack,
-};
-
-const getProductImage = (imagePath: string | undefined, productName: string): string => {
-  // If it's a full URL (uploaded image), use it directly
+const getProductImage = (imagePath: string | undefined): string => {
   if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
     return imagePath;
   }
-  // Try to match by image path
-  if (imagePath) {
-    const key = imagePath.split('/').pop()?.replace('.png', '') || '';
-    if (productImageMap[key]) return productImageMap[key];
-  }
-  // Try to match by product name
-  const nameKey = productName.toLowerCase().replace(/\s+/g, '-');
-  return productImageMap[nameKey] || holofanPro65;
+  return '/placeholder.svg';
 };
 
 const ProductDetail = () => {
@@ -140,7 +116,7 @@ const ProductDetail = () => {
               <ProductGallery
                 images={product.mediaUrls || []}
                 productName={product.name}
-                mainImage={getProductImage(product.image, product.name)}
+                mainImage={getProductImage(product.image)}
               />
             </motion.div>
 
