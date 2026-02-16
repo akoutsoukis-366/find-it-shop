@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Zap, Heart, Mail, Phone, MapPinned, MapPin, Loader2 } from 'lucide-react';
+import { Shield, Zap, Heart, Mail, Phone, MapPinned, Loader2 } from 'lucide-react';
+import greeceMap from '@/assets/greece-athens-map.jpg';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -141,19 +142,16 @@ const About = () => {
                     viewport={{ once: true }}
                     className="relative"
                   >
-                    <div className="aspect-square bg-card rounded-3xl border border-border flex items-center justify-center overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10" />
-                      <div className="relative text-center p-12">
-                        <div className="w-24 h-24 rounded-full gradient-primary mx-auto mb-6 flex items-center justify-center">
-                          <MapPin className="w-12 h-12 text-primary-foreground" />
-                        </div>
+                    <div className="aspect-square bg-card rounded-3xl border border-border flex flex-col items-center justify-end overflow-hidden relative">
+                      <img src={greeceMap} alt="Χάρτης Ελλάδας - Αθήνα" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="relative w-full bg-gradient-to-t from-black/70 to-transparent p-8 text-center">
                         {content.about_story_box_title && (
-                          <h3 className="text-2xl font-bold text-foreground mb-2">
+                          <h3 className="text-2xl font-bold text-white mb-1">
                             {content.about_story_box_title}
                           </h3>
                         )}
                         {content.about_story_box_subtitle && (
-                          <p className="text-muted-foreground">
+                          <p className="text-white/80 text-sm">
                             {content.about_story_box_subtitle}
                           </p>
                         )}
