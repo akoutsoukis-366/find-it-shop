@@ -6,6 +6,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useContentSettings } from '@/hooks/useContentSettings';
 import ProductCard from '@/components/ProductCard';
 import CategorySection from '@/components/CategorySection';
+import TrustSignals from '@/components/TrustSignals';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
@@ -220,6 +221,9 @@ const Index = () => {
           </div>
         </section>
       )}
+
+      {/* Trust Signals */}
+      <TrustSignals />
 
       {/* Shop by Category */}
       <CategorySection />

@@ -6,6 +6,8 @@ export interface Category {
   name: string;
   slug: string;
   sort_order: number;
+  description: string | null;
+  image_url: string | null;
   created_at: string;
 }
 
