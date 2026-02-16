@@ -70,6 +70,15 @@ export interface ContentSettings {
   about_contact_subtitle: string;
   // Footer
   footer_description: string;
+  // Trust signals
+  trust1_title: string;
+  trust1_description: string;
+  trust2_title: string;
+  trust2_description: string;
+  trust3_title: string;
+  trust3_description: string;
+  trust4_title: string;
+  trust4_description: string;
 }
 const defaultContent: ContentSettings = {
   // Store info
@@ -140,6 +149,15 @@ const defaultContent: ContentSettings = {
   about_contact_subtitle: '',
   // Footer
   footer_description: '',
+  // Trust signals
+  trust1_title: '',
+  trust1_description: '',
+  trust2_title: '',
+  trust2_description: '',
+  trust3_title: '',
+  trust3_description: '',
+  trust4_title: '',
+  trust4_description: '',
 };
 
 export const useContentSettings = () => {
