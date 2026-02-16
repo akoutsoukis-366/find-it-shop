@@ -141,10 +141,4 @@ export const useProduct = (id: string | undefined) => {
   return { product, isLoading, error };
 };
 
-export const categories = [
-  { id: 'all', name: 'All Products' },
-  { id: 'premium', name: 'Premium' },
-  { id: 'essential', name: 'Essential' },
-  { id: 'lifestyle', name: 'Lifestyle' },
-  { id: 'bundle', name: 'Bundles' },
-];
+// Categories are now fetched from the database via useCategories hook

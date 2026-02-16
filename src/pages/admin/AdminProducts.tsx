@@ -12,6 +12,7 @@ import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/admin/ImageUpload';
 import MediaGalleryUpload from '@/components/admin/MediaGalleryUpload';
+import { useCategories } from '@/hooks/useCategories';
 import {
   Dialog,
   DialogContent,
@@ -94,6 +95,7 @@ const AdminProducts = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; product: Product | null }>({ open: false, product: null });
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
+  const { categories } = useCategories();
 
   useEffect(() => {
     fetchProducts();
@@ -409,10 +411,9 @@ const AdminProducts = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="essential">Essential</SelectItem>
-                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                    <SelectItem value="bundle">Bundle</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
