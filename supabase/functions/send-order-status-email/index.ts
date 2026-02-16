@@ -123,7 +123,7 @@ const getEmailContent = (
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #374151 100%); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 20px; letter-spacing: -0.5px;">
-                iTag
+                MetaVex
               </div>
             </div>
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
@@ -156,7 +156,7 @@ const getEmailContent = (
             </div>
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} iTag. All rights reserved.
+                © ${new Date().getFullYear()} MetaVex. All rights reserved.
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ const getEmailContent = (
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #374151 100%); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 20px; letter-spacing: -0.5px;">
-                iTag
+                MetaVex
               </div>
             </div>
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
@@ -198,7 +198,7 @@ const getEmailContent = (
                 <div style="background: #faf5ff; border: 1px solid #e9d5ff; padding: 20px; border-radius: 12px; margin: 24px 0; text-align: center;">
                   <div style="font-size: 24px; margin-bottom: 8px;">🎊</div>
                   <p style="color: #7c3aed; font-weight: 500; margin: 0;">
-                    We hope you love your new iTag products!
+                    We hope you love your new MetaVex products!
                   </p>
                 </div>
                 <div style="margin-top: 24px;">
@@ -219,7 +219,7 @@ const getEmailContent = (
             </div>
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} iTag. All rights reserved.
+                © ${new Date().getFullYear()} MetaVex. All rights reserved.
               </p>
             </div>
           </div>
@@ -299,7 +299,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "iTag <onboarding@resend.dev>",
+      from: "MetaVex <onboarding@resend.dev>",
       to: [customerEmail],
       subject: emailContent.subject,
       html: emailContent.html,

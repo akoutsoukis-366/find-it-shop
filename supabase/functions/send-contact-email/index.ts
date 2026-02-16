@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "iTag <onboarding@resend.dev>",
+      from: "MetaVex <onboarding@resend.dev>",
       to: [adminEmail],
       subject: `New Contact Form Submission from ${name}`,
       html: `
@@ -76,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="margin: 8px 0 0 0; white-space: pre-wrap;">${message}</p>
           </div>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— iTag Contact Form</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— MetaVex Contact Form</p>
         </div>
       `,
     });
@@ -85,7 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to the user
     const userEmailResponse = await resend.emails.send({
-      from: "iTag <onboarding@resend.dev>",
+      from: "MetaVex <onboarding@resend.dev>",
       to: [email],
       subject: "We received your message!",
       html: `
@@ -105,11 +105,11 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <p style="color: #4a4a4a; font-size: 16px;">
-            In the meantime, feel free to browse our <a href="https://itag.com/products" style="color: #2563eb;">products</a> 
-            or check out our <a href="https://itag.com/about" style="color: #2563eb;">FAQ</a>.
+108:             In the meantime, feel free to browse our <a href="https://itag-store.lovable.app/products" style="color: #2563eb;">products</a> 
+            or check out our <a href="https://itag-store.lovable.app/about" style="color: #2563eb;">FAQ</a>.
           </p>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— The iTag Team</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— The MetaVex Team</p>
         </div>
       `,
     });
