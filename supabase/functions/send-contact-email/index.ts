@@ -33,18 +33,31 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Fetch admin email from settings
+    // Fetch admin email and email_notifications setting
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: settingsData } = await supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'contact_email')
-      .maybeSingle();
+      .select('key, value')
+      .in('key', ['contact_email', 'email_notifications']);
 
-    const adminEmail = settingsData?.value || "aris.koutsouki@gmail.com";
+    const settingsMap: Record<string, string> = {};
+    settingsData?.forEach((item: { key: string; value: string | null }) => {
+      settingsMap[item.key] = item.value || '';
+    });
+
+    // Check if email notifications are enabled
+    if (settingsMap.email_notifications === 'false') {
+      console.log('[SEND-CONTACT-EMAIL] Email notifications disabled, skipping send');
+      return new Response(JSON.stringify({ success: true, message: 'Email notifications disabled' }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const adminEmail = settingsMap.contact_email || "aris.koutsouki@gmail.com";
     console.log(`[SEND-CONTACT-EMAIL] Sending notification to: ${adminEmail}`);
 
     // Send notification to admin

@@ -491,10 +491,10 @@ const AdminSettings = () => {
   ];
 
   const toggleSettings = [
-    { key: 'email_notifications' as const, icon: Bell, title: 'Email Notifications', description: 'Receive email alerts for new orders' },
-    { key: 'two_factor_auth' as const, icon: Shield, title: 'Two-Factor Authentication', description: 'Add an extra layer of security' },
-    { key: 'international_shipping' as const, icon: Globe, title: 'International Shipping', description: 'Enable shipping to international addresses' },
-    { key: 'dark_mode' as const, icon: Palette, title: 'Dark Mode', description: 'Use dark theme for admin panel' },
+    { key: 'email_notifications' as const, icon: Bell, title: 'Email Notifications', description: 'Send email alerts for orders and contact messages' },
+    { key: 'two_factor_auth' as const, icon: Shield, title: 'Two-Factor Authentication', description: 'Coming soon — adds extra login security' },
+    { key: 'international_shipping' as const, icon: Globe, title: 'International Shipping', description: 'Allow checkout shipping to international addresses' },
+    { key: 'dark_mode' as const, icon: Palette, title: 'Dark Mode', description: 'Toggle dark/light theme for admin panel' },
   ];
 
   const renderSection = (section: any) => (

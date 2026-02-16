@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -120,45 +121,32 @@ const getEmailContent = (
         </head>
         <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-            <!-- Header -->
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #374151 100%); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 20px; letter-spacing: -0.5px;">
                 iTag
               </div>
             </div>
-
-            <!-- Main Card -->
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
-              <!-- Hero Section -->
               <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 32px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
                 <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Your Order Has Shipped!</h1>
                 <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Great news, ${customerName || 'there'}! Your package is on the move.</p>
               </div>
-
-              <!-- Content -->
               <div style="padding: 32px;">
-                <!-- Order ID -->
                 <div style="text-align: center; margin-bottom: 24px;">
                   <span style="background: #f3f4f6; padding: 8px 16px; border-radius: 20px; font-size: 14px; color: #6b7280;">
                     Order <strong style="color: #1a1a1a;">#${orderId.slice(0, 8).toUpperCase()}</strong>
                   </span>
                 </div>
-
                 ${trackingSection}
                 ${deliverySection}
-
-                <!-- Items -->
                 <div style="margin-top: 24px;">
                   <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">Items Being Shipped</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     ${itemsList}
                   </table>
                 </div>
-
                 ${addressSection}
-
-                <!-- Footer Message -->
                 <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
                   <p style="color: #6b7280; font-size: 14px; margin: 0;">
                     Questions about your order? Just reply to this email and we'll help you out.
@@ -166,8 +154,6 @@ const getEmailContent = (
                 </div>
               </div>
             </div>
-
-            <!-- Footer -->
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
                 © ${new Date().getFullYear()} iTag. All rights reserved.
@@ -192,48 +178,35 @@ const getEmailContent = (
         </head>
         <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-            <!-- Header -->
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #374151 100%); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 20px; letter-spacing: -0.5px;">
                 iTag
               </div>
             </div>
-
-            <!-- Main Card -->
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
-              <!-- Hero Section -->
               <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 32px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">📬</div>
                 <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Package Delivered!</h1>
                 <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hey ${customerName || 'there'}, your order has arrived!</p>
               </div>
-
-              <!-- Content -->
               <div style="padding: 32px;">
-                <!-- Order ID -->
                 <div style="text-align: center; margin-bottom: 24px;">
                   <span style="background: #f3f4f6; padding: 8px 16px; border-radius: 20px; font-size: 14px; color: #6b7280;">
                     Order <strong style="color: #1a1a1a;">#${orderId.slice(0, 8).toUpperCase()}</strong>
                   </span>
                 </div>
-
-                <!-- Success Message -->
                 <div style="background: #faf5ff; border: 1px solid #e9d5ff; padding: 20px; border-radius: 12px; margin: 24px 0; text-align: center;">
                   <div style="font-size: 24px; margin-bottom: 8px;">🎊</div>
                   <p style="color: #7c3aed; font-weight: 500; margin: 0;">
                     We hope you love your new iTag products!
                   </p>
                 </div>
-
-                <!-- Items -->
                 <div style="margin-top: 24px;">
                   <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">What You Received</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     ${itemsList}
                   </table>
                 </div>
-
-                <!-- Help Section -->
                 <div style="margin-top: 32px; padding: 20px; background: #f9fafb; border-radius: 12px; text-align: center;">
                   <p style="color: #374151; font-size: 14px; margin: 0 0 8px 0; font-weight: 500;">
                     Need help with your products?
@@ -244,8 +217,6 @@ const getEmailContent = (
                 </div>
               </div>
             </div>
-
-            <!-- Footer -->
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
                 © ${new Date().getFullYear()} iTag. All rights reserved.
@@ -280,6 +251,25 @@ const handler = async (req: Request): Promise<Response> => {
     }: OrderStatusEmailRequest = await req.json();
 
     console.log(`Processing email for order ${orderId}, status: ${status}, email: ${customerEmail}`);
+
+    // Check if email notifications are enabled
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: notifSetting } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'email_notifications')
+      .maybeSingle();
+
+    if (notifSetting?.value === 'false') {
+      console.log('Email notifications are disabled in settings, skipping send');
+      return new Response(JSON.stringify({ message: 'Email notifications disabled' }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     if (!customerEmail) {
       console.log('No customer email provided, skipping email send');

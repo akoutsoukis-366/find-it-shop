@@ -25,18 +25,15 @@ function validateCartItem(
   
   const cartItem = item as Record<string, unknown>;
   
-  // Validate productId
   if (typeof cartItem.productId !== 'string' || !validProductIds.has(cartItem.productId)) {
     throw new Error(`Invalid product ID at index ${index}`);
   }
   
-  // Validate quantity - must be positive integer between 1 and 100
   const quantity = Number(cartItem.quantity);
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
     throw new Error(`Invalid quantity at index ${index}: must be between 1 and 100`);
   }
   
-  // Validate selectedColor - string with max length
   const selectedColor = typeof cartItem.selectedColor === 'string' 
     ? cartItem.selectedColor.slice(0, 50) 
     : '';
@@ -67,7 +64,6 @@ function validateCustomerInfo(info: unknown): {
   
   const customerInfo = info as Record<string, unknown>;
   
-  // Validate email format if provided
   const email = typeof customerInfo.email === 'string' 
     ? customerInfo.email.slice(0, 255).trim() 
     : undefined;
@@ -75,17 +71,14 @@ function validateCustomerInfo(info: unknown): {
     throw new Error('Invalid email format');
   }
   
-  // Validate name with length limit
   const name = typeof customerInfo.name === 'string' 
     ? customerInfo.name.slice(0, 200).trim() 
     : undefined;
   
-  // Validate phone with length limit
   const phone = typeof customerInfo.phone === 'string' 
     ? customerInfo.phone.slice(0, 30).trim() 
     : undefined;
   
-  // Validate address
   let address: {
     line1?: string;
     line2?: string;
@@ -110,8 +103,40 @@ function validateCustomerInfo(info: unknown): {
   return { email, name, phone, address };
 }
 
+// Domestic-only countries (when international shipping is disabled)
+const DOMESTIC_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] = ["GR"];
+
+// All supported countries
+const ALL_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] = [
+  "AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AT", "AU", "AW", "AX", "AZ",
+  "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+  "CA", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CV", "CW", "CY", "CZ",
+  "DE", "DJ", "DK", "DM", "DO", "DZ",
+  "EC", "EE", "EG", "EH", "ER", "ES", "ET",
+  "FI", "FJ", "FK", "FO", "FR",
+  "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
+  "HK", "HN", "HR", "HT", "HU",
+  "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IS", "IT",
+  "JE", "JM", "JO", "JP",
+  "KE", "KG", "KH", "KI", "KM", "KN", "KR", "KW", "KY", "KZ",
+  "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+  "MA", "MC", "MD", "ME", "MF", "MG", "MK", "ML", "MM", "MN", "MO", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+  "NA", "NC", "NE", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+  "OM",
+  "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PY",
+  "QA",
+  "RE", "RO", "RS", "RU", "RW",
+  "SA", "SB", "SC", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SZ",
+  "TA", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+  "UA", "UG", "US", "UY", "UZ",
+  "VA", "VC", "VE", "VG", "VN", "VU",
+  "WF", "WS",
+  "XK",
+  "YE", "YT",
+  "ZA", "ZM", "ZW"
+];
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -121,7 +146,6 @@ serve(async (req) => {
     
     console.log("[CREATE-CHECKOUT] Starting checkout session creation");
 
-    // Validate items array
     if (!body.items || !Array.isArray(body.items)) {
       throw new Error("Items must be an array");
     }
@@ -134,12 +158,10 @@ serve(async (req) => {
       throw new Error("Too many items in cart (max 50)");
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all products from database
     const { data: productsData, error: productsError } = await supabase
       .from('products')
       .select('id, name, price');
@@ -149,7 +171,6 @@ serve(async (req) => {
       throw new Error("Failed to fetch product data");
     }
 
-    // Build product maps from database
     const products = productsData as Product[];
     const productMap = new Map<string, Product>();
     const validProductIds = new Set<string>();
@@ -161,15 +182,12 @@ serve(async (req) => {
 
     console.log("[CREATE-CHECKOUT] Loaded", products.length, "products from database");
 
-    // Validate each cart item
     const items = body.items.map((item: unknown, index: number) => 
       validateCartItem(item, index, validProductIds)
     );
     
-    // Validate customer info
     const customerInfo = validateCustomerInfo(body.customerInfo);
     
-    // Validate customerEmail if provided separately
     let customerEmail: string | undefined;
     if (typeof body.customerEmail === 'string') {
       customerEmail = body.customerEmail.slice(0, 255).trim();
@@ -180,11 +198,11 @@ serve(async (req) => {
     
     console.log("[CREATE-CHECKOUT] Validated items count:", items.length);
 
-    // Fetch settings from database
+    // Fetch settings from database including international_shipping
     const { data: settingsData } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['currency', 'shipping_cost', 'free_shipping_threshold']);
+      .in('key', ['currency', 'shipping_cost', 'free_shipping_threshold', 'international_shipping']);
 
     const settingsMap: Record<string, string> = {};
     settingsData?.forEach((item: { key: string; value: string | null }) => {
@@ -194,15 +212,14 @@ serve(async (req) => {
     const currency = (settingsMap.currency || 'USD').toLowerCase();
     const shippingCost = parseFloat(settingsMap.shipping_cost || '0');
     const freeShippingThreshold = parseFloat(settingsMap.free_shipping_threshold || '0');
+    const internationalShipping = settingsMap.international_shipping !== 'false'; // default true
     
-    console.log("[CREATE-CHECKOUT] Settings - Currency:", currency, "Shipping:", shippingCost, "Free threshold:", freeShippingThreshold);
+    console.log("[CREATE-CHECKOUT] Settings - Currency:", currency, "Shipping:", shippingCost, "Free threshold:", freeShippingThreshold, "International:", internationalShipping);
 
-    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Calculate subtotal first for free shipping check
     const subtotalInCents = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
       const product = productMap.get(item.productId);
       const priceInCents = Math.round((product?.price || 0) * 100);
@@ -210,10 +227,8 @@ serve(async (req) => {
     }, 0);
     const subtotalInDollars = subtotalInCents / 100;
 
-    // Build line items from cart using price_data for dynamic currency and prices from DB
     const lineItems = items.map((item: { productId: string; quantity: number; selectedColor: string }) => {
       const product = productMap.get(item.productId);
-      // Price is stored in dollars in DB, convert to cents
       const priceInCents = Math.round((product?.price || 0) * 100);
       return {
         price_data: {
@@ -227,8 +242,6 @@ serve(async (req) => {
       };
     });
 
-
-    // Add shipping as a separate line item if applicable
     const qualifiesForFreeShipping = freeShippingThreshold > 0 && subtotalInDollars >= freeShippingThreshold;
     
     if (shippingCost > 0 && !qualifiesForFreeShipping) {
@@ -250,7 +263,6 @@ serve(async (req) => {
 
     console.log("[CREATE-CHECKOUT] Line items:", JSON.stringify(lineItems));
 
-    // Check for existing Stripe customer or create new one with prefilled info
     let customerId: string | undefined;
     const email = customerInfo?.email || customerEmail;
     
@@ -260,7 +272,6 @@ serve(async (req) => {
         customerId = customers.data[0].id;
         console.log("[CREATE-CHECKOUT] Found existing customer:", customerId);
       } else if (customerInfo) {
-        // Create new customer with prefilled info including shipping
         const addressData = customerInfo.address ? {
           line1: customerInfo.address.line1 || '',
           line2: customerInfo.address.line2 || '',
@@ -286,51 +297,24 @@ serve(async (req) => {
       }
     }
 
-    // Create checkout session with prefilled customer data
+    // Use domestic or all countries based on international_shipping setting
+    const allowedCountries = internationalShipping ? ALL_COUNTRIES : DOMESTIC_COUNTRIES;
+
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/cart`,
       shipping_address_collection: {
-        allowed_countries: [
-          "AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AT", "AU", "AW", "AX", "AZ",
-          "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
-          "CA", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CV", "CW", "CY", "CZ",
-          "DE", "DJ", "DK", "DM", "DO", "DZ",
-          "EC", "EE", "EG", "EH", "ER", "ES", "ET",
-          "FI", "FJ", "FK", "FO", "FR",
-          "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
-          "HK", "HN", "HR", "HT", "HU",
-          "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IS", "IT",
-          "JE", "JM", "JO", "JP",
-          "KE", "KG", "KH", "KI", "KM", "KN", "KR", "KW", "KY", "KZ",
-          "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
-          "MA", "MC", "MD", "ME", "MF", "MG", "MK", "ML", "MM", "MN", "MO", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
-          "NA", "NC", "NE", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
-          "OM",
-          "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PY",
-          "QA",
-          "RE", "RO", "RS", "RU", "RW",
-          "SA", "SB", "SC", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SZ",
-          "TA", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
-          "UA", "UG", "US", "UY", "UZ",
-          "VA", "VC", "VE", "VG", "VN", "VU",
-          "WF", "WS",
-          "XK",
-          "YE", "YT",
-          "ZA", "ZM", "ZW"
-        ],
+        allowed_countries: allowedCountries,
       },
       phone_number_collection: {
         enabled: true,
       },
     };
 
-    // Add customer with full prefill or just email
     if (customerId) {
       sessionConfig.customer = customerId;
-      // Update customer with latest info including shipping for prefill
       if (customerInfo) {
         try {
           const addressData = customerInfo.address?.line1 ? {
@@ -369,17 +353,14 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    // Log full error details server-side for debugging
     console.error("[CREATE-CHECKOUT] Error:", error instanceof Error ? error.message : String(error));
     
-    // Return sanitized error message to client
     const errorMessage = error instanceof Error ? error.message : String(error);
     const isValidationError = errorMessage.includes('Invalid') || 
                               errorMessage.includes('must be') || 
                               errorMessage.includes('required') ||
                               errorMessage.includes('Too many');
     
-    // Only expose validation errors, not internal errors
     const clientMessage = isValidationError ? errorMessage : 'Unable to create checkout session';
     
     return new Response(JSON.stringify({ error: clientMessage }), {
