@@ -5,8 +5,10 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { useContentSettings } from '@/hooks/useContentSettings';
 
 const AdminLayout = () => {
+  const { content } = useContentSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -132,10 +134,14 @@ const AdminLayout = () => {
       <aside className="w-64 bg-card border-r border-border flex flex-col">
         <div className="p-6 border-b border-border">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">iT</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">Admin</span>
+            {content.logo_url ? (
+              <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">{content.store_name?.substring(0, 2) || ''}</span>
+              </div>
+            )}
+            <span className="text-xl font-bold text-foreground">{content.store_name || ''} Admin</span>
           </Link>
         </div>
 
