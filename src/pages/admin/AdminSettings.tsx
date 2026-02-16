@@ -105,6 +105,13 @@ interface SettingsData {
   trust3_description: string;
   trust4_title: string;
   trust4_description: string;
+  // Legal pages
+  privacy_title: string;
+  privacy_content: string;
+  terms_title: string;
+  terms_content: string;
+  shipping_title: string;
+  shipping_content: string;
 }
 
 const currencies = [
@@ -209,14 +216,21 @@ const defaultSettings: SettingsData = {
   // Footer
   footer_description: '',
   // Trust signals
-  trust1_title: 'Free Shipping',
-  trust1_description: 'On orders over €50',
-  trust2_title: '2 Year Warranty',
-  trust2_description: 'Full manufacturer coverage',
-  trust3_title: '30-Day Returns',
-  trust3_description: 'Hassle-free return policy',
-  trust4_title: '24/7 Support',
-  trust4_description: "We're here to help",
+  trust1_title: '',
+  trust1_description: '',
+  trust2_title: '',
+  trust2_description: '',
+  trust3_title: '',
+  trust3_description: '',
+  trust4_title: '',
+  trust4_description: '',
+  // Legal pages
+  privacy_title: 'Πολιτική Απορρήτου',
+  privacy_content: '',
+  terms_title: 'Όροι Χρήσης',
+  terms_content: '',
+  shipping_title: 'Πολιτική Αποστολών',
+  shipping_content: '',
 };
 
 const AdminSettings = () => {
@@ -490,6 +504,36 @@ const AdminSettings = () => {
     },
   ];
 
+  const legalContentSections = [
+    {
+      icon: FileText,
+      title: 'Πολιτική Απορρήτου',
+      description: 'Περιεχόμενο σελίδας Πολιτικής Απορρήτου',
+      fields: [
+        { key: 'privacy_title' as const, label: 'Τίτλος Σελίδας', type: 'text' },
+        { key: 'privacy_content' as const, label: 'Περιεχόμενο', type: 'textarea' },
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Όροι Χρήσης',
+      description: 'Περιεχόμενο σελίδας Όρων Χρήσης',
+      fields: [
+        { key: 'terms_title' as const, label: 'Τίτλος Σελίδας', type: 'text' },
+        { key: 'terms_content' as const, label: 'Περιεχόμενο', type: 'textarea' },
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Πολιτική Αποστολών',
+      description: 'Περιεχόμενο σελίδας Αποστολών & Επιστροφών',
+      fields: [
+        { key: 'shipping_title' as const, label: 'Τίτλος Σελίδας', type: 'text' },
+        { key: 'shipping_content' as const, label: 'Περιεχόμενο', type: 'textarea' },
+      ],
+    },
+  ];
+
   const toggleSettings = [
     { key: 'email_notifications' as const, icon: Bell, title: 'Email Notifications', description: 'Send email alerts for orders and contact messages' },
     { key: 'two_factor_auth' as const, icon: Shield, title: 'Two-Factor Authentication', description: 'Coming soon — adds extra login security' },
@@ -593,6 +637,7 @@ const AdminSettings = () => {
           <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="homepage">Homepage Content</TabsTrigger>
           <TabsTrigger value="about">About Page Content</TabsTrigger>
+          <TabsTrigger value="legal">Νομικά</TabsTrigger>
         </TabsList>
 
         <TabsContent value="store" className="space-y-8">
@@ -704,6 +749,10 @@ const AdminSettings = () => {
 
         <TabsContent value="about" className="space-y-8">
           {aboutContentSections.map(renderSection)}
+        </TabsContent>
+
+        <TabsContent value="legal" className="space-y-8">
+          {legalContentSections.map(renderSection)}
         </TabsContent>
       </Tabs>
     </div>

@@ -64,9 +64,9 @@ const Footer = () => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Νομικά</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Πολιτική Απορρήτου</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Όροι Χρήσης</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Αποστολές</a></li>
+                <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Πολιτική Απορρήτου</Link></li>
+                <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Όροι Χρήσης</Link></li>
+                <li><Link to="/shipping" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Αποστολές</Link></li>
               </ul>
             </div>
           </div>
