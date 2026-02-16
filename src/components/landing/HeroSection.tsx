@@ -18,35 +18,43 @@ const HeroSection = ({ content }: HeroSectionProps) => {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px]" />
       </div>
 
-      {/* Text Content */}
-      <div className="container mx-auto px-4 pt-12 pb-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto"
-        >
-          {content.hero_badge_text && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              <span className="text-muted-foreground">{content.hero_badge_text}</span>
-            </div>
-          )}
+      {/* Full Hero Video */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative flex-1 w-full flex items-center justify-center px-4 pt-8 pb-8"
+      >
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
+        </div>
 
-          {(content.hero_title_line1 || content.hero_title_line2) && (
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-              {content.hero_title_line1 && <span className="block">{content.hero_title_line1}</span>}
-              {content.hero_title_line2 && <span className="gradient-text block">{content.hero_title_line2}</span>}
-            </h1>
-          )}
+        <div className="relative max-w-5xl 2xl:max-w-7xl w-full mx-auto flex flex-col items-center gap-8">
+          <div className="relative w-full">
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20 pointer-events-none z-10 rounded-2xl" />
 
-          {content.hero_description && (
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              {content.hero_description}
-            </p>
-          )}
+            {heroVideoUrl ? (
+              <video
+                src={heroVideoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-auto object-contain rounded-2xl"
+                style={{ maxHeight: '70vh' }}
+              />
+            ) : (
+              <div className="w-full h-[50vh] bg-muted/50 rounded-2xl flex items-center justify-center">
+                <p className="text-muted-foreground">Δεν έχει οριστεί video</p>
+              </div>
+            )}
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-10 rounded-b-2xl" />
+          </div>
+
+          {/* Floating CTA buttons over bottom gradient */}
+          <div className="relative z-20 -mt-20 flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/products">
               <Button variant="hero" size="xl">
                 Αγόρασε Τώρα
@@ -59,59 +67,6 @@ const HeroSection = ({ content }: HeroSectionProps) => {
               </Button>
             </Link>
           </div>
-
-          {(content.hero_stat1_value || content.hero_stat2_value || content.hero_stat3_value) && (
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4">
-              {[
-                { value: content.hero_stat1_value, label: content.hero_stat1_label },
-                { value: content.hero_stat2_value, label: content.hero_stat2_label },
-                { value: content.hero_stat3_value, label: content.hero_stat3_label },
-              ].filter(s => s.value || s.label).map((stat, i, arr) => (
-                <div key={i} className="flex items-center gap-4 sm:gap-8">
-                  <div className="text-center">
-                    {stat.value && <div className="text-sm sm:text-base font-semibold text-foreground">{stat.value}</div>}
-                    {stat.label && <div className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{stat.label}</div>}
-                  </div>
-                  {i < arr.length - 1 && <div className="hidden sm:block w-px h-12 bg-border" />}
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Hero Video Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="relative flex-1 w-full flex items-center justify-center px-4 pb-8"
-      >
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
-        </div>
-
-        <div className="relative max-w-4xl 2xl:max-w-6xl w-full mx-auto">
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50 pointer-events-none z-10 rounded-2xl" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
-
-          {heroVideoUrl ? (
-            <video
-              src={heroVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-auto object-contain rounded-2xl"
-              style={{ maxHeight: '500px' }}
-            />
-          ) : (
-            <div className="w-full h-[400px] bg-muted/50 rounded-2xl flex items-center justify-center">
-              <p className="text-muted-foreground">Δεν έχει οριστεί video</p>
-            </div>
-          )}
-
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10 rounded-b-2xl" />
         </div>
       </motion.div>
     </section>
