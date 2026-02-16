@@ -25,10 +25,10 @@ const CategorySection = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Shop by Category
+            Αγόρασε ανά Κατηγορία
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Explore our curated collections of cutting-edge tech products.
+            Εξερεύνησε τις συλλογές μας από premium tech προϊόντα.
           </p>
         </motion.div>
 
@@ -63,7 +63,7 @@ const CategorySection = () => {
                       </p>
                     )}
                     <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                      Browse
+                      Περιήγηση
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
