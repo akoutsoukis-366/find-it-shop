@@ -91,7 +91,7 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
         </div>
 
-        <div className="relative max-w-4xl w-full mx-auto">
+        <div className="relative max-w-4xl 2xl:max-w-6xl w-full mx-auto">
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50 pointer-events-none z-10 rounded-2xl" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
 
