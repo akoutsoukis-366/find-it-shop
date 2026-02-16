@@ -209,7 +209,7 @@ function generateAdminNotificationEmail(
         </div>
         
         <div style="text-align: center; padding: 30px 20px;">
-          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">This is an automated notification from iTag Store</p>
+          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">This is an automated notification from MetaVex Store</p>
         </div>
       </div>
     </body>
@@ -266,13 +266,16 @@ serve(async (req) => {
 
     console.log("[VERIFY-PAYMENT] Session verified, payment status:", session.payment_status);
 
-    // Get line items
+    // Get line items and separate shipping from products
     const lineItems = session.line_items?.data || [];
-    const items = lineItems.map((item: Stripe.LineItem) => ({
+    const shippingLineItem = lineItems.find((item: Stripe.LineItem) => item.description === 'Shipping');
+    const productLineItems = lineItems.filter((item: Stripe.LineItem) => item.description !== 'Shipping');
+    const items = productLineItems.map((item: Stripe.LineItem) => ({
       name: item.description,
       quantity: item.quantity,
       price: item.amount_total,
     }));
+    const shippingFromLineItem = shippingLineItem ? shippingLineItem.amount_total : 0;
 
     // Extract shipping address - check both shipping_details and customer_details
     let shippingAddress = null;
@@ -314,8 +317,8 @@ serve(async (req) => {
         customer_name: session.customer_details?.name,
         shipping_address: shippingAddress,
         items: items,
-        subtotal: session.amount_subtotal || 0,
-        shipping: session.shipping_cost?.amount_total || 0,
+        subtotal: (session.amount_total || 0) - shippingFromLineItem,
+        shipping: shippingFromLineItem,
         total: session.amount_total || 0,
         currency: session.currency || "usd",
         status: "completed",
@@ -349,15 +352,15 @@ serve(async (req) => {
           customerName,
           data.id,
           items,
-          session.amount_subtotal || 0,
-          session.shipping_cost?.amount_total || 0,
+          (session.amount_total || 0) - shippingFromLineItem,
+          shippingFromLineItem,
           session.amount_total || 0,
           session.currency || 'usd',
           shippingAddress
         );
 
         const emailResponse = await resend.emails.send({
-          from: "iTag Store <onboarding@resend.dev>",
+          from: "MetaVex Store <onboarding@resend.dev>",
           to: [customerEmail],
           subject: `Order Confirmed - #${data.id.slice(0, 8).toUpperCase()}`,
           html: emailHtml,
@@ -379,15 +382,15 @@ serve(async (req) => {
           customerName,
           customerEmail || 'Not provided',
           items,
-          session.amount_subtotal || 0,
-          session.shipping_cost?.amount_total || 0,
+          (session.amount_total || 0) - shippingFromLineItem,
+          shippingFromLineItem,
           session.amount_total || 0,
           session.currency || 'usd',
           shippingAddress
         );
 
         const adminEmailResponse = await resend.emails.send({
-          from: "iTag Store <onboarding@resend.dev>",
+          from: "MetaVex Store <onboarding@resend.dev>",
           to: [adminEmail],
           subject: `🛒 New Order #${data.id.slice(0, 8).toUpperCase()} - ${formatCurrency(session.amount_total || 0, session.currency || 'usd')}`,
           html: adminEmailHtml,
