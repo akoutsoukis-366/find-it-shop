@@ -12,6 +12,7 @@ const AdminLayout = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -39,6 +40,17 @@ const AdminLayout = () => {
         return;
       }
 
+      // Fetch dark mode setting
+      const { data: darkModeSetting } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'dark_mode')
+        .maybeSingle();
+
+      if (darkModeSetting?.value === 'false') {
+        setIsDarkMode(false);
+      }
+
       setIsAdmin(true);
       setLoading(false);
     };
@@ -53,6 +65,30 @@ const AdminLayout = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Listen for dark_mode setting changes via realtime or refetch
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-settings')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'settings',
+          filter: 'key=eq.dark_mode',
+        },
+        (payload) => {
+          const newValue = (payload.new as { value: string | null }).value;
+          setIsDarkMode(newValue !== 'false');
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -90,7 +126,8 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className={cn("min-h-screen bg-background flex", !isDarkMode && "admin-light")}
+         style={!isDarkMode ? { background: 'hsl(0, 0%, 96%)' } : undefined}>
       {/* Sidebar */}
       <aside className="w-64 bg-card border-r border-border flex flex-col">
         <div className="p-6 border-b border-border">
