@@ -96,6 +96,15 @@ interface SettingsData {
   about_contact_subtitle: string;
   // Footer
   footer_description: string;
+  // Trust signals
+  trust1_title: string;
+  trust1_description: string;
+  trust2_title: string;
+  trust2_description: string;
+  trust3_title: string;
+  trust3_description: string;
+  trust4_title: string;
+  trust4_description: string;
 }
 
 const currencies = [
@@ -199,6 +208,15 @@ const defaultSettings: SettingsData = {
   about_contact_subtitle: "Have questions? We'd love to hear from you.",
   // Footer
   footer_description: '',
+  // Trust signals
+  trust1_title: 'Free Shipping',
+  trust1_description: 'On orders over €50',
+  trust2_title: '2 Year Warranty',
+  trust2_description: 'Full manufacturer coverage',
+  trust3_title: '30-Day Returns',
+  trust3_description: 'Hassle-free return policy',
+  trust4_title: '24/7 Support',
+  trust4_description: "We're here to help",
 };
 
 const AdminSettings = () => {
@@ -388,6 +406,21 @@ const AdminSettings = () => {
       description: 'Footer content displayed at the bottom of every page',
       fields: [
         { key: 'footer_description' as const, label: 'Footer Description', type: 'textarea' },
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Trust Signals',
+      description: 'Trust badges displayed between hero and categories',
+      fields: [
+        { key: 'trust1_title' as const, label: 'Signal 1 Title', type: 'text' },
+        { key: 'trust1_description' as const, label: 'Signal 1 Description', type: 'text' },
+        { key: 'trust2_title' as const, label: 'Signal 2 Title', type: 'text' },
+        { key: 'trust2_description' as const, label: 'Signal 2 Description', type: 'text' },
+        { key: 'trust3_title' as const, label: 'Signal 3 Title', type: 'text' },
+        { key: 'trust3_description' as const, label: 'Signal 3 Description', type: 'text' },
+        { key: 'trust4_title' as const, label: 'Signal 4 Title', type: 'text' },
+        { key: 'trust4_description' as const, label: 'Signal 4 Description', type: 'text' },
       ],
     },
   ];

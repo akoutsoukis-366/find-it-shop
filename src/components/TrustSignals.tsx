@@ -1,52 +1,46 @@
 import { motion } from 'framer-motion';
 import { Truck, ShieldCheck, Headphones, RotateCcw } from 'lucide-react';
+import { useContentSettings } from '@/hooks/useContentSettings';
 
-const signals = [
-  {
-    icon: Truck,
-    title: 'Free Shipping',
-    description: 'On orders over €50',
-  },
-  {
-    icon: ShieldCheck,
-    title: '2 Year Warranty',
-    description: 'Full manufacturer coverage',
-  },
-  {
-    icon: RotateCcw,
-    title: '30-Day Returns',
-    description: 'Hassle-free return policy',
-  },
-  {
-    icon: Headphones,
-    title: '24/7 Support',
-    description: 'We\'re here to help',
-  },
-];
+const icons = [Truck, ShieldCheck, RotateCcw, Headphones];
 
 const TrustSignals = () => {
+  const { content } = useContentSettings();
+
+  const signals = [
+    { title: content.trust1_title, description: content.trust1_description },
+    { title: content.trust2_title, description: content.trust2_description },
+    { title: content.trust3_title, description: content.trust3_description },
+    { title: content.trust4_title, description: content.trust4_description },
+  ].filter(s => s.title || s.description);
+
+  if (signals.length === 0) return null;
+
   return (
     <section className="py-16 border-y border-border">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {signals.map((signal, index) => (
-            <motion.div
-              key={signal.title}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="flex flex-col items-center text-center gap-3"
-            >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <signal.icon className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground text-sm">{signal.title}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">{signal.description}</p>
-              </div>
-            </motion.div>
-          ))}
+          {signals.map((signal, index) => {
+            const Icon = icons[index] || Truck;
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="flex flex-col items-center text-center gap-3"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  {signal.title && <h4 className="font-semibold text-foreground text-sm">{signal.title}</h4>}
+                  {signal.description && <p className="text-xs text-muted-foreground mt-0.5">{signal.description}</p>}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
