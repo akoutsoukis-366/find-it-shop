@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useProducts, categories } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,12 +10,15 @@ import { Loader2 } from 'lucide-react';
 
 const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const { products, isLoading } = useProducts();
+  const { products, isLoading: productsLoading } = useProducts();
+  const { filterCategories, isLoading: categoriesLoading } = useCategories();
 
   const filteredProducts =
     selectedCategory === 'all'
       ? products
       : products.filter((p) => p.category === selectedCategory);
+
+  const isLoading = productsLoading || categoriesLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,7 +36,7 @@ const Products = () => {
               Our Products
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our complete range of tracking devices designed for every need.
+              Explore our complete range of products designed for every need.
             </p>
           </motion.div>
 
@@ -43,11 +47,11 @@ const Products = () => {
             transition={{ delay: 0.1 }}
             className="flex flex-wrap justify-center gap-3 mb-12"
           >
-            {categories.map((category) => (
+            {filterCategories.map((category) => (
               <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'secondary'}
-                onClick={() => setSelectedCategory(category.id)}
+                key={category.slug}
+                variant={selectedCategory === category.slug ? 'default' : 'secondary'}
+                onClick={() => setSelectedCategory(category.slug)}
               >
                 {category.name}
               </Button>
