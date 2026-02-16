@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import ProductCard from '@/components/ProductCard';
@@ -9,7 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 const Products = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat) setSelectedCategory(cat);
+  }, [searchParams]);
   const { products, isLoading: productsLoading } = useProducts();
   const { filterCategories, isLoading: categoriesLoading } = useCategories();
 
@@ -51,7 +58,14 @@ const Products = () => {
               <Button
                 key={category.slug}
                 variant={selectedCategory === category.slug ? 'default' : 'secondary'}
-                onClick={() => setSelectedCategory(category.slug)}
+                onClick={() => {
+                  setSelectedCategory(category.slug);
+                  if (category.slug === 'all') {
+                    setSearchParams({});
+                  } else {
+                    setSearchParams({ category: category.slug });
+                  }
+                }}
               >
                 {category.name}
               </Button>
