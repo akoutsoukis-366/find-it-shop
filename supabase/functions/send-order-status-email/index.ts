@@ -35,6 +35,7 @@ const getEmailContent = (
   customerName: string, 
   orderId: string, 
   items: Array<{ name: string; quantity: number; price?: number }>,
+  storeName: string,
   trackingNumber?: string,
   trackingUrl?: string,
   estimatedDelivery?: string,
@@ -123,7 +124,7 @@ const getEmailContent = (
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #374151 100%); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 20px; letter-spacing: -0.5px;">
-                MetaVex
+                ${storeName}
               </div>
             </div>
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
@@ -156,7 +157,7 @@ const getEmailContent = (
             </div>
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} MetaVex. All rights reserved.
+                © ${new Date().getFullYear()} ${storeName}. All rights reserved.
               </p>
             </div>
           </div>
@@ -180,7 +181,7 @@ const getEmailContent = (
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
             <div style="text-align: center; margin-bottom: 32px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #374151 100%); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 20px; letter-spacing: -0.5px;">
-                MetaVex
+                ${storeName}
               </div>
             </div>
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
@@ -198,7 +199,7 @@ const getEmailContent = (
                 <div style="background: #faf5ff; border: 1px solid #e9d5ff; padding: 20px; border-radius: 12px; margin: 24px 0; text-align: center;">
                   <div style="font-size: 24px; margin-bottom: 8px;">🎊</div>
                   <p style="color: #7c3aed; font-weight: 500; margin: 0;">
-                    We hope you love your new MetaVex products!
+                    We hope you love your new ${storeName} products!
                   </p>
                 </div>
                 <div style="margin-top: 24px;">
@@ -219,7 +220,7 @@ const getEmailContent = (
             </div>
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} MetaVex. All rights reserved.
+                © ${new Date().getFullYear()} ${storeName}. All rights reserved.
               </p>
             </div>
           </div>
@@ -259,11 +260,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { data: notifSetting } = await supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'email_notifications')
-      .maybeSingle();
+      .select('key, value')
+      .in('key', ['email_notifications', 'store_name']);
 
-    if (notifSetting?.value === 'false') {
+    const notifMap: Record<string, string> = {};
+    notifSetting?.forEach((item: { key: string; value: string | null }) => {
+      notifMap[item.key] = item.value || '';
+    });
+
+    if (notifMap.email_notifications === 'false') {
       console.log('Email notifications are disabled in settings, skipping send');
       return new Response(JSON.stringify({ message: 'Email notifications disabled' }), {
         status: 200,
@@ -279,11 +284,14 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    const storeName = notifMap.store_name || 'Our Store';
+
     const emailContent = getEmailContent(
       status, 
       customerName, 
       orderId, 
       items, 
+      storeName,
       trackingNumber,
       trackingUrl,
       estimatedDelivery,
@@ -299,7 +307,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "MetaVex <onboarding@resend.dev>",
+      from: `${storeName} <onboarding@resend.dev>`,
       to: [customerEmail],
       subject: emailContent.subject,
       html: emailContent.html,
