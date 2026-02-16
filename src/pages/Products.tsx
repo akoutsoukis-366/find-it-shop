@@ -40,10 +40,10 @@ const Products = () => {
             className="text-center mb-12"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Our Products
+              Τα Προϊόντα μας
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our complete range of products designed for every need.
+              Εξερεύνησε την πλήρη γκάμα προϊόντων μας για κάθε ανάγκη.
             </p>
           </motion.div>
 
@@ -88,7 +88,7 @@ const Products = () => {
 
               {filteredProducts.length === 0 && (
                 <div className="text-center py-16">
-                  <p className="text-muted-foreground">No products found in this category.</p>
+                  <p className="text-muted-foreground">Δεν βρέθηκαν προϊόντα σε αυτή την κατηγορία.</p>
                 </div>
               )}
             </>
