@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: settingsData } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['contact_email', 'email_notifications']);
+      .in('key', ['contact_email', 'email_notifications', 'store_name']);
 
     const settingsMap: Record<string, string> = {};
     settingsData?.forEach((item: { key: string; value: string | null }) => {
@@ -58,11 +58,12 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const adminEmail = settingsMap.contact_email || "aris.koutsouki@gmail.com";
+    const storeName = settingsMap.store_name || 'Our Store';
     console.log(`[SEND-CONTACT-EMAIL] Sending notification to: ${adminEmail}`);
 
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "MetaVex <onboarding@resend.dev>",
+      from: `${storeName} <onboarding@resend.dev>`,
       to: [adminEmail],
       subject: `New Contact Form Submission from ${name}`,
       html: `
@@ -76,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="margin: 8px 0 0 0; white-space: pre-wrap;">${message}</p>
           </div>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— MetaVex Contact Form</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— ${storeName} Contact Form</p>
         </div>
       `,
     });
@@ -85,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to the user
     const userEmailResponse = await resend.emails.send({
-      from: "MetaVex <onboarding@resend.dev>",
+      from: `${storeName} <onboarding@resend.dev>`,
       to: [email],
       subject: "We received your message!",
       html: `
@@ -109,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
             or check out our <a href="https://itag-store.lovable.app/about" style="color: #2563eb;">FAQ</a>.
           </p>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— The MetaVex Team</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— The ${storeName} Team</p>
         </div>
       `,
     });

@@ -209,7 +209,7 @@ function generateAdminNotificationEmail(
         </div>
         
         <div style="text-align: center; padding: 30px 20px;">
-          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">This is an automated notification from MetaVex Store</p>
+          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">This is an automated notification from your store</p>
         </div>
       </div>
     </body>
@@ -335,13 +335,18 @@ serve(async (req) => {
     console.log("[VERIFY-PAYMENT] Order created:", data.id);
 
     // Get admin contact email from settings
-    const { data: contactEmailSetting } = await supabase
+    const { data: emailSettings } = await supabase
       .from("settings")
-      .select("value")
-      .eq("key", "contact_email")
-      .single();
+      .select("key, value")
+      .in("key", ["contact_email", "store_name"]);
 
-    const adminEmail = contactEmailSetting?.value;
+    const settingsMap: Record<string, string> = {};
+    emailSettings?.forEach((item: { key: string; value: string | null }) => {
+      settingsMap[item.key] = item.value || '';
+    });
+
+    const adminEmail = settingsMap.contact_email;
+    const storeName = settingsMap.store_name || 'Our Store';
     const customerEmail = session.customer_details?.email;
     const customerName = session.customer_details?.name || 'Valued Customer';
     
@@ -360,7 +365,7 @@ serve(async (req) => {
         );
 
         const emailResponse = await resend.emails.send({
-          from: "MetaVex Store <onboarding@resend.dev>",
+          from: `${storeName} <onboarding@resend.dev>`,
           to: [customerEmail],
           subject: `Order Confirmed - #${data.id.slice(0, 8).toUpperCase()}`,
           html: emailHtml,
@@ -390,7 +395,7 @@ serve(async (req) => {
         );
 
         const adminEmailResponse = await resend.emails.send({
-          from: "MetaVex Store <onboarding@resend.dev>",
+          from: `${storeName} <onboarding@resend.dev>`,
           to: [adminEmail],
           subject: `🛒 New Order #${data.id.slice(0, 8).toUpperCase()} - ${formatCurrency(session.amount_total || 0, session.currency || 'usd')}`,
           html: adminEmailHtml,
