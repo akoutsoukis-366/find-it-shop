@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { useContentSettings } from '@/hooks/useContentSettings';
 import ProductCard from '@/components/ProductCard';
+import CategorySection from '@/components/CategorySection';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
@@ -219,6 +220,9 @@ const Index = () => {
           </div>
         </section>
       )}
+
+      {/* Shop by Category */}
+      <CategorySection />
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (

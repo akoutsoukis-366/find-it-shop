@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cartStore';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useContentSettings } from '@/hooks/useContentSettings';
+import { useCategories } from '@/hooks/useCategories';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const totalItems = useCartStore((state) => state.getTotalItems());
   const { content } = useContentSettings();
+  const { categories } = useCategories();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -60,11 +62,7 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Products', path: '/products' },
-    { name: 'About', path: '/about' },
-  ];
+
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -81,20 +79,42 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+          <div className="hidden md:flex items-center gap-6">
               <Link
-                key={link.path}
-                to={link.path}
+                to="/"
                 className={`text-sm font-medium transition-colors ${
-                  isActive(link.path)
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                  isActive('/') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {link.name}
+                Home
               </Link>
-            ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors ${
+                  location.pathname === '/products' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}>
+                  Products
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-popover border border-border z-50 w-48">
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link to="/products">All Products</Link>
+                  </DropdownMenuItem>
+                  {categories.length > 0 && <DropdownMenuSeparator />}
+                  {categories.map((cat) => (
+                    <DropdownMenuItem key={cat.id} asChild className="cursor-pointer">
+                      <Link to={`/products?category=${cat.slug}`}>{cat.name}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Link
+                to="/about"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/about') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                About
+              </Link>
           </div>
 
           {/* Actions */}
@@ -173,20 +193,25 @@ const Navbar = () => {
             className="md:hidden glass border-t border-border"
           >
             <div className="container mx-auto px-4 py-4">
-              {navLinks.map((link) => (
+              <Link to="/" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/') ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Home
+              </Link>
+              <Link to="/products" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/products') ? 'text-foreground' : 'text-muted-foreground'}`}>
+                All Products
+              </Link>
+              {categories.map((cat) => (
                 <Link
-                  key={link.path}
-                  to={link.path}
+                  key={cat.id}
+                  to={`/products?category=${cat.slug}`}
                   onClick={() => setIsOpen(false)}
-                  className={`block py-3 text-sm font-medium ${
-                    isActive(link.path)
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
+                  className="block py-2 pl-4 text-sm text-muted-foreground"
                 >
-                  {link.name}
+                  {cat.name}
                 </Link>
               ))}
+              <Link to="/about" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/about') ? 'text-foreground' : 'text-muted-foreground'}`}>
+                About
+              </Link>
               {user ? (
                 <>
                   <Link
