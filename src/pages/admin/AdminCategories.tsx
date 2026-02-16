@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCategories, type Category } from '@/hooks/useCategories';
+import ImageUpload from '@/components/admin/ImageUpload';
 import {
   Dialog,
   DialogContent,
@@ -55,6 +56,8 @@ const AdminCategories = () => {
           .update({
             name: editingCategory.name,
             slug: editingCategory.slug,
+            description: editingCategory.description || null,
+            image_url: editingCategory.image_url || null,
             sort_order: editingCategory.sort_order ?? 0,
           })
           .eq('id', editingCategory.id);
@@ -66,6 +69,8 @@ const AdminCategories = () => {
           .insert({
             name: editingCategory.name,
             slug: editingCategory.slug,
+            description: editingCategory.description || null,
+            image_url: editingCategory.image_url || null,
             sort_order: editingCategory.sort_order ?? 0,
           });
         if (error) throw error;
@@ -136,6 +141,7 @@ const AdminCategories = () => {
           <thead>
             <tr className="border-b border-border">
               <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Image</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Name</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Slug</th>
               <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
@@ -144,7 +150,7 @@ const AdminCategories = () => {
           <tbody>
             {categories.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
+                <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
                   No categories found. Add one to get started.
                 </td>
               </tr>
@@ -152,8 +158,14 @@ const AdminCategories = () => {
               categories.map((category) => (
                 <tr key={category.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
                   <td className="px-6 py-4 text-foreground">{category.sort_order}</td>
+                  <td className="px-6 py-4">
+                    {category.image_url ? (
+                      <img src={category.image_url} alt={category.name} className="w-10 h-10 rounded-lg object-cover bg-secondary" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xs text-muted-foreground">—</div>
+                    )}
+                  </td>
                   <td className="px-6 py-4 font-medium text-foreground">{category.name}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{category.slug}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(category)}>
@@ -218,6 +230,23 @@ const AdminCategories = () => {
                   onChange={(e) => setEditingCategory({ ...editingCategory, sort_order: parseInt(e.target.value) || 0 })}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="cat-description">Description</Label>
+                <Input
+                  id="cat-description"
+                  value={editingCategory.description || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                  placeholder="Short category description"
+                />
+              </div>
+              <ImageUpload
+                value={editingCategory.image_url || ''}
+                onChange={(url) => setEditingCategory({ ...editingCategory, image_url: url })}
+                label="Category Image"
+                description="Displayed on the homepage category cards"
+                bucket="site-assets"
+                folder="categories"
+              />
               <Button onClick={handleSave} disabled={isSaving} className="w-full">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {editingCategory.id ? 'Update Category' : 'Create Category'}

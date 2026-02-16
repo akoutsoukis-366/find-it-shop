@@ -39,7 +39,7 @@ const CategorySection = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map((category, index) => {
             const count = countByCategory(category.slug);
-            const image = getCategoryImage(category.slug);
+            const image = category.image_url || getCategoryImage(category.slug);
 
             return (
               <motion.div
