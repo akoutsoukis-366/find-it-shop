@@ -34,10 +34,9 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           )}
 
           {(content.hero_title_line1 || content.hero_title_line2) && (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight">
-              {content.hero_title_line1 && <span className="block sm:inline">{content.hero_title_line1}</span>}
-              {content.hero_title_line1 && content.hero_title_line2 && ' '}
-              {content.hero_title_line2 && <span className="gradient-text block sm:inline">{content.hero_title_line2}</span>}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+              {content.hero_title_line1 && <span className="block">{content.hero_title_line1}</span>}
+              {content.hero_title_line2 && <span className="gradient-text block">{content.hero_title_line2}</span>}
             </h1>
           )}
 

@@ -28,7 +28,7 @@ const FeaturesStrip = ({ content }: FeaturesStripProps) => {
             className="text-center mb-14"
           >
             {content.features_title && (
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-3">
                 {content.features_title}
               </h2>
             )}
