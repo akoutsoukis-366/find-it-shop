@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContentSettings } from '@/hooks/useContentSettings';
-import heroImage from '@/assets/hero-multi-product.jpg';
+import heroVideo from '@/assets/hero-multi-product.mp4';
 
 interface HeroSectionProps {
   content: ContentSettings;
@@ -94,12 +94,14 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20 pointer-events-none z-10 rounded-2xl" />
 
-          <img
-            src={heroImage}
-            alt="Premium tech products - holographic fans, power banks, smart trackers"
+          <video
+            src={heroVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
             className="w-full h-auto object-cover rounded-2xl"
             style={{ maxHeight: '500px' }}
-            loading="eager"
           />
 
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10 rounded-b-2xl" />
