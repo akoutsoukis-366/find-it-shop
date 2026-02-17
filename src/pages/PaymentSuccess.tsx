@@ -20,9 +20,6 @@ const PaymentSuccess = () => {
     const verifyAndSaveOrder = async () => {
       if (sessionId) {
         try {
-          console.log('[PaymentSuccess] Verifying session:', sessionId);
-          
-          // Get current user if logged in
           const { data: { session: authSession } } = await supabase.auth.getSession();
           
           const { data, error } = await supabase.functions.invoke('verify-payment', {
@@ -32,14 +29,11 @@ const PaymentSuccess = () => {
           if (error) {
             console.error('[PaymentSuccess] Error verifying payment:', error);
           } else if (data?.orderId) {
-            console.log('[PaymentSuccess] Order created:', data.orderId);
             setOrderId(data.orderId);
           }
         } catch (err) {
           console.error('[PaymentSuccess] Error calling verify-payment:', err);
         }
-      } else {
-        console.log('[PaymentSuccess] No session_id in URL');
       }
       setVerifying(false);
     };
@@ -60,7 +54,7 @@ const PaymentSuccess = () => {
               animate={{ opacity: 1 }}
             >
               <Loader2 className="w-16 h-16 mx-auto mb-6 text-primary animate-spin" />
-              <h1 className="text-2xl font-bold text-foreground">Processing your order...</h1>
+              <h1 className="text-2xl font-bold text-foreground">Επεξεργασία παραγγελίας...</h1>
             </motion.div>
           ) : (
             <>
@@ -79,7 +73,7 @@ const PaymentSuccess = () => {
                 transition={{ delay: 0.2 }}
                 className="text-4xl font-bold text-foreground mb-4"
               >
-                Payment Successful!
+                Η Πληρωμή Ολοκληρώθηκε!
               </motion.h1>
 
               <motion.p
@@ -88,10 +82,10 @@ const PaymentSuccess = () => {
                 transition={{ delay: 0.3 }}
                 className="text-xl text-muted-foreground mb-8"
               >
-                Thank you for your order. You'll receive a confirmation email shortly.
+                Ευχαριστούμε για την παραγγελία σας. Θα λάβετε email επιβεβαίωσης σύντομα.
                 {orderId && (
                   <span className="block mt-2 text-sm">
-                    Order ID: <span className="font-mono">{orderId.slice(0, 8)}...</span>
+                    Αριθμός Παραγγελίας: <span className="font-mono">{orderId.slice(0, 8)}...</span>
                   </span>
                 )}
               </motion.p>
@@ -104,11 +98,11 @@ const PaymentSuccess = () => {
               >
                 <div className="flex items-center justify-center gap-4 mb-6">
                   <Package className="w-8 h-8 text-primary" />
-                  <span className="text-lg font-medium text-foreground">Order Confirmed</span>
+                  <span className="text-lg font-medium text-foreground">Η Παραγγελία Επιβεβαιώθηκε</span>
                 </div>
                 <p className="text-muted-foreground">
-                  Your order is being processed and will be shipped soon.
-                  You'll receive tracking information via email once your order ships.
+                  Η παραγγελία σας βρίσκεται σε επεξεργασία και θα αποσταλεί σύντομα.
+                  Θα λάβετε πληροφορίες παρακολούθησης μέσω email.
                 </p>
               </motion.div>
 
@@ -120,13 +114,13 @@ const PaymentSuccess = () => {
               >
                 <Button asChild size="lg">
                   <Link to="/products">
-                    Continue Shopping
+                    Συνέχεια Αγορών
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
                   <Link to="/">
-                    Back to Home
+                    Αρχική Σελίδα
                   </Link>
                 </Button>
               </motion.div>
