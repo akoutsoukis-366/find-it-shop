@@ -239,19 +239,19 @@ const AdminProducts = () => {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog ({products.length} total)</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Products</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Manage your product catalog ({products.length} total)</p>
         </div>
-        <Button onClick={handleAddProduct}>
+        <Button onClick={handleAddProduct} size="sm" className="md:size-default">
           <Plus className="h-4 w-4" />
-          Add Product
+          <span className="hidden sm:inline">Add Product</span>
         </Button>
       </div>
 
-      <div className="relative mb-6">
+      <div className="relative mb-4 md:mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search products..."
@@ -264,9 +264,10 @@ const AdminProducts = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl border border-border overflow-hidden"
+        className="bg-card rounded-xl md:rounded-2xl border border-border overflow-hidden"
       >
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
@@ -342,6 +343,56 @@ const AdminProducts = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-border">
+          {filteredProducts.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              {searchQuery ? 'No products match your search' : 'No products found'}
+            </div>
+          ) : (
+            filteredProducts.map((product) => (
+              <div key={product.id} className="p-4 flex items-center gap-3">
+                <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                  <img
+                    src={getProductImage(product.image_url)}
+                    alt={product.name}
+                    className="w-full h-full object-contain p-1"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground truncate">{product.name}</span>
+                    <span className="text-sm font-bold text-foreground ml-2">${Number(product.price).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-secondary-foreground capitalize">
+                      {product.category}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      product.in_stock ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
+                    }`}>
+                      {product.in_stock ? 'In Stock' : 'Out'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditProduct(product)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => setDeleteDialog({ open: true, product })}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </motion.div>
 

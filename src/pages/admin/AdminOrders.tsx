@@ -342,16 +342,16 @@ const AdminOrders = () => {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Orders</h1>
-          <p className="text-muted-foreground">Manage customer orders and fulfillment</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Orders</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Manage customer orders and fulfillment</p>
         </div>
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
+      <div className="relative mb-4 md:mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search orders..."
@@ -361,60 +361,118 @@ const AdminOrders = () => {
         />
       </div>
 
-      {/* Orders Table */}
+      {/* Orders */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl border border-border overflow-hidden"
+        className="bg-card rounded-xl md:rounded-2xl border border-border overflow-hidden"
       >
         {filteredOrders.length === 0 ? (
-          <div className="p-12 text-center">
-            <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No orders yet</h3>
-            <p className="text-muted-foreground">Orders will appear here after customers complete checkout.</p>
+          <div className="p-8 md:p-12 text-center">
+            <Package className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No orders yet</h3>
+            <p className="text-sm text-muted-foreground">Orders will appear here after customers complete checkout.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-foreground font-mono text-sm">
-                      {order.id.slice(0, 8)}...
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-foreground">{order.customer_name || 'Guest'}</div>
-                        <div className="text-sm text-muted-foreground">{order.customer_email || 'N/A'}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground max-w-[200px] truncate">
-                      {order.items.map(item => `${item.name} (×${item.quantity})`).join(', ')}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-foreground">{formatPrice(order.total)}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{formatDate(order.created_at)}</td>
-                    <td className="px-6 py-4">
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Total</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Date</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-foreground font-mono text-sm">
+                        {order.id.slice(0, 8)}...
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="font-medium text-foreground">{order.customer_name || 'Guest'}</div>
+                          <div className="text-sm text-muted-foreground">{order.customer_email || 'N/A'}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-muted-foreground max-w-[200px] truncate">
+                        {order.items.map(item => `${item.name} (×${item.quantity})`).join(', ')}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-foreground">{formatPrice(order.total)}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{formatDate(order.created_at)}</td>
+                      <td className="px-6 py-4">
+                        <Select
+                          value={order.status}
+                          onValueChange={(value) => handleStatusChange(order.id, value)}
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                                {order.status}
+                              </span>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-border">
+              {filteredOrders.map((order) => (
+                <div key={order.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-muted-foreground">{order.id.slice(0, 8)}...</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-foreground">{order.customer_name || 'Guest'}</div>
+                      <div className="text-xs text-muted-foreground">{order.customer_email || 'N/A'}</div>
+                    </div>
+                    <span className="text-sm font-bold text-foreground">{formatPrice(order.total)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {order.items.map(item => `${item.name} (×${item.quantity})`).join(', ')}
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-muted-foreground">{formatDate(order.created_at)}</span>
+                    <div className="flex items-center gap-2">
                       <Select
                         value={order.status}
                         onValueChange={(value) => handleStatusChange(order.id, value)}
                       >
-                        <SelectTrigger className="w-[140px]">
-                          <SelectValue>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                              {order.status}
-                            </span>
-                          </SelectValue>
+                        <SelectTrigger className="w-[110px] h-8 text-xs">
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">Pending</SelectItem>
@@ -424,23 +482,15 @@ const AdminOrders = () => {
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => handleViewOrder(order)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewOrder(order)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </motion.div>
 

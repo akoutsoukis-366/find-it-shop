@@ -55,13 +55,13 @@ const HeroSection = ({ content }: HeroSectionProps) => {
         </motion.div>
       </div>
 
-      {/* Hero Video Section - seamlessly blended */}
+      {/* Hero Video Section - hidden on mobile for performance */}
       {heroVideoUrl && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.3 }}
-          className="relative flex-1 min-h-0 w-full flex items-center justify-center"
+          className="relative flex-1 min-h-0 w-full hidden md:flex items-center justify-center"
         >
           {/* Soft ambient glow behind video */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -69,7 +69,7 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           </div>
 
           <div className="relative max-w-3xl 2xl:max-w-4xl w-full mx-auto">
-            {/* Seamless edge blending - heavy fade on all sides */}
+            {/* Seamless edge blending */}
             <div className="absolute -inset-1 pointer-events-none z-10" style={{
               background: `
                 radial-gradient(ellipse 70% 60% at center, transparent 30%, hsl(var(--background)) 85%),
@@ -80,7 +80,6 @@ const HeroSection = ({ content }: HeroSectionProps) => {
               `
             }} />
 
-            {/* Loading spinner */}
             {!videoLoaded && (
               <div className="flex items-center justify-center" style={{ minHeight: '200px' }}>
                 <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
