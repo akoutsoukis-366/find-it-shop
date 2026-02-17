@@ -21,6 +21,8 @@ export interface DbProduct {
   rating: number;
   reviews_count: number;
   specs: unknown;
+  shipping_returns_info: string | null;
+  warranty_info: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +42,8 @@ export interface Product {
   rating: number;
   reviews: number;
   specs?: ProductSpec[];
+  shippingReturnsInfo?: string;
+  warrantyInfo?: string;
 }
 
 const parseSpecs = (specs: unknown): ProductSpec[] | undefined => {
@@ -68,6 +72,8 @@ export const dbProductToProduct = (dbProduct: DbProduct): Product => ({
   rating: Number(dbProduct.rating),
   reviews: dbProduct.reviews_count,
   specs: parseSpecs(dbProduct.specs),
+  shippingReturnsInfo: dbProduct.shipping_returns_info || undefined,
+  warrantyInfo: dbProduct.warranty_info || undefined,
 });
 
 export const useProducts = () => {
