@@ -14,14 +14,14 @@ const HeroSection = ({ content }: HeroSectionProps) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden pt-16">
+    <section className="relative h-screen flex flex-col overflow-hidden pt-16">
       {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px]" />
       </div>
 
       {/* Text Content */}
-      <div className="container mx-auto px-4 pt-12 pb-8 relative z-10">
+      <div className="container mx-auto px-4 pt-6 pb-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -86,7 +86,7 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="relative flex-1 w-full flex items-center justify-center px-4 pb-8"
+          className="relative flex-1 min-h-0 w-full flex items-center justify-center px-4 pb-4"
         >
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
@@ -120,7 +120,7 @@ const HeroSection = ({ content }: HeroSectionProps) => {
               preload="auto"
               onCanPlayThrough={() => setVideoLoaded(true)}
               className={`w-full h-auto object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0 absolute'}`}
-              style={{ maxHeight: '500px' }}
+              style={{ maxHeight: '100%' }}
             />
           </div>
         </motion.div>
