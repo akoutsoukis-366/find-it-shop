@@ -1,7 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useContentSettings } from '@/hooks/useContentSettings';
-import HeroSection from '@/components/landing/HeroSection';
 import FeaturesStrip from '@/components/landing/FeaturesStrip';
 import FeaturedProducts from '@/components/landing/FeaturedProducts';
 import CtaSection from '@/components/landing/CtaSection';
@@ -29,9 +28,28 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <EmailVerificationBanner />
       <Navbar />
-      <HeroSection content={content} />
-      <TrustSignals />
+
+      {/* Compact tagline banner */}
+      {(content.hero_description || content.hero_title_line1) && (
+        <div className="pt-20 pb-6 text-center bg-gradient-to-b from-secondary/30 to-background">
+          <div className="container mx-auto px-4">
+            {content.hero_title_line1 && (
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+                {content.hero_title_line1}
+              </h1>
+            )}
+            {content.hero_description && (
+              <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+                {content.hero_description}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+      {!content.hero_description && !content.hero_title_line1 && <div className="pt-20" />}
+
       <CategorySection />
+      <TrustSignals />
       <FeaturedProducts
         content={content}
         products={featuredProducts}
