@@ -7,11 +7,13 @@ import ProductCard from '@/components/ProductCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, Search, X } from 'lucide-react';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const cat = searchParams.get('category');
@@ -20,10 +22,13 @@ const Products = () => {
   const { products, isLoading: productsLoading } = useProducts();
   const { filterCategories, isLoading: categoriesLoading } = useCategories();
 
-  const filteredProducts =
-    selectedCategory === 'all'
-      ? products
-      : products.filter((p) => p.category === selectedCategory);
+  const filteredProducts = products
+    .filter((p) => selectedCategory === 'all' || p.category === selectedCategory)
+    .filter((p) =>
+      searchQuery.trim() === '' ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const isLoading = productsLoading || categoriesLoading;
 
@@ -34,17 +39,30 @@ const Products = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
+          {/* Search Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="max-w-xl mx-auto mb-10"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Τα Προϊόντα μας
-            </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Εξερεύνησε την πλήρη γκάμα προϊόντων μας για κάθε ανάγκη.
-            </p>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Αναζήτηση προϊόντων..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </motion.div>
 
           {/* Categories */}
