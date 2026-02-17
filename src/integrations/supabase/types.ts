@@ -144,8 +144,10 @@ export type Database = {
           price: number
           rating: number | null
           reviews_count: number | null
+          shipping_returns_info: string | null
           specs: Json | null
           updated_at: string
+          warranty_info: string | null
         }
         Insert: {
           category?: string
@@ -162,8 +164,10 @@ export type Database = {
           price: number
           rating?: number | null
           reviews_count?: number | null
+          shipping_returns_info?: string | null
           specs?: Json | null
           updated_at?: string
+          warranty_info?: string | null
         }
         Update: {
           category?: string
@@ -180,8 +184,10 @@ export type Database = {
           price?: number
           rating?: number | null
           reviews_count?: number | null
+          shipping_returns_info?: string | null
           specs?: Json | null
           updated_at?: string
+          warranty_info?: string | null
         }
         Relationships: []
       }

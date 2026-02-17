@@ -49,6 +49,8 @@ interface Product {
   rating: number;
   reviews_count: number;
   specs: ProductSpec[];
+  shipping_returns_info: string | null;
+  warranty_info: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +80,8 @@ const defaultProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'> = {
   rating: 0,
   reviews_count: 0,
   specs: [],
+  shipping_returns_info: null,
+  warranty_info: null,
 };
 
 const getProductImage = (imageUrl: string | null): string => {
@@ -164,6 +168,8 @@ const AdminProducts = () => {
             in_stock: editingProduct.in_stock,
             featured: editingProduct.featured,
             specs: validSpecs as unknown as Json,
+            shipping_returns_info: editingProduct.shipping_returns_info || null,
+            warranty_info: editingProduct.warranty_info || null,
           })
           .eq('id', editingProduct.id);
 
@@ -185,6 +191,8 @@ const AdminProducts = () => {
             in_stock: editingProduct.in_stock ?? true,
             featured: editingProduct.featured ?? false,
             specs: validSpecs as unknown as Json,
+            shipping_returns_info: editingProduct.shipping_returns_info || null,
+            warranty_info: editingProduct.warranty_info || null,
           });
 
         if (error) throw error;
@@ -559,6 +567,28 @@ const AdminProducts = () => {
                     </Button>
                   </div>
                 ))}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="shipping_returns_info">Αποστολές & Επιστροφές</Label>
+                <Textarea
+                  id="shipping_returns_info"
+                  value={editingProduct.shipping_returns_info || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, shipping_returns_info: e.target.value })}
+                  placeholder=""
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="warranty_info">Εγγύηση Καλής Λειτουργίας</Label>
+                <Textarea
+                  id="warranty_info"
+                  value={editingProduct.warranty_info || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, warranty_info: e.target.value })}
+                  placeholder=""
+                  rows={3}
+                />
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
