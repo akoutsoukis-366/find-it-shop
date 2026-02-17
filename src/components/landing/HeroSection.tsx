@@ -21,62 +21,31 @@ const HeroSection = ({ content }: HeroSectionProps) => {
       </div>
 
       {/* Text Content */}
-      <div className="container mx-auto px-4 pt-6 pb-4 relative z-10">
+      <div className="container mx-auto px-4 pt-4 pb-2 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto"
+          className="flex flex-col items-center text-center space-y-3 max-w-4xl mx-auto"
         >
-          {content.hero_badge_text && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              <span className="text-muted-foreground">{content.hero_badge_text}</span>
-            </div>
-          )}
-
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
             {content.hero_title_line1 && <span className="block">{content.hero_title_line1}</span>}
             {content.hero_title_line2 && <span className="block text-primary">{content.hero_title_line2}</span>}
           </h1>
 
-          {content.hero_description && (
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              {content.hero_description}
-            </p>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+          <div className="flex flex-row gap-3 justify-center pt-1">
             <Link to="/products">
-              <Button variant="hero" size="xl">
+              <Button variant="hero" size="lg">
                 Αγόρασε Τώρα
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/about">
-              <Button variant="glass" size="xl">
+              <Button variant="glass" size="lg">
                 Μάθε Περισσότερα
               </Button>
             </Link>
           </div>
-
-          {(content.hero_stat1_value || content.hero_stat2_value || content.hero_stat3_value) && (
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4">
-              {[
-                { value: content.hero_stat1_value, label: content.hero_stat1_label },
-                { value: content.hero_stat2_value, label: content.hero_stat2_label },
-                { value: content.hero_stat3_value, label: content.hero_stat3_label },
-              ].filter(s => s.value || s.label).map((stat, i, arr) => (
-                <div key={i} className="flex items-center gap-4 sm:gap-8">
-                  <div className="text-center">
-                    {stat.value && <div className="text-sm sm:text-base font-semibold text-foreground">{stat.value}</div>}
-                    {stat.label && <div className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{stat.label}</div>}
-                  </div>
-                  {i < arr.length - 1 && <div className="hidden sm:block w-px h-12 bg-border" />}
-                </div>
-              ))}
-            </div>
-          )}
         </motion.div>
       </div>
 
