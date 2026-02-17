@@ -13,11 +13,13 @@ import { Loader2, Search, X } from 'lucide-react';
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) setSelectedCategory(cat);
+    const q = searchParams.get('search');
+    if (q) setSearchQuery(q);
   }, [searchParams]);
   const { products, isLoading: productsLoading } = useProducts();
   const { filterCategories, isLoading: categoriesLoading } = useCategories();
