@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Menu, X, User, LogOut, Search } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { Input } from '@/components/ui/input';
 import ContactModal from '@/components/ContactModal';
 import MegaMenu from '@/components/MegaMenu';
+import SearchDropdown from '@/components/SearchDropdown';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +25,9 @@ const Navbar = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -55,6 +58,16 @@ const Navbar = () => {
     const handler = () => setContactOpen(true);
     window.addEventListener('open-contact-modal', handler);
     return () => window.removeEventListener('open-contact-modal', handler);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const checkAdminRole = async (userId: string) => {
@@ -99,15 +112,25 @@ const Navbar = () => {
 
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
-            <div className="relative w-full">
+            <div className="relative w-full" ref={searchRef}>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Αναζήτηση προϊόντων..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
                 className="pl-9 h-9 rounded-full border-border/50 bg-background/50 backdrop-blur-sm text-sm"
               />
+              {searchFocused && (
+                <SearchDropdown
+                  query={searchQuery}
+                  onSelect={() => {
+                    setSearchQuery('');
+                    setSearchFocused(false);
+                  }}
+                />
+              )}
             </div>
           </form>
 
