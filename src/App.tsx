@@ -26,7 +26,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
-
+import CookieConsent from "./components/CookieConsent";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -66,6 +66,7 @@ const App = () => (
           
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <CookieConsent />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-// Get product image from database or fallback to placeholder
+
 const getProductImage = (product: { name: string; image: string }): string => {
   if (product.image && product.image.startsWith('http')) {
     return product.image;
@@ -97,7 +97,6 @@ const Cart = () => {
   const shipping = qualifiesForFreeShipping || shippingSettings.shippingCost === 0 ? 0 : shippingSettings.shippingCost;
   const total = subtotal + shipping;
   
-  // Progress towards free shipping
   const amountToFreeShipping = shippingSettings.freeShippingThreshold > 0 
     ? Math.max(0, shippingSettings.freeShippingThreshold - subtotal)
     : 0;
@@ -105,12 +104,9 @@ const Cart = () => {
     ? Math.min(100, (subtotal / shippingSettings.freeShippingThreshold) * 100)
     : 100;
 
-  // Estimated delivery dates
   const today = new Date();
   const standardDeliveryMin = addDays(today, shippingSettings.standardShippingDaysMin);
   const standardDeliveryMax = addDays(today, shippingSettings.standardShippingDaysMax);
-  const expressDeliveryMin = addDays(today, shippingSettings.expressShippingDaysMin);
-  const expressDeliveryMax = addDays(today, shippingSettings.expressShippingDaysMax);
 
   const formatDeliveryRange = (minDate: Date, maxDate: Date) => {
     if (format(minDate, 'MMM') === format(maxDate, 'MMM')) {
@@ -124,9 +120,8 @@ const Cart = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // For logged-in users, check email verification
       if (user && !user.email_confirmed_at) {
-        toast.error('Please verify your email before placing an order. Check your inbox for the verification link.');
+        toast.error('Παρακαλώ επιβεβαιώστε το email σας πριν ολοκληρώσετε την παραγγελία.');
         setIsLoading(false);
         return;
       }
@@ -137,7 +132,6 @@ const Cart = () => {
         selectedColor: item.selectedColor,
       }));
 
-      // Get profile for prefilling if user is logged in
       let customerInfo = undefined;
       if (user) {
         const { data: profile } = await supabase
@@ -174,7 +168,7 @@ const Cart = () => {
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      toast.error('Failed to start checkout. Please try again.');
+      toast.error('Αποτυχία εκκίνησης πληρωμής. Δοκιμάστε ξανά.');
     } finally {
       setIsLoading(false);
     }
@@ -192,13 +186,13 @@ const Cart = () => {
               className="text-center py-24"
             >
               <ShoppingBag className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
-              <h1 className="text-2xl font-bold text-foreground mb-4">Your cart is empty</h1>
+              <h1 className="text-2xl font-bold text-foreground mb-4">Το καλάθι σας είναι άδειο</h1>
               <p className="text-muted-foreground mb-8">
-                Looks like you haven't added any items to your cart yet.
+                Δεν έχετε προσθέσει ακόμα προϊόντα στο καλάθι σας.
               </p>
               <Link to="/products">
                 <Button variant="hero" size="lg">
-                  Start Shopping
+                  Ξεκινήστε τις Αγορές
                 </Button>
               </Link>
             </motion.div>
@@ -215,13 +209,11 @@ const Cart = () => {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Back Button */}
           <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4" />
-            Continue Shopping
+            Συνέχεια Αγορών
           </Link>
 
-          {/* Free Shipping Progress Banner */}
           {shippingSettings.freeShippingThreshold > 0 && !settingsLoading && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -237,14 +229,14 @@ const Cart = () => {
                   <>
                     <Gift className="h-5 w-5 text-green-500" />
                     <span className="font-medium text-green-500">
-                      🎉 You've unlocked FREE shipping!
+                      🎉 Ξεκλειδώσατε ΔΩΡΕΑΝ αποστολή!
                     </span>
                   </>
                 ) : (
                   <>
                     <Truck className="h-5 w-5 text-primary" />
                     <span className="font-medium text-foreground">
-                      Add {formatPrice(amountToFreeShipping)} more for FREE shipping
+                      Προσθέστε {formatPrice(amountToFreeShipping)} ακόμα για ΔΩΡΕΑΝ αποστολή
                     </span>
                   </>
                 )}
@@ -254,20 +246,19 @@ const Cart = () => {
                 className={`h-2 ${qualifiesForFreeShipping ? '[&>div]:bg-green-500' : ''}`}
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Free shipping on orders over {formatPrice(shippingSettings.freeShippingThreshold)}
+                Δωρεάν αποστολή σε παραγγελίες άνω των {formatPrice(shippingSettings.freeShippingThreshold)}
               </p>
             </motion.div>
           )}
 
           <div className="grid lg:grid-cols-3 gap-12">
-            {/* Cart Items */}
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-foreground">
-                  Shopping Cart ({items.length})
+                  Καλάθι Αγορών ({items.length})
                 </h1>
                 <Button variant="ghost" onClick={clearCart} className="text-destructive hover:text-destructive">
-                  Clear Cart
+                  Εκκαθάριση
                 </Button>
               </div>
 
@@ -282,7 +273,6 @@ const Cart = () => {
                       exit={{ opacity: 0, x: -100 }}
                       className="flex gap-6 p-6 bg-card rounded-2xl border border-border"
                     >
-                      {/* Image */}
                       <div className="w-24 h-24 bg-secondary rounded-xl overflow-hidden flex items-center justify-center">
                         <img
                           src={getProductImage(item.product)}
@@ -291,10 +281,9 @@ const Cart = () => {
                         />
                       </div>
 
-                      {/* Details */}
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
-                        <div>
+                          <div>
                             <h3 className="font-semibold text-foreground">{item.product.name}</h3>
                           </div>
                           <span className="font-semibold text-foreground">
@@ -303,7 +292,6 @@ const Cart = () => {
                         </div>
 
                         <div className="flex items-center justify-between">
-                          {/* Quantity Controls */}
                           <div className="flex items-center gap-3">
                             <Button
                               variant="secondary"
@@ -328,7 +316,6 @@ const Cart = () => {
                             </Button>
                           </div>
 
-                          {/* Remove Button */}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -345,46 +332,44 @@ const Cart = () => {
               </div>
             </div>
 
-            {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="sticky top-24 p-6 bg-card rounded-2xl border border-border space-y-6">
-                <h2 className="text-xl font-bold text-foreground">Order Summary</h2>
+                <h2 className="text-xl font-bold text-foreground">Σύνοψη Παραγγελίας</h2>
 
                 <div className="space-y-4">
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Subtotal</span>
+                    <span>Υποσύνολο</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
                   
                   <div className="flex justify-between text-muted-foreground">
                     <span className="flex items-center gap-2">
-                      Shipping
+                      Αποστολή
                       {qualifiesForFreeShipping && (
                         <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
-                          FREE
+                          ΔΩΡΕΑΝ
                         </span>
                       )}
                     </span>
                     <span className={qualifiesForFreeShipping ? 'line-through text-muted-foreground/50' : ''}>
-                      {shipping === 0 && !qualifiesForFreeShipping ? 'Free' : formatPrice(shippingSettings.shippingCost)}
+                      {shipping === 0 && !qualifiesForFreeShipping ? 'Δωρεάν' : formatPrice(shippingSettings.shippingCost)}
                     </span>
                   </div>
                   {!qualifiesForFreeShipping && shippingSettings.freeShippingThreshold > 0 && amountToFreeShipping > 0 && (
                     <p className="text-sm text-primary flex items-center gap-1">
                       <Truck className="h-4 w-4" />
-                      Add {formatPrice(amountToFreeShipping)} more for free shipping!
+                      Προσθέστε {formatPrice(amountToFreeShipping)} ακόμα για δωρεάν αποστολή!
                     </p>
                   )}
                   
-                  {/* Estimated Delivery Dates */}
                   <div className="border-t border-border pt-4 space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <Calendar className="h-4 w-4" />
-                      Estimated Delivery
+                      Εκτιμώμενη Παράδοση
                     </div>
                     
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-foreground">Standard Shipping</span>
+                      <span className="text-foreground">Κανονική Αποστολή</span>
                       <span className="text-muted-foreground font-medium">
                         {formatDeliveryRange(standardDeliveryMin, standardDeliveryMax)}
                       </span>
@@ -393,7 +378,7 @@ const Cart = () => {
 
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between text-lg font-semibold text-foreground">
-                      <span>Total</span>
+                      <span>Σύνολο</span>
                       <span>{formatPrice(total)}</span>
                     </div>
                   </div>
@@ -409,10 +394,10 @@ const Cart = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
+                      Επεξεργασία...
                     </>
                   ) : (
-                    'Proceed to Checkout'
+                    'Ολοκλήρωση Παραγγελίας'
                   )}
                 </Button>
 

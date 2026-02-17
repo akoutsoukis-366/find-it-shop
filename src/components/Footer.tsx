@@ -56,7 +56,7 @@ const Footer = () => {
                     Επικοινωνία
                   </button>
                 </li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Συχνές Ερωτήσεις</a></li>
+                <li><Link to="/shipping" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Συχνές Ερωτήσεις</Link></li>
               </ul>
             </div>
 

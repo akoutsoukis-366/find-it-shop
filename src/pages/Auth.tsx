@@ -192,7 +192,7 @@ const Auth = () => {
       });
 
       if (signInError) throw signInError;
-      toast.success('Welcome back!');
+      toast.success('Καλώς ήρθατε!');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
@@ -214,7 +214,7 @@ const Auth = () => {
       if (resetError) throw resetError;
 
       setResetEmailSent(true);
-      toast.success('Password reset email sent!');
+      toast.success('Ο σύνδεσμος επαναφοράς κωδικού στάλθηκε!');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to send reset email';
       setError(message);
@@ -348,7 +348,7 @@ const Auth = () => {
         setJustSignedUp(false);
         
         // Set verification message and switch to login tab
-        setVerificationMessage('Account created successfully! Please check your email to verify your account before logging in.');
+        setVerificationMessage('Ο λογαριασμός δημιουργήθηκε! Ελέγξτε το email σας για να επιβεβαιώσετε τον λογαριασμό σας πριν συνδεθείτε.');
         setActiveTab('login');
       }
     } catch (err) {
@@ -373,7 +373,7 @@ const Auth = () => {
         <div className="max-w-md mx-auto">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            Πίσω στην Αρχική
           </Link>
 
           <motion.div
@@ -392,12 +392,12 @@ const Auth = () => {
                   className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Back to Login
+                  Πίσω στη Σύνδεση
                 </button>
 
-                <h2 className="text-2xl font-bold text-foreground mb-2">Reset Password</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Επαναφορά Κωδικού</h2>
                 <p className="text-muted-foreground mb-6">
-                  Enter your email address and we'll send you a link to reset your password.
+                  Εισάγετε το email σας και θα σας στείλουμε σύνδεσμο επαναφοράς κωδικού.
                 </p>
 
                 {error && (
@@ -410,9 +410,9 @@ const Auth = () => {
                 {resetEmailSent ? (
                   <div className="text-center py-8">
                     <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-foreground mb-2">Check your email</h3>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">Ελέγξτε το email σας</h3>
                     <p className="text-muted-foreground">
-                      We've sent a password reset link to <strong>{forgotEmail}</strong>
+                      Στείλαμε σύνδεσμο επαναφοράς κωδικού στο <strong>{forgotEmail}</strong>
                     </p>
                   </div>
                 ) : (
@@ -436,11 +436,11 @@ const Auth = () => {
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        'Send Reset Link'
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Αποστολή...
+                      </>
+                    ) : (
+                      'Αποστολή Συνδέσμου'
                       )}
                     </Button>
                   </form>
@@ -449,8 +449,8 @@ const Auth = () => {
             ) : (
               <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setError(null); setVerificationMessage(null); }} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  <TabsTrigger value="login">Σύνδεση</TabsTrigger>
+                  <TabsTrigger value="signup">Εγγραφή</TabsTrigger>
                 </TabsList>
 
                 {verificationMessage && (
@@ -505,10 +505,10 @@ const Auth = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
+                        Σύνδεση...
                       </>
                     ) : (
-                      'Sign In'
+                      'Σύνδεση'
                     )}
                   </Button>
 
@@ -518,7 +518,7 @@ const Auth = () => {
                       onClick={() => setShowForgotPassword(true)}
                       className="text-sm text-primary hover:underline"
                     >
-                      Forgot your password?
+                      Ξεχάσατε τον κωδικό σας;
                     </button>
                   </div>
                 </form>
@@ -553,7 +553,7 @@ const Auth = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password *</Label>
+                      <Label htmlFor="signup-password">Κωδικός *</Label>
                       <Input
                         id="signup-password"
                         type="password"
@@ -565,7 +565,7 @@ const Auth = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm *</Label>
+                      <Label htmlFor="confirm-password">Επιβεβαίωση *</Label>
                       <Input
                         id="confirm-password"
                         type="password"
@@ -577,16 +577,16 @@ const Auth = () => {
                     </div>
 
                     <div className="col-span-2 border-t border-border pt-4 mt-2">
-                      <h3 className="text-sm font-medium text-foreground mb-4">Shipping Details (Optional)</h3>
+                      <h3 className="text-sm font-medium text-foreground mb-4">Στοιχεία Αποστολής (Προαιρετικά)</h3>
                     </div>
 
                     <div className="col-span-2 space-y-2">
-                      <Label htmlFor="full-name">Full Name</Label>
+                      <Label htmlFor="full-name">Ονοματεπώνυμο</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="full-name"
-                          placeholder="John Doe"
+                          placeholder="Γιάννης Παπαδόπουλος"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           className="pl-10"
@@ -595,7 +595,7 @@ const Auth = () => {
                     </div>
 
                     <div className="col-span-2 space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
+                      <Label htmlFor="phone">Τηλέφωνο</Label>
                       <div className="flex gap-2">
                         <Select value={phoneCountry} onValueChange={setPhoneCountry}>
                           <SelectTrigger className="w-[140px]">
@@ -635,12 +635,12 @@ const Auth = () => {
                     </div>
 
                     <div className="col-span-2 space-y-2">
-                      <Label htmlFor="address1">Address Line 1</Label>
+                      <Label htmlFor="address1">Διεύθυνση</Label>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="address1"
-                          placeholder="123 Main St"
+                          placeholder="Οδός Ερμού 15"
                           value={addressLine1}
                           onChange={(e) => setAddressLine1(e.target.value)}
                           className="pl-10"
@@ -649,50 +649,50 @@ const Auth = () => {
                     </div>
 
                     <div className="col-span-2 space-y-2">
-                      <Label htmlFor="address2">Address Line 2</Label>
+                      <Label htmlFor="address2">Διεύθυνση 2</Label>
                       <Input
                         id="address2"
-                        placeholder="Apt 4B"
+                        placeholder="Όροφος 2"
                         value={addressLine2}
                         onChange={(e) => setAddressLine2(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
+                      <Label htmlFor="city">Πόλη</Label>
                       <Input
                         id="city"
-                        placeholder="New York"
+                        placeholder="Αθήνα"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
+                      <Label htmlFor="state">Περιοχή</Label>
                       <Input
                         id="state"
-                        placeholder="NY"
+                        placeholder="Αττική"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="postal">Postal Code</Label>
+                      <Label htmlFor="postal">Τ.Κ.</Label>
                       <Input
                         id="postal"
-                        placeholder="10001"
+                        placeholder="10563"
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
+                      <Label htmlFor="country">Χώρα</Label>
                       <Select value={country} onValueChange={setCountry}>
                         <SelectTrigger id="country">
-                          <SelectValue placeholder="Select country" />
+                          <SelectValue placeholder="Επιλέξτε χώρα" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px]">
                           {countries.map((c) => (
@@ -713,10 +713,10 @@ const Auth = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating account...
+                        Δημιουργία λογαριασμού...
                       </>
                     ) : (
-                      'Create Account'
+                      'Δημιουργία Λογαριασμού'
                     )}
                   </Button>
                 </form>
