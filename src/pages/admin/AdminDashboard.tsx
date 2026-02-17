@@ -116,35 +116,35 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening.</p>
+    <div className="p-4 md:p-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Welcome back! Here's what's happening.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="p-6 bg-card rounded-2xl border border-border"
+            className="p-4 md:p-6 bg-card rounded-xl md:rounded-2xl border border-border"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <stat.icon className="h-6 w-6 text-primary" />
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center">
+                <stat.icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
               </div>
-              <div className={`flex items-center gap-1 text-sm ${
+              <div className={`flex items-center gap-1 text-xs md:text-sm ${
                 stat.trend === 'up' ? 'text-success' : stat.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
               }`}>
-                {stat.trend === 'up' && <ArrowUp className="h-4 w-4" />}
+                {stat.trend === 'up' && <ArrowUp className="h-3 w-3 md:h-4 md:w-4" />}
                 {stat.change}
               </div>
             </div>
-            <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
-            <div className="text-sm text-muted-foreground">{stat.title}</div>
+            <div className="text-xl md:text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+            <div className="text-xs md:text-sm text-muted-foreground">{stat.title}</div>
           </motion.div>
         ))}
       </div>
@@ -154,50 +154,74 @@ const AdminDashboard = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-card rounded-2xl border border-border overflow-hidden"
+        className="bg-card rounded-xl md:rounded-2xl border border-border overflow-hidden"
       >
-        <div className="p-6 border-b border-border">
-          <h2 className="text-xl font-bold text-foreground">Recent Orders</h2>
+        <div className="p-4 md:p-6 border-b border-border">
+          <h2 className="text-lg md:text-xl font-bold text-foreground">Recent Orders</h2>
         </div>
         {orders.length === 0 ? (
-          <div className="p-12 text-center">
-            <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No orders yet</h3>
-            <p className="text-muted-foreground">Orders will appear here after customers complete checkout.</p>
+          <div className="p-8 md:p-12 text-center">
+            <ShoppingCart className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No orders yet</h3>
+            <p className="text-sm text-muted-foreground">Orders will appear here after customers complete checkout.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Amount</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-foreground font-mono">
-                      {order.id.slice(0, 8)}...
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{order.customer_name || 'Guest'}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {order.items.map(item => item.name).join(', ')}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-foreground">{formatPrice(order.total)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </td>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Order ID</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Customer</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Products</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Amount</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-foreground font-mono">
+                        {order.id.slice(0, 8)}...
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{order.customer_name || 'Guest'}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        {order.items.map(item => item.name).join(', ')}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-foreground">{formatPrice(order.total)}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-border">
+              {orders.map((order) => (
+                <div key={order.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-muted-foreground">{order.id.slice(0, 8)}...</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">{order.customer_name || 'Guest'}</span>
+                    <span className="text-sm font-bold text-foreground">{formatPrice(order.total)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {order.items.map(item => item.name).join(', ')}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </motion.div>
     </div>
