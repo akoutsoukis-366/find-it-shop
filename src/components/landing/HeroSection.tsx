@@ -90,9 +90,17 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
         </div>
 
-        <div className="relative max-w-5xl 2xl:max-w-6xl w-full mx-auto">
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20 pointer-events-none z-10 rounded-2xl" />
+        <div className="relative max-w-5xl 2xl:max-w-6xl w-full mx-auto overflow-hidden rounded-2xl">
+          {/* Edge-blending gradients — make any video melt into the page */}
+          <div className="absolute inset-0 pointer-events-none z-10" style={{
+            background: `
+              radial-gradient(ellipse at center, transparent 40%, hsl(var(--background)) 100%),
+              linear-gradient(to top, hsl(var(--background)) 0%, transparent 30%),
+              linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 20%),
+              linear-gradient(to left, hsl(var(--background)) 0%, transparent 15%),
+              linear-gradient(to right, hsl(var(--background)) 0%, transparent 15%)
+            `
+          }} />
 
           <video
             src={heroVideo}
@@ -100,11 +108,9 @@ const HeroSection = ({ content }: HeroSectionProps) => {
             loop
             muted
             playsInline
-            className="w-full h-auto object-cover rounded-2xl"
+            className="w-full h-auto object-cover"
             style={{ maxHeight: '500px' }}
           />
-
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10 rounded-b-2xl" />
         </div>
       </motion.div>
     </section>
