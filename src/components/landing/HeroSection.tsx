@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContentSettings } from '@/hooks/useContentSettings';
+import heroImage from '@/assets/hero-multi-product.jpg';
 
 interface HeroSectionProps {
   content: ContentSettings;
@@ -80,34 +81,26 @@ const HeroSection = ({ content }: HeroSectionProps) => {
 
       {/* Hero Video Section */}
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, delay: 0.2 }}
         className="relative flex-1 w-full flex items-center justify-center px-4 pb-8"
       >
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
         </div>
 
-        <div className="relative max-w-4xl 2xl:max-w-6xl w-full mx-auto">
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50 pointer-events-none z-10 rounded-2xl" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
+        <div className="relative max-w-5xl 2xl:max-w-6xl w-full mx-auto">
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30 pointer-events-none z-10 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20 pointer-events-none z-10 rounded-2xl" />
 
-          {heroVideoUrl ? (
-            <video
-              src={heroVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-auto object-contain rounded-2xl"
-              style={{ maxHeight: '500px' }}
-            />
-          ) : (
-            <div className="w-full h-[400px] bg-muted/50 rounded-2xl flex items-center justify-center">
-              <p className="text-muted-foreground">Δεν έχει οριστεί video</p>
-            </div>
-          )}
+          <img
+            src={heroImage}
+            alt="Premium tech products - holographic fans, power banks, smart trackers"
+            className="w-full h-auto object-cover rounded-2xl"
+            style={{ maxHeight: '500px' }}
+            loading="eager"
+          />
 
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10 rounded-b-2xl" />
         </div>
