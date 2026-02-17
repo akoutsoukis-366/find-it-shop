@@ -117,8 +117,8 @@ const HeroSection = ({ content }: HeroSectionProps) => {
               loop
               muted
               playsInline
-              preload="metadata"
-              onCanPlay={() => setVideoLoaded(true)}
+              preload="auto"
+              onCanPlayThrough={() => setVideoLoaded(true)}
               className={`w-full h-auto object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0 absolute'}`}
               style={{ maxHeight: '500px' }}
             />
