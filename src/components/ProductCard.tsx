@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { Product, useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -54,14 +54,6 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
           {/* Content */}
           <div className="p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-warning text-warning" />
-                <span className="text-sm font-medium text-foreground">{product.rating}</span>
-              </div>
-              <span className="text-sm text-muted-foreground">({product.reviews} reviews)</span>
-            </div>
-
             <div>
               <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
                 {product.name}
