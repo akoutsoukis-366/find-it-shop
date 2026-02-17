@@ -9,6 +9,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useContentSettings } from '@/hooks/useContentSettings';
 import { useCategories } from '@/hooks/useCategories';
 import { Input } from '@/components/ui/input';
+import ContactModal from '@/components/ContactModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ const Navbar = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [contactOpen, setContactOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -46,6 +48,12 @@ const Navbar = () => {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setContactOpen(true);
+    window.addEventListener('open-contact-modal', handler);
+    return () => window.removeEventListener('open-contact-modal', handler);
   }, []);
 
   const checkAdminRole = async (userId: string) => {
@@ -104,24 +112,16 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-              <Link
-                to="/"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Home
-              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors ${
                   location.pathname === '/products' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}>
-                  Products
+                  Προϊόντα
                   <ChevronDown className="h-3.5 w-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-popover border border-border z-50 w-48">
                   <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/products">All Products</Link>
+                    <Link to="/products">Όλα τα Προϊόντα</Link>
                   </DropdownMenuItem>
                   {categories.length > 0 && <DropdownMenuSeparator />}
                   {categories.map((cat) => (
@@ -137,8 +137,17 @@ const Navbar = () => {
                   isActive('/about') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                About
+                Σχετικά
               </Link>
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('open-contact-modal');
+                  window.dispatchEvent(event);
+                }}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Επικοινωνία
+              </button>
           </div>
 
           {/* Actions */}
@@ -156,30 +165,30 @@ const Navbar = () => {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/profile">My Profile</Link>
+                    <Link to="/profile">Το Προφίλ μου</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/orders">My Orders</Link>
+                    <Link to="/orders">Οι Παραγγελίες μου</Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link to="/admin">Admin Dashboard</Link>
+                        <Link to="/admin">Πίνακας Διαχείρισης</Link>
                       </DropdownMenuItem>
                     </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    Αποσύνδεση
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link to="/auth" className="hidden md:block">
                 <Button variant="ghost" size="sm">
-                  Sign In
+                  Σύνδεση
                 </Button>
               </Link>
             )}
@@ -217,11 +226,8 @@ const Navbar = () => {
             className="md:hidden glass border-t border-border"
           >
             <div className="container mx-auto px-4 py-4">
-              <Link to="/" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/') ? 'text-foreground' : 'text-muted-foreground'}`}>
-                Home
-              </Link>
               <Link to="/products" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/products') ? 'text-foreground' : 'text-muted-foreground'}`}>
-                All Products
+                Όλα τα Προϊόντα
               </Link>
               {categories.map((cat) => (
                 <Link
@@ -234,8 +240,17 @@ const Navbar = () => {
                 </Link>
               ))}
               <Link to="/about" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/about') ? 'text-foreground' : 'text-muted-foreground'}`}>
-                About
+                Σχετικά
               </Link>
+              <button
+                onClick={() => {
+                  setContactOpen(true);
+                  setIsOpen(false);
+                }}
+                className="block py-3 text-sm font-medium text-muted-foreground w-full text-left"
+              >
+                Επικοινωνία
+              </button>
               {user ? (
                 <>
                   <Link
@@ -243,14 +258,14 @@ const Navbar = () => {
                     onClick={() => setIsOpen(false)}
                     className="block py-3 text-sm font-medium text-muted-foreground"
                   >
-                    My Profile
+                    Το Προφίλ μου
                   </Link>
                   <Link
                     to="/orders"
                     onClick={() => setIsOpen(false)}
                     className="block py-3 text-sm font-medium text-muted-foreground"
                   >
-                    My Orders
+                    Οι Παραγγελίες μου
                   </Link>
                   {isAdmin && (
                     <Link
@@ -258,7 +273,7 @@ const Navbar = () => {
                       onClick={() => setIsOpen(false)}
                       className="block py-3 text-sm font-medium text-muted-foreground"
                     >
-                      Admin Dashboard
+                      Πίνακας Διαχείρισης
                     </Link>
                   )}
                   <button
@@ -268,7 +283,7 @@ const Navbar = () => {
                     }}
                     className="block py-3 text-sm font-medium text-destructive w-full text-left"
                   >
-                    Sign Out
+                    Αποσύνδεση
                   </button>
                 </>
               ) : (
@@ -277,13 +292,15 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                   className="block py-3 text-sm font-medium text-muted-foreground"
                 >
-                  Sign In
+                  Σύνδεση
                 </Link>
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </nav>
   );
 };
