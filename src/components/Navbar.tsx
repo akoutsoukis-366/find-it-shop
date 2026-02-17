@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cartStore';
@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useContentSettings } from '@/hooks/useContentSettings';
 import { useCategories } from '@/hooks/useCategories';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -62,7 +64,15 @@ const Navbar = () => {
     navigate('/');
   };
 
-
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/products');
+    }
+    setSearchQuery('');
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -71,12 +81,26 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
             {content.logo_url && (
               <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
             )}
             {content.store_name && <span className="text-xl font-bold text-foreground">{content.store_name}</span>}
           </Link>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Αναζήτηση προϊόντων..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 rounded-full border-border/50 bg-background/50 backdrop-blur-sm text-sm"
+              />
+            </div>
+          </form>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
