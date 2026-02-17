@@ -33,7 +33,13 @@ const HeroSection = ({ content }: HeroSectionProps) => {
             {content.hero_title_line2 && <span className="block text-primary">{content.hero_title_line2}</span>}
           </h1>
 
-          <div className="flex flex-row gap-3 justify-center pt-1">
+          {content.hero_description && (
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+              {content.hero_description}
+            </p>
+          )}
+
+          <div className="flex flex-row gap-3 justify-center">
             <Link to="/products">
               <Button variant="hero" size="lg">
                 Αγόρασε Τώρα
@@ -61,7 +67,7 @@ const HeroSection = ({ content }: HeroSectionProps) => {
             <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
           </div>
 
-          <div className="relative max-w-5xl 2xl:max-w-6xl w-full mx-auto overflow-hidden rounded-2xl">
+          <div className="relative max-w-3xl 2xl:max-w-4xl w-full mx-auto overflow-hidden rounded-2xl">
             {/* Edge-blending gradients */}
             <div className="absolute inset-0 pointer-events-none z-10" style={{
               background: `
