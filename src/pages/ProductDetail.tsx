@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Minus, Plus, Star, Truck, Shield, RefreshCcw, Loader2 } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Truck, Shield, RefreshCcw, Loader2 } from 'lucide-react';
 import { useProduct } from '@/hooks/useProducts';
 import { useCartStore } from '@/store/cartStore';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -137,13 +137,6 @@ const ProductDetail = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                   {product.name}
                 </h1>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 fill-warning text-warning" />
-                    <span className="font-medium text-foreground">{product.rating}</span>
-                  </div>
-                  <span className="text-muted-foreground">({product.reviews} reviews)</span>
-                </div>
               </div>
 
               <p className="text-lg text-muted-foreground">{product.description}</p>
