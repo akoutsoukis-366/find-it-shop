@@ -1,10 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Search } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useContentSettings } from '@/hooks/useContentSettings';
@@ -19,7 +18,6 @@ import {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
@@ -27,17 +25,6 @@ const Navbar = () => {
   const totalItems = useCartStore((state) => state.getTotalItems());
   const { content } = useContentSettings();
   const { categories } = useCategories();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate('/products');
-    }
-    setSearchQuery('');
-    setIsOpen(false);
-  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -84,26 +71,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
+          <Link to="/" className="flex items-center gap-2">
             {content.logo_url && (
               <img src={content.logo_url} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
             )}
             {content.store_name && <span className="text-xl font-bold text-foreground">{content.store_name}</span>}
           </Link>
-
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-6">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Αναζήτηση προϊόντων..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 h-9 text-sm rounded-full border-border/50 bg-secondary/50"
-              />
-            </div>
-          </form>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
@@ -220,19 +193,6 @@ const Navbar = () => {
             className="md:hidden glass border-t border-border"
           >
             <div className="container mx-auto px-4 py-4">
-              {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="mb-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Αναζήτηση προϊόντων..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 h-9 text-sm rounded-full border-border/50 bg-secondary/50"
-                  />
-                </div>
-              </form>
               <Link to="/" onClick={() => setIsOpen(false)} className={`block py-3 text-sm font-medium ${isActive('/') ? 'text-foreground' : 'text-muted-foreground'}`}>
                 Home
               </Link>

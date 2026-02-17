@@ -46,21 +46,8 @@ const HeroSection = ({ content }: HeroSectionProps) => {
             </div>
           )}
 
-          {(content.hero_title_line1 || content.hero_title_line2) && (
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-              {content.hero_title_line1 && <span className="block">{content.hero_title_line1}</span>}
-              {content.hero_title_line2 && <span className="gradient-text block">{content.hero_title_line2}</span>}
-            </h1>
-          )}
-
-          {content.hero_description && (
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              {content.hero_description}
-            </p>
-          )}
-
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="w-full max-w-xl">
+          {/* Search Bar replacing title */}
+          <form onSubmit={handleSearch} className="w-full max-w-2xl">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -68,10 +55,16 @@ const HeroSection = ({ content }: HeroSectionProps) => {
                 placeholder="Αναζήτηση προϊόντων..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 h-12 text-base rounded-full border-border/50 bg-background/50 backdrop-blur-sm"
+                className="pl-12 pr-4 h-14 text-lg rounded-full border-border/50 bg-background/50 backdrop-blur-sm"
               />
             </div>
           </form>
+
+          {content.hero_description && (
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+              {content.hero_description}
+            </p>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
             <Link to="/products">
