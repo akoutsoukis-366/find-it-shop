@@ -1,9 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContentSettings } from '@/hooks/useContentSettings';
-import heroVideo from '@/assets/hero-multi-product.mp4';
 
 interface HeroSectionProps {
   content: ContentSettings;
@@ -11,6 +11,7 @@ interface HeroSectionProps {
 
 const HeroSection = ({ content }: HeroSectionProps) => {
   const heroVideoUrl = content.hero_video_url || '';
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden pt-16">
@@ -80,39 +81,50 @@ const HeroSection = ({ content }: HeroSectionProps) => {
       </div>
 
       {/* Hero Video Section */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, delay: 0.2 }}
-        className="relative flex-1 w-full flex items-center justify-center px-4 pb-8"
-      >
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
-        </div>
+      {heroVideoUrl && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="relative flex-1 w-full flex items-center justify-center px-4 pb-8"
+        >
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[600px] h-[600px] bg-gradient-radial from-primary/30 via-primary/10 to-transparent blur-[100px]" />
+          </div>
 
-        <div className="relative max-w-5xl 2xl:max-w-6xl w-full mx-auto overflow-hidden rounded-2xl">
-          {/* Edge-blending gradients — make any video melt into the page */}
-          <div className="absolute inset-0 pointer-events-none z-10" style={{
-            background: `
-              radial-gradient(ellipse at center, transparent 40%, hsl(var(--background)) 100%),
-              linear-gradient(to top, hsl(var(--background)) 0%, transparent 30%),
-              linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 20%),
-              linear-gradient(to left, hsl(var(--background)) 0%, transparent 15%),
-              linear-gradient(to right, hsl(var(--background)) 0%, transparent 15%)
-            `
-          }} />
+          <div className="relative max-w-5xl 2xl:max-w-6xl w-full mx-auto overflow-hidden rounded-2xl">
+            {/* Edge-blending gradients */}
+            <div className="absolute inset-0 pointer-events-none z-10" style={{
+              background: `
+                radial-gradient(ellipse at center, transparent 40%, hsl(var(--background)) 100%),
+                linear-gradient(to top, hsl(var(--background)) 0%, transparent 30%),
+                linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 20%),
+                linear-gradient(to left, hsl(var(--background)) 0%, transparent 15%),
+                linear-gradient(to right, hsl(var(--background)) 0%, transparent 15%)
+              `
+            }} />
 
-          <video
-            src={heroVideo}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-auto object-cover"
-            style={{ maxHeight: '500px' }}
-          />
-        </div>
-      </motion.div>
+            {/* Loading spinner */}
+            {!videoLoaded && (
+              <div className="flex items-center justify-center" style={{ minHeight: '300px' }}>
+                <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+              </div>
+            )}
+
+            <video
+              src={heroVideoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              onCanPlay={() => setVideoLoaded(true)}
+              className={`w-full h-auto object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0 absolute'}`}
+              style={{ maxHeight: '500px' }}
+            />
+          </div>
+        </motion.div>
+      )}
     </section>
   );
 };
