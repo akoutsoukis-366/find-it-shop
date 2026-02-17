@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ContentSettings } from '@/hooks/useContentSettings';
 
 interface HeroSectionProps {
@@ -12,17 +10,6 @@ interface HeroSectionProps {
 
 const HeroSection = ({ content }: HeroSectionProps) => {
   const heroVideoUrl = content.hero_video_url || '';
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate('/products');
-    }
-  };
 
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden pt-16">
@@ -46,19 +33,10 @@ const HeroSection = ({ content }: HeroSectionProps) => {
             </div>
           )}
 
-          {/* Search Bar replacing title */}
-          <form onSubmit={handleSearch} className="w-full max-w-2xl">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Αναζήτηση προϊόντων..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 h-14 text-lg rounded-full border-border/50 bg-background/50 backdrop-blur-sm"
-              />
-            </div>
-          </form>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground">
+            {content.hero_title_line1 && <span className="block">{content.hero_title_line1}</span>}
+            {content.hero_title_line2 && <span className="block text-primary">{content.hero_title_line2}</span>}
+          </h1>
 
           {content.hero_description && (
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
