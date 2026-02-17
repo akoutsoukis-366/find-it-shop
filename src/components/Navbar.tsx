@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Search } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cartStore';
@@ -10,6 +10,7 @@ import { useContentSettings } from '@/hooks/useContentSettings';
 import { useCategories } from '@/hooks/useCategories';
 import { Input } from '@/components/ui/input';
 import ContactModal from '@/components/ContactModal';
+import MegaMenu from '@/components/MegaMenu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,25 +113,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-              <DropdownMenu>
-                <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-                  location.pathname === '/products' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}>
-                  Προϊόντα
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-popover border border-border z-50 w-48">
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/products">Όλα τα Προϊόντα</Link>
-                  </DropdownMenuItem>
-                  {categories.length > 0 && <DropdownMenuSeparator />}
-                  {categories.map((cat) => (
-                    <DropdownMenuItem key={cat.id} asChild className="cursor-pointer">
-                      <Link to={`/products?category=${cat.slug}`}>{cat.name}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <MegaMenu isActive={location.pathname === '/products'} />
               <Link
                 to="/about"
                 className={`text-sm font-medium transition-colors ${
