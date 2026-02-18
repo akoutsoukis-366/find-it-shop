@@ -11,6 +11,7 @@ interface Product {
   id: string;
   name: string;
   price: number;
+  stock_quantity: number;
 }
 
 // Input validation functions
@@ -164,7 +165,7 @@ serve(async (req) => {
 
     const { data: productsData, error: productsError } = await supabase
       .from('products')
-      .select('id, name, price');
+      .select('id, name, price, stock_quantity');
 
     if (productsError) {
       console.error("[CREATE-CHECKOUT] Error fetching products:", productsError);
@@ -185,6 +186,17 @@ serve(async (req) => {
     const items = body.items.map((item: unknown, index: number) => 
       validateCartItem(item, index, validProductIds)
     );
+
+    // Validate stock availability for each item
+    for (const item of items) {
+      const product = productMap.get(item.productId);
+      if (product && product.stock_quantity < item.quantity) {
+        throw new Error(`Insufficient stock for "${product.name}". Available: ${product.stock_quantity}, requested: ${item.quantity}`);
+      }
+      if (product && product.stock_quantity === 0) {
+        throw new Error(`"${product.name}" is out of stock`);
+      }
+    }
     
     const customerInfo = validateCustomerInfo(body.customerInfo);
     
