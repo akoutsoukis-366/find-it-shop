@@ -146,6 +146,7 @@ export type Database = {
           reviews_count: number | null
           shipping_returns_info: string | null
           specs: Json | null
+          stock_quantity: number
           updated_at: string
           warranty_info: string | null
         }
@@ -166,6 +167,7 @@ export type Database = {
           reviews_count?: number | null
           shipping_returns_info?: string | null
           specs?: Json | null
+          stock_quantity?: number
           updated_at?: string
           warranty_info?: string | null
         }
@@ -186,6 +188,7 @@ export type Database = {
           reviews_count?: number | null
           shipping_returns_info?: string | null
           specs?: Json | null
+          stock_quantity?: number
           updated_at?: string
           warranty_info?: string | null
         }
@@ -297,6 +300,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      reduce_stock: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
       }
     }
     Enums: {

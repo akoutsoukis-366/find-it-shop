@@ -334,6 +334,29 @@ serve(async (req) => {
 
     console.log("[VERIFY-PAYMENT] Order created:", data.id);
 
+    // Reduce stock quantities based on cart metadata
+    const cartMeta = session.metadata?.cart_items;
+    if (cartMeta) {
+      const cartItems = cartMeta.split(',').map((entry: string) => {
+        const [productId, qty] = entry.split(':');
+        return { productId, quantity: parseInt(qty) || 0 };
+      });
+
+      for (const cartItem of cartItems) {
+        if (cartItem.productId && cartItem.quantity > 0) {
+          const { error: stockError } = await supabase.rpc('reduce_stock', {
+            p_product_id: cartItem.productId,
+            p_quantity: cartItem.quantity,
+          });
+          if (stockError) {
+            console.error(`[VERIFY-PAYMENT] Failed to reduce stock for ${cartItem.productId}:`, stockError);
+          } else {
+            console.log(`[VERIFY-PAYMENT] Reduced stock for ${cartItem.productId} by ${cartItem.quantity}`);
+          }
+        }
+      }
+    }
+
     // Get admin contact email from settings
     const { data: emailSettings } = await supabase
       .from("settings")
