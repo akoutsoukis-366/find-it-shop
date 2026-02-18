@@ -61,7 +61,7 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.3 }}
-          className="relative flex-1 min-h-0 w-full hidden md:flex items-center justify-center"
+          className="relative flex-1 min-h-0 w-full flex items-center justify-center"
         >
           {/* Soft ambient glow behind video */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
