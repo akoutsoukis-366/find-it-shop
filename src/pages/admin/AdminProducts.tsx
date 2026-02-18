@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,6 +51,7 @@ interface Product {
   specs: ProductSpec[];
   shipping_returns_info: string | null;
   warranty_info: string | null;
+  stock_quantity: number;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +83,7 @@ const defaultProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'> = {
   specs: [],
   shipping_returns_info: null,
   warranty_info: null,
+  stock_quantity: 0,
 };
 
 const getProductImage = (imageUrl: string | null): string => {
@@ -100,10 +102,31 @@ const AdminProducts = () => {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; product: Product | null }>({ open: false, product: null });
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const { categories } = useCategories();
+  const [updatingStock, setUpdatingStock] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  const handleStockChange = async (productId: string, newQuantity: number) => {
+    const qty = Math.max(0, newQuantity);
+    setUpdatingStock(productId);
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ stock_quantity: qty })
+        .eq('id', productId);
+      if (error) throw error;
+      setProducts(prev => prev.map(p => 
+        p.id === productId ? { ...p, stock_quantity: qty, in_stock: qty > 0 } : p
+      ));
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      toast.error('Failed to update stock');
+    } finally {
+      setUpdatingStock(null);
+    }
+  };
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -165,11 +188,11 @@ const AdminProducts = () => {
             media_urls: editingProduct.media_urls || [],
             category: editingProduct.category,
             colors: editingProduct.colors || [],
-            in_stock: editingProduct.in_stock,
             featured: editingProduct.featured,
             specs: validSpecs as unknown as Json,
             shipping_returns_info: editingProduct.shipping_returns_info || null,
             warranty_info: editingProduct.warranty_info || null,
+            stock_quantity: editingProduct.stock_quantity ?? 0,
           })
           .eq('id', editingProduct.id);
 
@@ -188,11 +211,11 @@ const AdminProducts = () => {
             media_urls: editingProduct.media_urls || [],
             category: editingProduct.category || 'essential',
             colors: editingProduct.colors || [],
-            in_stock: editingProduct.in_stock ?? true,
             featured: editingProduct.featured ?? false,
             specs: validSpecs as unknown as Json,
             shipping_returns_info: editingProduct.shipping_returns_info || null,
             warranty_info: editingProduct.warranty_info || null,
+            stock_quantity: editingProduct.stock_quantity ?? 0,
           });
 
         if (error) throw error;
@@ -324,11 +347,41 @@ const AdminProducts = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        product.in_stock ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
-                      }`}>
-                        {product.in_stock ? 'In Stock' : 'Out of Stock'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          disabled={updatingStock === product.id || product.stock_quantity <= 0}
+                          onClick={() => handleStockChange(product.id, product.stock_quantity - 1)}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0"
+                          className="w-16 h-7 text-center text-sm px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          value={product.stock_quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            handleStockChange(product.id, val);
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          disabled={updatingStock === product.id}
+                          onClick={() => handleStockChange(product.id, product.stock_quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        {product.stock_quantity === 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-destructive/20 text-destructive">
+                            Out
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-foreground">{product.rating}</td>
                     <td className="px-6 py-4">
@@ -379,9 +432,9 @@ const AdminProducts = () => {
                       {product.category}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                      product.in_stock ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
+                      product.stock_quantity > 0 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                     }`}>
-                      {product.in_stock ? 'In Stock' : 'Out'}
+                      Qty: {product.stock_quantity}
                     </span>
                   </div>
                 </div>
@@ -493,13 +546,17 @@ const AdminProducts = () => {
                 folder="products"
               />
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="in_stock">In Stock</Label>
-                <Switch
-                  id="in_stock"
-                  checked={editingProduct.in_stock ?? true}
-                  onCheckedChange={(checked) => setEditingProduct({ ...editingProduct, in_stock: checked })}
+              <div className="space-y-2">
+                <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                <Input
+                  id="stock_quantity"
+                  type="number"
+                  min="0"
+                  value={editingProduct.stock_quantity ?? 0}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, stock_quantity: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
                 />
+                <p className="text-xs text-muted-foreground">Product will automatically be marked out of stock when quantity reaches 0</p>
               </div>
 
               <div className="flex items-center justify-between">

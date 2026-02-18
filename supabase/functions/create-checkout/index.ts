@@ -300,6 +300,11 @@ serve(async (req) => {
     // Use domestic or all countries based on international_shipping setting
     const allowedCountries = internationalShipping ? ALL_COUNTRIES : DOMESTIC_COUNTRIES;
 
+    // Build cart metadata for stock tracking (productId:quantity pairs)
+    const cartMeta = items.map((item: { productId: string; quantity: number }) => 
+      `${item.productId}:${item.quantity}`
+    ).join(',');
+
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       line_items: lineItems,
       mode: "payment",
@@ -310,6 +315,9 @@ serve(async (req) => {
       },
       phone_number_collection: {
         enabled: true,
+      },
+      metadata: {
+        cart_items: cartMeta,
       },
     };
 
