@@ -24,7 +24,8 @@ function generateOrderConfirmationEmail(
   shipping: number,
   total: number,
   currency: string,
-  shippingAddress: any
+  shippingAddress: any,
+  storeName: string
 ): string {
   const itemsHtml = items.map(item => `
     <tr>
@@ -42,7 +43,7 @@ function generateOrderConfirmationEmail(
       ${shippingAddress.city || ''}, ${shippingAddress.state || ''} ${shippingAddress.postal_code || ''}<br>
       ${shippingAddress.country || ''}
     </p>
-  ` : '<p style="color: #6b7280; font-family: Arial, sans-serif;">No shipping address provided</p>';
+  ` : '<p style="color: #6b7280; font-family: Arial, sans-serif;">Δεν δόθηκε διεύθυνση αποστολής</p>';
 
   return `
     <!DOCTYPE html>
@@ -57,23 +58,23 @@ function generateOrderConfirmationEmail(
           <div style="width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
             <span style="font-size: 30px;">✓</span>
           </div>
-          <h1 style="color: white; margin: 0 0 10px; font-size: 28px; font-family: Arial, sans-serif;">Order Confirmed!</h1>
-          <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 16px; font-family: Arial, sans-serif;">Thank you for your purchase, ${customerName}!</p>
+          <h1 style="color: white; margin: 0 0 10px; font-size: 28px; font-family: Arial, sans-serif;">Η Παραγγελία Επιβεβαιώθηκε!</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 16px; font-family: Arial, sans-serif;">Ευχαριστούμε για την αγορά σας, ${customerName}!</p>
         </div>
         
         <div style="background: white; padding: 30px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
           <div style="background: #f9fafb; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: center;">
-            <p style="margin: 0 0 5px; color: #6b7280; font-size: 14px; font-family: Arial, sans-serif;">Order Number</p>
+            <p style="margin: 0 0 5px; color: #6b7280; font-size: 14px; font-family: Arial, sans-serif;">Αριθμός Παραγγελίας</p>
             <p style="margin: 0; color: #111827; font-size: 18px; font-weight: bold; font-family: Arial, sans-serif;">#${orderId.slice(0, 8).toUpperCase()}</p>
           </div>
           
-          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Order Summary</h2>
+          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Σύνοψη Παραγγελίας</h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
               <tr style="background: #f9fafb;">
-                <th style="padding: 12px; text-align: left; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Item</th>
-                <th style="padding: 12px; text-align: center; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Qty</th>
-                <th style="padding: 12px; text-align: right; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Price</th>
+                <th style="padding: 12px; text-align: left; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Προϊόν</th>
+                <th style="padding: 12px; text-align: center; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Ποσ.</th>
+                <th style="padding: 12px; text-align: right; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Τιμή</th>
               </tr>
             </thead>
             <tbody>
@@ -83,32 +84,32 @@ function generateOrderConfirmationEmail(
           
           <div style="border-top: 2px solid #e5e7eb; padding-top: 15px; margin-bottom: 25px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #6b7280; font-family: Arial, sans-serif;">Subtotal</span>
+              <span style="color: #6b7280; font-family: Arial, sans-serif;">Υποσύνολο</span>
               <span style="color: #111827; font-family: Arial, sans-serif;">${formatCurrency(subtotal, currency)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #6b7280; font-family: Arial, sans-serif;">Shipping</span>
-              <span style="color: #111827; font-family: Arial, sans-serif;">${shipping === 0 ? 'FREE' : formatCurrency(shipping, currency)}</span>
+              <span style="color: #6b7280; font-family: Arial, sans-serif;">Αποστολή</span>
+              <span style="color: #111827; font-family: Arial, sans-serif;">${shipping === 0 ? 'ΔΩΡΕΑΝ' : formatCurrency(shipping, currency)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb;">
-              <span style="color: #111827; font-weight: bold; font-size: 18px; font-family: Arial, sans-serif;">Total</span>
+              <span style="color: #111827; font-weight: bold; font-size: 18px; font-family: Arial, sans-serif;">Σύνολο</span>
               <span style="color: #10b981; font-weight: bold; font-size: 18px; font-family: Arial, sans-serif;">${formatCurrency(total, currency)}</span>
             </div>
           </div>
           
-          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Shipping Address</h2>
+          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Διεύθυνση Αποστολής</h2>
           <div style="background: #f9fafb; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
             ${addressHtml}
           </div>
           
           <div style="background: #ecfdf5; border-radius: 8px; padding: 20px; text-align: center;">
-            <p style="margin: 0 0 5px; color: #059669; font-weight: bold; font-family: Arial, sans-serif;">What's Next?</p>
-            <p style="margin: 0; color: #047857; font-size: 14px; font-family: Arial, sans-serif;">Your order will be shipped soon. We'll send you tracking information once it's on its way!</p>
+            <p style="margin: 0 0 5px; color: #059669; font-weight: bold; font-family: Arial, sans-serif;">Τι Ακολουθεί;</p>
+            <p style="margin: 0; color: #047857; font-size: 14px; font-family: Arial, sans-serif;">Η παραγγελία σας θα αποσταλεί σύντομα. Θα σας στείλουμε πληροφορίες παρακολούθησης μόλις είναι καθ' οδόν!</p>
           </div>
         </div>
         
         <div style="text-align: center; padding: 30px 20px;">
-          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">Thank you for shopping with us!</p>
+          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">Ευχαριστούμε που μας επιλέξατε! — ${storeName}</p>
         </div>
       </div>
     </body>
@@ -143,7 +144,7 @@ function generateAdminNotificationEmail(
       ${shippingAddress.city || ''}, ${shippingAddress.state || ''} ${shippingAddress.postal_code || ''}<br>
       ${shippingAddress.country || ''}
     </p>
-  ` : '<p style="color: #6b7280; font-family: Arial, sans-serif;">No shipping address provided</p>';
+  ` : '<p style="color: #6b7280; font-family: Arial, sans-serif;">Δεν δόθηκε διεύθυνση αποστολής</p>';
 
   return `
     <!DOCTYPE html>
@@ -158,33 +159,33 @@ function generateAdminNotificationEmail(
           <div style="width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
             <span style="font-size: 30px;">🛒</span>
           </div>
-          <h1 style="color: white; margin: 0 0 10px; font-size: 28px; font-family: Arial, sans-serif;">New Order Received!</h1>
-          <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 16px; font-family: Arial, sans-serif;">Order #${orderId.slice(0, 8).toUpperCase()}</p>
+          <h1 style="color: white; margin: 0 0 10px; font-size: 28px; font-family: Arial, sans-serif;">Νέα Παραγγελία!</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 16px; font-family: Arial, sans-serif;">Παραγγελία #${orderId.slice(0, 8).toUpperCase()}</p>
         </div>
         
         <div style="background: white; padding: 30px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
           <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
-            <p style="margin: 0; color: #92400e; font-weight: bold; font-family: Arial, sans-serif;">💰 Order Total: ${formatCurrency(total, currency)}</p>
+            <p style="margin: 0; color: #92400e; font-weight: bold; font-family: Arial, sans-serif;">💰 Σύνολο Παραγγελίας: ${formatCurrency(total, currency)}</p>
           </div>
           
-          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Customer Details</h2>
+          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Στοιχεία Πελάτη</h2>
           <div style="background: #f9fafb; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
-            <p style="margin: 0 0 8px; font-family: Arial, sans-serif;"><strong>Name:</strong> ${customerName}</p>
+            <p style="margin: 0 0 8px; font-family: Arial, sans-serif;"><strong>Όνομα:</strong> ${customerName}</p>
             <p style="margin: 0; font-family: Arial, sans-serif;"><strong>Email:</strong> ${customerEmail}</p>
           </div>
           
-          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Shipping Address</h2>
+          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Διεύθυνση Αποστολής</h2>
           <div style="background: #f9fafb; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
             ${addressHtml}
           </div>
           
-          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Order Items</h2>
+          <h2 style="color: #111827; font-size: 18px; margin: 0 0 15px; font-family: Arial, sans-serif;">Προϊόντα Παραγγελίας</h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
               <tr style="background: #f9fafb;">
-                <th style="padding: 12px; text-align: left; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Item</th>
-                <th style="padding: 12px; text-align: center; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Qty</th>
-                <th style="padding: 12px; text-align: right; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Price</th>
+                <th style="padding: 12px; text-align: left; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Προϊόν</th>
+                <th style="padding: 12px; text-align: center; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Ποσ.</th>
+                <th style="padding: 12px; text-align: right; font-size: 14px; color: #6b7280; font-family: Arial, sans-serif;">Τιμή</th>
               </tr>
             </thead>
             <tbody>
@@ -194,22 +195,22 @@ function generateAdminNotificationEmail(
           
           <div style="border-top: 2px solid #e5e7eb; padding-top: 15px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #6b7280; font-family: Arial, sans-serif;">Subtotal</span>
+              <span style="color: #6b7280; font-family: Arial, sans-serif;">Υποσύνολο</span>
               <span style="color: #111827; font-family: Arial, sans-serif;">${formatCurrency(subtotal, currency)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #6b7280; font-family: Arial, sans-serif;">Shipping</span>
-              <span style="color: #111827; font-family: Arial, sans-serif;">${shipping === 0 ? 'FREE' : formatCurrency(shipping, currency)}</span>
+              <span style="color: #6b7280; font-family: Arial, sans-serif;">Αποστολή</span>
+              <span style="color: #111827; font-family: Arial, sans-serif;">${shipping === 0 ? 'ΔΩΡΕΑΝ' : formatCurrency(shipping, currency)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb;">
-              <span style="color: #111827; font-weight: bold; font-size: 18px; font-family: Arial, sans-serif;">Total</span>
+              <span style="color: #111827; font-weight: bold; font-size: 18px; font-family: Arial, sans-serif;">Σύνολο</span>
               <span style="color: #f59e0b; font-weight: bold; font-size: 18px; font-family: Arial, sans-serif;">${formatCurrency(total, currency)}</span>
             </div>
           </div>
         </div>
         
         <div style="text-align: center; padding: 30px 20px;">
-          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">This is an automated notification from your store</p>
+          <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: Arial, sans-serif;">Αυτοματοποιημένη ειδοποίηση από το κατάστημά σας</p>
         </div>
       </div>
     </body>
@@ -277,7 +278,7 @@ serve(async (req) => {
     }));
     const shippingFromLineItem = shippingLineItem ? shippingLineItem.amount_total : 0;
 
-    // Extract shipping address - check both shipping_details and customer_details
+    // Extract shipping address
     let shippingAddress = null;
     
     if (session.shipping_details?.address) {
@@ -291,7 +292,6 @@ serve(async (req) => {
         country: session.shipping_details.address.country,
       };
     } else if (session.customer_details?.address) {
-      // Fallback to customer_details address
       shippingAddress = {
         name: session.customer_details.name,
         line1: session.customer_details.address.line1,
@@ -304,8 +304,6 @@ serve(async (req) => {
     }
     
     console.log("[VERIFY-PAYMENT] Shipping address:", JSON.stringify(shippingAddress));
-    console.log("[VERIFY-PAYMENT] Session shipping_details:", JSON.stringify(session.shipping_details));
-    console.log("[VERIFY-PAYMENT] Session customer_details:", JSON.stringify(session.customer_details));
 
     // Insert order into database
     const { data, error } = await supabase
@@ -371,7 +369,7 @@ serve(async (req) => {
     const adminEmail = settingsMap.contact_email;
     const storeName = settingsMap.store_name || 'Our Store';
     const customerEmail = session.customer_details?.email;
-    const customerName = session.customer_details?.name || 'Valued Customer';
+    const customerName = session.customer_details?.name || 'Αγαπητέ Πελάτη';
     
     // Send customer confirmation email
     if (customerEmail) {
@@ -384,13 +382,14 @@ serve(async (req) => {
           shippingFromLineItem,
           session.amount_total || 0,
           session.currency || 'usd',
-          shippingAddress
+          shippingAddress,
+          storeName
         );
 
         const emailResponse = await resend.emails.send({
           from: `${storeName} <onboarding@resend.dev>`,
           to: [customerEmail],
-          subject: `Order Confirmed - #${data.id.slice(0, 8).toUpperCase()}`,
+          subject: `Επιβεβαίωση Παραγγελίας - #${data.id.slice(0, 8).toUpperCase()}`,
           html: emailHtml,
         });
 
@@ -408,7 +407,7 @@ serve(async (req) => {
         const adminEmailHtml = generateAdminNotificationEmail(
           data.id,
           customerName,
-          customerEmail || 'Not provided',
+          customerEmail || 'Δεν δόθηκε',
           items,
           (session.amount_total || 0) - shippingFromLineItem,
           shippingFromLineItem,
@@ -420,7 +419,7 @@ serve(async (req) => {
         const adminEmailResponse = await resend.emails.send({
           from: `${storeName} <onboarding@resend.dev>`,
           to: [adminEmail],
-          subject: `🛒 New Order #${data.id.slice(0, 8).toUpperCase()} - ${formatCurrency(session.amount_total || 0, session.currency || 'usd')}`,
+          subject: `🛒 Νέα Παραγγελία #${data.id.slice(0, 8).toUpperCase()} - ${formatCurrency(session.amount_total || 0, session.currency || 'usd')}`,
           html: adminEmailHtml,
         });
 
@@ -437,10 +436,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    // Log full error details server-side for debugging
     console.error("[VERIFY-PAYMENT] Error:", error instanceof Error ? error.message : String(error));
     
-    // Return generic error message to client
     return new Response(JSON.stringify({ error: 'Payment verification failed' }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

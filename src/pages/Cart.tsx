@@ -161,7 +161,20 @@ const Cart = () => {
         body: { items: cartItems, customerInfo },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Try to parse the error response body for a meaningful message
+        try {
+          const errorBody = await error.context?.json?.() || error.context;
+          if (typeof errorBody === 'object' && errorBody?.error) {
+            toast.error(errorBody.error);
+          } else {
+            toast.error('Αποτυχία εκκίνησης πληρωμής. Δοκιμάστε ξανά.');
+          }
+        } catch {
+          toast.error('Αποτυχία εκκίνησης πληρωμής. Δοκιμάστε ξανά.');
+        }
+        return;
+      }
 
       if (data?.error) {
         toast.error(data.error);
