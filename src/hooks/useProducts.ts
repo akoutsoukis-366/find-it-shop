@@ -23,6 +23,7 @@ export interface DbProduct {
   specs: unknown;
   shipping_returns_info: string | null;
   warranty_info: string | null;
+  stock_quantity: number;
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +45,7 @@ export interface Product {
   specs?: ProductSpec[];
   shippingReturnsInfo?: string;
   warrantyInfo?: string;
+  stockQuantity: number;
 }
 
 const parseSpecs = (specs: unknown): ProductSpec[] | undefined => {
@@ -74,6 +76,7 @@ export const dbProductToProduct = (dbProduct: DbProduct): Product => ({
   specs: parseSpecs(dbProduct.specs),
   shippingReturnsInfo: dbProduct.shipping_returns_info || undefined,
   warrantyInfo: dbProduct.warranty_info || undefined,
+  stockQuantity: dbProduct.stock_quantity ?? 0,
 });
 
 export const useProducts = () => {

@@ -188,14 +188,17 @@ serve(async (req) => {
     );
 
     // Validate stock availability for each item
+    const stockErrors: string[] = [];
     for (const item of items) {
       const product = productMap.get(item.productId);
-      if (product && product.stock_quantity < item.quantity) {
-        throw new Error(`Insufficient stock for "${product.name}". Available: ${product.stock_quantity}, requested: ${item.quantity}`);
-      }
       if (product && product.stock_quantity === 0) {
-        throw new Error(`"${product.name}" is out of stock`);
+        stockErrors.push(`Το "${product.name}" δεν είναι διαθέσιμο.`);
+      } else if (product && product.stock_quantity < item.quantity) {
+        stockErrors.push(`Το "${product.name}" έχει μόνο ${product.stock_quantity} διαθέσιμα τεμάχια. Μειώστε την ποσότητα σε ${product.stock_quantity} ή λιγότερα.`);
       }
+    }
+    if (stockErrors.length > 0) {
+      throw new Error(stockErrors.join(' '));
     }
     
     const customerInfo = validateCustomerInfo(body.customerInfo);
@@ -379,7 +382,9 @@ serve(async (req) => {
     const isValidationError = errorMessage.includes('Invalid') || 
                               errorMessage.includes('must be') || 
                               errorMessage.includes('required') ||
-                              errorMessage.includes('Too many');
+                              errorMessage.includes('Too many') ||
+                              errorMessage.includes('διαθέσιμα') ||
+                              errorMessage.includes('διαθέσιμο');
     
     const clientMessage = isValidationError ? errorMessage : 'Unable to create checkout session';
     

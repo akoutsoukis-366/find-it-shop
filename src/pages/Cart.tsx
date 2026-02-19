@@ -163,6 +163,11 @@ const Cart = () => {
 
       if (error) throw error;
 
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
       if (data?.url) {
         window.open(data.url, '_blank');
       }

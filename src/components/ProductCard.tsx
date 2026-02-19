@@ -36,10 +36,20 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     >
       <Link to={`/products/${product.id}`}>
         <div className="group relative bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-          {/* Badge */}
+          {/* Badges */}
           {product.originalPrice && (
             <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full gradient-primary text-xs font-semibold text-primary-foreground">
               Save {formatPrice(product.originalPrice - product.price)}
+            </div>
+          )}
+          {product.inStock && product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+            <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-orange-500 text-xs font-semibold text-white">
+              Μόνο {product.stockQuantity} απομένουν
+            </div>
+          )}
+          {!product.inStock && (
+            <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-destructive text-xs font-semibold text-destructive-foreground">
+              Εξαντλήθηκε
             </div>
           )}
 
