@@ -33,7 +33,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Fetch admin email and email_notifications setting
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -48,7 +47,6 @@ const handler = async (req: Request): Promise<Response> => {
       settingsMap[item.key] = item.value || '';
     });
 
-    // Check if email notifications are enabled
     if (settingsMap.email_notifications === 'false') {
       console.log('[SEND-CONTACT-EMAIL] Email notifications disabled, skipping send');
       return new Response(JSON.stringify({ success: true, message: 'Email notifications disabled' }), {
@@ -65,19 +63,19 @@ const handler = async (req: Request): Promise<Response> => {
     const adminEmailResponse = await resend.emails.send({
       from: `${storeName} <onboarding@resend.dev>`,
       to: [adminEmail],
-      subject: `New Contact Form Submission from ${name}`,
+      subject: `Νέο μήνυμα επικοινωνίας από ${name}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #1a1a1a; font-size: 24px;">New Contact Form Submission</h1>
+          <h1 style="color: #1a1a1a; font-size: 24px;">Νέο Μήνυμα Επικοινωνίας</h1>
           
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 12px 0;"><strong>Name:</strong> ${name}</p>
+            <p style="margin: 0 0 12px 0;"><strong>Όνομα:</strong> ${name}</p>
             <p style="margin: 0 0 12px 0;"><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-            <p style="margin: 0;"><strong>Message:</strong></p>
+            <p style="margin: 0;"><strong>Μήνυμα:</strong></p>
             <p style="margin: 8px 0 0 0; white-space: pre-wrap;">${message}</p>
           </div>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— ${storeName} Contact Form</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— Φόρμα Επικοινωνίας ${storeName}</p>
         </div>
       `,
     });
@@ -88,29 +86,29 @@ const handler = async (req: Request): Promise<Response> => {
     const userEmailResponse = await resend.emails.send({
       from: `${storeName} <onboarding@resend.dev>`,
       to: [email],
-      subject: "We received your message!",
+      subject: "Λάβαμε το μήνυμά σας!",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #1a1a1a; font-size: 24px;">Thank You for Contacting Us!</h1>
+          <h1 style="color: #1a1a1a; font-size: 24px;">Ευχαριστούμε που Επικοινωνήσατε!</h1>
           
-          <p style="color: #4a4a4a; font-size: 16px;">Hi ${name},</p>
+          <p style="color: #4a4a4a; font-size: 16px;">Γεια σας ${name},</p>
           
           <p style="color: #4a4a4a; font-size: 16px;">
-            We've received your message and will get back to you as soon as possible, 
-            typically within 24-48 hours.
+            Λάβαμε το μήνυμά σας και θα επικοινωνήσουμε μαζί σας το συντομότερο δυνατό, 
+            συνήθως εντός 24-48 ωρών.
           </p>
           
           <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 8px 0; font-weight: 600;">Your message:</p>
+            <p style="margin: 0 0 8px 0; font-weight: 600;">Το μήνυμά σας:</p>
             <p style="margin: 0; color: #666; white-space: pre-wrap;">${message}</p>
           </div>
           
           <p style="color: #4a4a4a; font-size: 16px;">
-108:             In the meantime, feel free to browse our <a href="https://itag-store.lovable.app/products" style="color: #2563eb;">products</a> 
-            or check out our <a href="https://itag-store.lovable.app/about" style="color: #2563eb;">FAQ</a>.
+            Στο μεταξύ, μη διστάσετε να περιηγηθείτε στα <a href="https://itag-store.lovable.app/products" style="color: #2563eb;">προϊόντα μας</a> 
+            ή να επισκεφθείτε τη σελίδα <a href="https://itag-store.lovable.app/about" style="color: #2563eb;">Σχετικά με εμάς</a>.
           </p>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— The ${storeName} Team</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— Η ομάδα ${storeName}</p>
         </div>
       `,
     });

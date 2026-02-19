@@ -68,7 +68,7 @@ const getEmailContent = (
         <div style="display: flex; align-items: flex-start;">
           <span style="font-size: 20px; margin-right: 12px;">📍</span>
           <div>
-            <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Shipping To</div>
+            <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Αποστολή Προς</div>
             <div style="font-size: 14px; color: #1a1a1a; line-height: 1.6;">${formatAddress(shippingAddress)}</div>
           </div>
         </div>
@@ -81,15 +81,15 @@ const getEmailContent = (
       <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 24px; border-radius: 12px; margin: 24px 0; color: white;">
         <div style="display: flex; align-items: center; margin-bottom: 12px;">
           <span style="font-size: 24px; margin-right: 12px;">📦</span>
-          <span style="font-size: 18px; font-weight: 600;">Track Your Package</span>
+          <span style="font-size: 18px; font-weight: 600;">Παρακολούθηση Δέματος</span>
         </div>
         <div style="background: rgba(255,255,255,0.15); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px;">Tracking Number</div>
+          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px;">Αριθμός Παρακολούθησης</div>
           <div style="font-family: 'SF Mono', Monaco, monospace; font-size: 18px; font-weight: 600; letter-spacing: 1px;">${trackingNumber}</div>
         </div>
         ${trackingUrl ? `
           <a href="${trackingUrl}" target="_blank" style="display: inline-block; background: white; color: #2563eb; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
-            Track Package →
+            Παρακολούθηση Δέματος →
           </a>
         ` : ''}
       </div>
@@ -102,7 +102,7 @@ const getEmailContent = (
         <div style="display: flex; align-items: center;">
           <span style="font-size: 20px; margin-right: 12px;">🚚</span>
           <div>
-            <div style="font-size: 12px; color: #16a34a; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Estimated Delivery</div>
+            <div style="font-size: 12px; color: #16a34a; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Εκτιμώμενη Παράδοση</div>
             <div style="font-size: 16px; color: #166534; font-weight: 600;">${estimatedDelivery}</div>
           </div>
         </div>
@@ -112,7 +112,7 @@ const getEmailContent = (
   
   if (status === 'shipped') {
     return {
-      subject: `🚀 Your order #${orderId.slice(0, 8).toUpperCase()} is on its way!`,
+      subject: `🚀 Η παραγγελία σας #${orderId.slice(0, 8).toUpperCase()} είναι καθ' οδόν!`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -130,19 +130,19 @@ const getEmailContent = (
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
               <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 32px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
-                <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Your Order Has Shipped!</h1>
-                <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Great news, ${customerName || 'there'}! Your package is on the move.</p>
+                <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Η Παραγγελία σας Απεστάλη!</h1>
+                <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Εξαιρετικά νέα, ${customerName || 'εκεί'}! Το δέμα σας είναι καθ' οδόν.</p>
               </div>
               <div style="padding: 32px;">
                 <div style="text-align: center; margin-bottom: 24px;">
                   <span style="background: #f3f4f6; padding: 8px 16px; border-radius: 20px; font-size: 14px; color: #6b7280;">
-                    Order <strong style="color: #1a1a1a;">#${orderId.slice(0, 8).toUpperCase()}</strong>
+                    Παραγγελία <strong style="color: #1a1a1a;">#${orderId.slice(0, 8).toUpperCase()}</strong>
                   </span>
                 </div>
                 ${trackingSection}
                 ${deliverySection}
                 <div style="margin-top: 24px;">
-                  <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">Items Being Shipped</h3>
+                  <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">Προϊόντα που Αποστέλλονται</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     ${itemsList}
                   </table>
@@ -150,14 +150,14 @@ const getEmailContent = (
                 ${addressSection}
                 <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
                   <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                    Questions about your order? Just reply to this email and we'll help you out.
+                    Ερωτήσεις σχετικά με την παραγγελία σας; Απαντήστε σε αυτό το email και θα σας βοηθήσουμε.
                   </p>
                 </div>
               </div>
             </div>
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} ${storeName}. All rights reserved.
+                © ${new Date().getFullYear()} ${storeName}. Με επιφύλαξη παντός δικαιώματος.
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ const getEmailContent = (
   
   if (status === 'delivered') {
     return {
-      subject: `✅ Your order #${orderId.slice(0, 8).toUpperCase()} has been delivered!`,
+      subject: `✅ Η παραγγελία σας #${orderId.slice(0, 8).toUpperCase()} παραδόθηκε!`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -187,40 +187,40 @@ const getEmailContent = (
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
               <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 32px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">📬</div>
-                <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Package Delivered!</h1>
-                <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hey ${customerName || 'there'}, your order has arrived!</p>
+                <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Το Δέμα Παραδόθηκε!</h1>
+                <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Γεια σας ${customerName || 'εκεί'}, η παραγγελία σας έφτασε!</p>
               </div>
               <div style="padding: 32px;">
                 <div style="text-align: center; margin-bottom: 24px;">
                   <span style="background: #f3f4f6; padding: 8px 16px; border-radius: 20px; font-size: 14px; color: #6b7280;">
-                    Order <strong style="color: #1a1a1a;">#${orderId.slice(0, 8).toUpperCase()}</strong>
+                    Παραγγελία <strong style="color: #1a1a1a;">#${orderId.slice(0, 8).toUpperCase()}</strong>
                   </span>
                 </div>
                 <div style="background: #faf5ff; border: 1px solid #e9d5ff; padding: 20px; border-radius: 12px; margin: 24px 0; text-align: center;">
                   <div style="font-size: 24px; margin-bottom: 8px;">🎊</div>
                   <p style="color: #7c3aed; font-weight: 500; margin: 0;">
-                    We hope you love your new ${storeName} products!
+                    Ελπίζουμε να απολαύσετε τα νέα σας προϊόντα ${storeName}!
                   </p>
                 </div>
                 <div style="margin-top: 24px;">
-                  <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">What You Received</h3>
+                  <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px;">Τι Παραλάβατε</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     ${itemsList}
                   </table>
                 </div>
                 <div style="margin-top: 32px; padding: 20px; background: #f9fafb; border-radius: 12px; text-align: center;">
                   <p style="color: #374151; font-size: 14px; margin: 0 0 8px 0; font-weight: 500;">
-                    Need help with your products?
+                    Χρειάζεστε βοήθεια με τα προϊόντα σας;
                   </p>
                   <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                    Our support team is here to help! Just reply to this email.
+                    Η ομάδα υποστήριξής μας είναι εδώ για να βοηθήσει! Απαντήστε σε αυτό το email.
                   </p>
                 </div>
               </div>
             </div>
             <div style="text-align: center; margin-top: 32px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} ${storeName}. All rights reserved.
+                © ${new Date().getFullYear()} ${storeName}. Με επιφύλαξη παντός δικαιώματος.
               </p>
             </div>
           </div>
@@ -253,7 +253,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing email for order ${orderId}, status: ${status}, email: ${customerEmail}`);
 
-    // Check if email notifications are enabled
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
