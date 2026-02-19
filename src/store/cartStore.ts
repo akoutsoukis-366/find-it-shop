@@ -14,6 +14,7 @@ export interface Product {
   featured?: boolean;
   rating: number;
   reviews: number;
+  stockQuantity: number;
 }
 
 export interface CartItem {

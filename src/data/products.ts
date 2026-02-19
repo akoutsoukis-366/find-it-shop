@@ -14,6 +14,7 @@ export const products: Product[] = [
     featured: true,
     rating: 4.9,
     reviews: 2847,
+    stockQuantity: 100,
   },
   {
     id: '2',
@@ -27,6 +28,7 @@ export const products: Product[] = [
     featured: true,
     rating: 4.7,
     reviews: 1923,
+    stockQuantity: 100,
   },
   {
     id: '3',
@@ -41,6 +43,7 @@ export const products: Product[] = [
     featured: true,
     rating: 4.8,
     reviews: 892,
+    stockQuantity: 100,
   },
   {
     id: '4',
@@ -53,6 +56,7 @@ export const products: Product[] = [
     inStock: true,
     rating: 4.6,
     reviews: 1456,
+    stockQuantity: 100,
   },
   {
     id: '5',
@@ -65,6 +69,7 @@ export const products: Product[] = [
     inStock: true,
     rating: 4.8,
     reviews: 3421,
+    stockQuantity: 100,
   },
   {
     id: '6',
@@ -79,6 +84,7 @@ export const products: Product[] = [
     featured: true,
     rating: 4.9,
     reviews: 5678,
+    stockQuantity: 100,
   },
 ];
 
