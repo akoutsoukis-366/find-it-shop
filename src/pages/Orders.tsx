@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Package, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCurrency } from '@/hooks/useCurrency';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -26,10 +27,18 @@ interface Order {
   } | null;
 }
 
+const statusLabels: Record<string, string> = {
+  completed: 'Ολοκληρώθηκε',
+  processing: 'Σε Επεξεργασία',
+  shipped: 'Απεστάλη',
+  pending: 'Εκκρεμεί',
+};
+
 const Orders = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const checkAuthAndFetchOrders = async () => {
@@ -63,15 +72,11 @@ const Orders = () => {
   }, [navigate]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('el-GR', {
       month: 'long',
       day: 'numeric',
       year: 'numeric'
     });
-  };
-
-  const formatPrice = (cents: number) => {
-    return `$${(cents / 100).toFixed(2)}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -103,11 +108,11 @@ const Orders = () => {
         <div className="max-w-4xl mx-auto">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            Πίσω στην Αρχική
           </Link>
 
-          <h1 className="text-3xl font-bold text-foreground mb-2">My Orders</h1>
-          <p className="text-muted-foreground mb-8">View your order history and track shipments</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Οι Παραγγελίες μου</h1>
+          <p className="text-muted-foreground mb-8">Δείτε το ιστορικό παραγγελιών και παρακολουθήστε τις αποστολές σας</p>
 
           {orders.length === 0 ? (
             <motion.div
@@ -116,11 +121,11 @@ const Orders = () => {
               className="bg-card rounded-2xl border border-border p-12 text-center"
             >
               <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-xl font-semibold text-foreground mb-2">No orders yet</h2>
-              <p className="text-muted-foreground mb-6">Start shopping to see your orders here.</p>
+              <h2 className="text-xl font-semibold text-foreground mb-2">Δεν υπάρχουν παραγγελίες ακόμα</h2>
+              <p className="text-muted-foreground mb-6">Ξεκινήστε τις αγορές σας για να δείτε τις παραγγελίες εδώ.</p>
               <Link to="/products">
                 <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity">
-                  Browse Products
+                  Περιήγηση Προϊόντων
                 </button>
               </Link>
             </motion.div>
@@ -136,38 +141,38 @@ const Orders = () => {
                 >
                   <div className="p-6 border-b border-border flex flex-wrap items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Order placed</p>
+                      <p className="text-sm text-muted-foreground">Ημερομηνία</p>
                       <p className="font-medium text-foreground">{formatDate(order.created_at)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="font-medium text-foreground">{formatPrice(order.total)}</p>
+                      <p className="text-sm text-muted-foreground">Σύνολο</p>
+                      <p className="font-medium text-foreground">{formatPrice(order.total / 100)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Order ID</p>
+                      <p className="text-sm text-muted-foreground">Κωδικός Παραγγελίας</p>
                       <p className="font-mono text-sm text-foreground">{order.id.slice(0, 8)}...</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                      {order.status}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                      {statusLabels[order.status] || order.status}
                     </span>
                   </div>
                   
                   <div className="p-6">
-                    <h3 className="font-medium text-foreground mb-4">Items</h3>
+                    <h3 className="font-medium text-foreground mb-4">Προϊόντα</h3>
                     <div className="space-y-3">
                       {order.items.map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
                           <span className="text-muted-foreground">
                             {item.name} × {item.quantity}
                           </span>
-                          <span className="text-foreground">{formatPrice(item.price)}</span>
+                          <span className="text-foreground">{formatPrice(item.price / 100)}</span>
                         </div>
                       ))}
                     </div>
 
                     {order.shipping_address && (
                       <div className="mt-6 pt-6 border-t border-border">
-                        <h3 className="font-medium text-foreground mb-2">Shipping to</h3>
+                        <h3 className="font-medium text-foreground mb-2">Αποστολή σε</h3>
                         <p className="text-sm text-muted-foreground">
                           {order.shipping_address.name && <span className="block">{order.shipping_address.name}</span>}
                           {order.shipping_address.line1 && <span className="block">{order.shipping_address.line1}</span>}

@@ -5,6 +5,7 @@ import { Product, useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
+
 const getProductImage = (imagePath: string | undefined): string => {
   if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
     return imagePath;
@@ -24,7 +25,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     addItem(product, product.colors[0] || '#1a1a1a');
-    toast.success(`${product.name} added to cart!`);
+    toast.success(`${product.name} προστέθηκε στο καλάθι!`);
   };
 
   return (
@@ -39,7 +40,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {/* Badges */}
           {product.originalPrice && (
             <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full gradient-primary text-xs font-semibold text-primary-foreground">
-              Save {formatPrice(product.originalPrice - product.price)}
+              Κερδίζετε {formatPrice(product.originalPrice - product.price)}
             </div>
           )}
           {product.inStock && product.stockQuantity > 0 && product.stockQuantity <= 5 && (

@@ -46,7 +46,7 @@ const Profile = () => {
     city: '',
     state: '',
     postal_code: '',
-    country: 'US',
+    country: 'GR',
   });
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const Profile = () => {
           city: data.city || '',
           state: data.state || '',
           postal_code: data.postal_code || '',
-          country: data.country || 'US',
+          country: data.country || 'GR',
         });
       }
 
@@ -100,10 +100,10 @@ const Profile = () => {
 
       if (error) throw error;
 
-      toast.success('Profile updated successfully');
+      toast.success('Το προφίλ ενημερώθηκε επιτυχώς');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error('Αποτυχία ενημέρωσης προφίλ');
     } finally {
       setSaving(false);
     }
@@ -124,13 +124,12 @@ const Profile = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      // Sign out and redirect
       await supabase.auth.signOut();
-      toast.success('Your account has been deleted');
+      toast.success('Ο λογαριασμός σας διαγράφηκε');
       navigate('/');
     } catch (error) {
       console.error('Error deleting account:', error);
-      toast.error('Failed to delete account. Please try again.');
+      toast.error('Αποτυχία διαγραφής λογαριασμού. Δοκιμάστε ξανά.');
     } finally {
       setDeleting(false);
     }
@@ -152,7 +151,7 @@ const Profile = () => {
         <div className="max-w-2xl mx-auto">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            Πίσω στην Αρχική
           </Link>
 
           <motion.div
@@ -160,8 +159,8 @@ const Profile = () => {
             animate={{ opacity: 1, y: 0 }}
             className="bg-card rounded-2xl border border-border p-8"
           >
-            <h1 className="text-2xl font-bold text-foreground mb-2">My Profile</h1>
-            <p className="text-muted-foreground mb-8">Manage your account details and shipping address</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Το Προφίλ μου</h1>
+            <p className="text-muted-foreground mb-8">Διαχειριστείτε τα στοιχεία του λογαριασμού και τη διεύθυνση αποστολής σας</p>
 
             <div className="space-y-6">
               <div className="space-y-2">
@@ -170,12 +169,12 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="full-name">Full Name</Label>
+                <Label htmlFor="full-name">Ονοματεπώνυμο</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="full-name"
-                    placeholder="John Doe"
+                    placeholder="Γιάννης Παπαδόπουλος"
                     value={profile.full_name || ''}
                     onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                     className="pl-10"
@@ -184,13 +183,13 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Τηλέφωνο</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+30 210 0000000"
                     value={profile.phone || ''}
                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                     className="pl-10"
@@ -199,16 +198,16 @@ const Profile = () => {
               </div>
 
               <div className="border-t border-border pt-6 mt-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Shipping Address</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">Διεύθυνση Αποστολής</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="col-span-2 space-y-2">
-                    <Label htmlFor="address1">Address Line 1</Label>
+                    <Label htmlFor="address1">Διεύθυνση 1</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="address1"
-                        placeholder="123 Main St"
+                        placeholder="Οδός & Αριθμός"
                         value={profile.address_line1 || ''}
                         onChange={(e) => setProfile({ ...profile, address_line1: e.target.value })}
                         className="pl-10"
@@ -217,50 +216,50 @@ const Profile = () => {
                   </div>
 
                   <div className="col-span-2 space-y-2">
-                    <Label htmlFor="address2">Address Line 2</Label>
+                    <Label htmlFor="address2">Διεύθυνση 2</Label>
                     <Input
                       id="address2"
-                      placeholder="Apt 4B"
+                      placeholder="Όροφος, Διαμέρισμα"
                       value={profile.address_line2 || ''}
                       onChange={(e) => setProfile({ ...profile, address_line2: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city">Πόλη</Label>
                     <Input
                       id="city"
-                      placeholder="New York"
+                      placeholder="Αθήνα"
                       value={profile.city || ''}
                       onChange={(e) => setProfile({ ...profile, city: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="state">State</Label>
+                    <Label htmlFor="state">Περιφέρεια</Label>
                     <Input
                       id="state"
-                      placeholder="NY"
+                      placeholder="Αττική"
                       value={profile.state || ''}
                       onChange={(e) => setProfile({ ...profile, state: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="postal">Postal Code</Label>
+                    <Label htmlFor="postal">Τ.Κ.</Label>
                     <Input
                       id="postal"
-                      placeholder="10001"
+                      placeholder="10563"
                       value={profile.postal_code || ''}
                       onChange={(e) => setProfile({ ...profile, postal_code: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
+                    <Label htmlFor="country">Χώρα</Label>
                     <Input
                       id="country"
-                      placeholder="US"
+                      placeholder="GR"
                       value={profile.country || ''}
                       onChange={(e) => setProfile({ ...profile, country: e.target.value })}
                     />
@@ -272,44 +271,44 @@ const Profile = () => {
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
+                    Αποθήκευση...
                   </>
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    Save Changes
+                    Αποθήκευση Αλλαγών
                   </>
                 )}
               </Button>
 
               {/* Delete Account Section */}
               <div className="border-t border-destructive/20 pt-6 mt-8">
-                <h2 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h2>
+                <h2 className="text-lg font-semibold text-destructive mb-2">Επικίνδυνη Ζώνη</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Once you delete your account, there is no going back. Please be certain.
+                  Μόλις διαγράψετε τον λογαριασμό σας, δεν υπάρχει επιστροφή. Σιγουρευτείτε πριν προχωρήσετε.
                 </p>
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full" disabled={deleting}>
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Account
+                      Διαγραφή Λογαριασμού
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle className="flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-destructive" />
-                        Delete Account
+                        Διαγραφή Λογαριασμού
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your account
-                        and remove all your data from our servers, including your profile, orders history,
-                        and any other associated information.
+                        Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγράψει μόνιμα τον λογαριασμό σας
+                        και θα αφαιρέσει όλα τα δεδομένα σας, συμπεριλαμβανομένου του προφίλ, του ιστορικού παραγγελιών
+                        και κάθε άλλης σχετικής πληροφορίας.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDeleteAccount}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -318,10 +317,10 @@ const Profile = () => {
                         {deleting ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Deleting...
+                            Διαγραφή...
                           </>
                         ) : (
-                          'Yes, delete my account'
+                          'Ναι, διέγραψε τον λογαριασμό μου'
                         )}
                       </AlertDialogAction>
                     </AlertDialogFooter>

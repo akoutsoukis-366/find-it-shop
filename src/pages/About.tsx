@@ -258,7 +258,7 @@ const About = () => {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
                     <Phone className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Phone</h3>
+                  <h3 className="font-semibold text-foreground mb-2">Τηλέφωνο</h3>
                   <a 
                     href={`tel:${settings.support_phone.replace(/[^\d+]/g, '')}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
@@ -279,7 +279,7 @@ const About = () => {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
                     <MapPinned className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Office</h3>
+                  <h3 className="font-semibold text-foreground mb-2">Γραφεία</h3>
                   <p className="text-muted-foreground">
                     {settings.office_address}
                   </p>
@@ -301,7 +301,7 @@ const About = () => {
                   onClick={() => setContactOpen(true)}
                 >
                   <Mail className="w-5 h-5 mr-2" />
-                  {content.cta_button_text || 'Contact Us'}
+                  {content.cta_button_text || 'Επικοινωνήστε μαζί μας'}
                 </Button>
               )}
             </motion.div>

@@ -92,7 +92,7 @@ const Auth = () => {
       }
 
       if (exists) {
-        setEmailError('An account with this email already exists');
+        setEmailError('Υπάρχει ήδη λογαριασμός με αυτό το email');
       } else {
         setEmailError(null);
       }
@@ -124,7 +124,7 @@ const Auth = () => {
       }
 
       if (exists) {
-        setPhoneError('An account with this phone number already exists');
+        setPhoneError('Υπάρχει ήδη λογαριασμός με αυτό το τηλέφωνο');
       } else {
         setPhoneError(null);
       }
@@ -195,7 +195,7 @@ const Auth = () => {
       if (signInError) throw signInError;
       toast.success('Καλώς ήρθατε!');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+      const message = err instanceof Error ? err.message : 'Η σύνδεση απέτυχε';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -217,7 +217,7 @@ const Auth = () => {
       setResetEmailSent(true);
       toast.success('Ο σύνδεσμος επαναφοράς κωδικού στάλθηκε!');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to send reset email';
+      const message = err instanceof Error ? err.message : 'Αποτυχία αποστολής email επαναφοράς';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -230,13 +230,13 @@ const Auth = () => {
     setError(null);
 
     if (signupPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Οι κωδικοί δεν ταιριάζουν');
       setIsLoading(false);
       return;
     }
 
     if (signupPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες');
       setIsLoading(false);
       return;
     }
@@ -262,8 +262,8 @@ const Auth = () => {
         .rpc('check_email_exists', { check_email: signupEmail.toLowerCase().trim() });
 
       if (emailExists) {
-        setError('An account with this email already exists');
-        setEmailError('An account with this email already exists');
+        setError('Υπάρχει ήδη λογαριασμός με αυτό το email');
+        setEmailError('Υπάρχει ήδη λογαριασμός με αυτό το email');
         setIsLoading(false);
         return;
       }
@@ -274,8 +274,8 @@ const Auth = () => {
           .rpc('check_phone_exists', { check_phone: fullPhone });
 
         if (phoneExists) {
-          setError('An account with this phone number already exists');
-          setPhoneError('An account with this phone number already exists');
+          setError('Υπάρχει ήδη λογαριασμός με αυτό το τηλέφωνο');
+          setPhoneError('Υπάρχει ήδη λογαριασμός με αυτό το τηλέφωνο');
           setIsLoading(false);
           return;
         }
@@ -353,11 +353,10 @@ const Auth = () => {
         setActiveTab('login');
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Signup failed';
-      // Handle Supabase auth duplicate email error
+      const message = err instanceof Error ? err.message : 'Η εγγραφή απέτυχε';
       if (message.includes('already registered') || message.includes('already exists')) {
-        setError('An account with this email already exists');
-        setEmailError('An account with this email already exists');
+        setError('Υπάρχει ήδη λογαριασμός με αυτό το email');
+        setEmailError('Υπάρχει ήδη λογαριασμός με αυτό το email');
       } else {
         setError(message);
       }
@@ -487,7 +486,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">Κωδικός</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input

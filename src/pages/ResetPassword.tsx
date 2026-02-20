@@ -21,20 +21,17 @@ const ResetPassword = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    // Check if user has a valid recovery session
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Check if this is a password recovery session
       if (session) {
         setIsValidSession(true);
       } else {
-        setError('Invalid or expired reset link. Please request a new password reset.');
+        setError('Μη έγκυρος ή ληγμένος σύνδεσμος. Ζητήστε νέα επαναφορά κωδικού.');
       }
       setCheckingSession(false);
     };
 
-    // Listen for auth state changes (recovery token will trigger this)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsValidSession(true);
@@ -53,13 +50,13 @@ const ResetPassword = () => {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Οι κωδικοί δεν ταιριάζουν');
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες');
       setIsLoading(false);
       return;
     }
@@ -72,14 +69,13 @@ const ResetPassword = () => {
       if (updateError) throw updateError;
 
       setSuccess(true);
-      toast.success('Password updated successfully!');
+      toast.success('Ο κωδικός ενημερώθηκε επιτυχώς!');
       
-      // Redirect to home after 2 seconds
       setTimeout(() => {
         navigate('/');
       }, 2000);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to reset password';
+      const message = err instanceof Error ? err.message : 'Αποτυχία επαναφοράς κωδικού';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -102,7 +98,7 @@ const ResetPassword = () => {
         <div className="max-w-md mx-auto">
           <Link to="/auth" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4" />
-            Back to Login
+            Πίσω στη Σύνδεση
           </Link>
 
           <motion.div
@@ -110,8 +106,8 @@ const ResetPassword = () => {
             animate={{ opacity: 1, y: 0 }}
             className="bg-card rounded-2xl border border-border p-8"
           >
-            <h1 className="text-2xl font-bold text-foreground mb-2">Reset Password</h1>
-            <p className="text-muted-foreground mb-8">Enter your new password below.</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Επαναφορά Κωδικού</h1>
+            <p className="text-muted-foreground mb-8">Εισάγετε τον νέο κωδικό σας παρακάτω.</p>
 
             {error && (
               <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3">
@@ -123,15 +119,15 @@ const ResetPassword = () => {
             {success ? (
               <div className="text-center py-8">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-foreground mb-2">Password Updated!</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-2">Ο Κωδικός Ενημερώθηκε!</h2>
                 <p className="text-muted-foreground mb-4">
-                  Your password has been successfully reset. Redirecting you to the home page...
+                  Ο κωδικός σας επαναφέρθηκε επιτυχώς. Ανακατεύθυνση στην αρχική σελίδα...
                 </p>
               </div>
             ) : isValidSession ? (
               <form onSubmit={handleResetPassword} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="password">New Password</Label>
+                  <Label htmlFor="password">Νέος Κωδικός</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -147,7 +143,7 @@ const ResetPassword = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
+                  <Label htmlFor="confirm-password">Επιβεβαίωση Νέου Κωδικού</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -166,17 +162,17 @@ const ResetPassword = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating password...
+                      Ενημέρωση κωδικού...
                     </>
                   ) : (
-                    'Reset Password'
+                    'Επαναφορά Κωδικού'
                   )}
                 </Button>
               </form>
             ) : (
               <div className="text-center py-4">
                 <Link to="/auth">
-                  <Button variant="outline">Request New Reset Link</Button>
+                  <Button variant="outline">Ζητήστε Νέο Σύνδεσμο</Button>
                 </Link>
               </div>
             )}

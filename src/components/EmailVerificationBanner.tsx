@@ -51,9 +51,9 @@ const EmailVerificationBanner = () => {
 
       if (error) throw error;
       
-      toast.success('Verification email sent! Please check your inbox.');
+      toast.success('Το email επιβεβαίωσης στάλθηκε! Ελέγξτε τα εισερχόμενά σας.');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to send verification email';
+      const message = err instanceof Error ? err.message : 'Αποτυχία αποστολής email επιβεβαίωσης';
       toast.error(message);
     } finally {
       setIsResending(false);
@@ -69,10 +69,10 @@ const EmailVerificationBanner = () => {
           <div className="flex items-center gap-3 flex-1">
             <Mail className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <p className="text-sm text-foreground">
-              Please verify your email address to access all features.
+              Παρακαλώ επιβεβαιώστε τη διεύθυνση email σας για πρόσβαση σε όλες τις λειτουργίες.
               {userEmail && (
                 <span className="text-muted-foreground ml-1">
-                  We sent a verification link to <strong>{userEmail}</strong>
+                  Στείλαμε σύνδεσμο επιβεβαίωσης στο <strong>{userEmail}</strong>
                 </span>
               )}
             </p>
@@ -89,17 +89,17 @@ const EmailVerificationBanner = () => {
               {isResending ? (
                 <>
                   <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                  Sending...
+                  Αποστολή...
                 </>
               ) : (
-                'Resend Email'
+                'Επαναποστολή Email'
               )}
             </Button>
             
             <button
               onClick={() => setDismissed(true)}
               className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Dismiss"
+              aria-label="Κλείσιμο"
             >
               <X className="h-4 w-4" />
             </button>
