@@ -11,6 +11,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductGallery from '@/components/ProductGallery';
 import { toast } from 'sonner';
+
 const getProductImage = (imagePath: string | undefined): string => {
   if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
     return imagePath;
@@ -25,7 +26,6 @@ const ProductDetail = () => {
   const addItem = useCartStore((state) => state.addItem);
   const { formatPrice } = useCurrency();
 
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -38,9 +38,9 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Product not found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Το προϊόν δεν βρέθηκε</h1>
           <Link to="/products">
-            <Button>Back to Products</Button>
+            <Button>Πίσω στα Προϊόντα</Button>
           </Link>
         </div>
       </div>
@@ -51,9 +51,8 @@ const ProductDetail = () => {
     for (let i = 0; i < quantity; i++) {
       addItem(product, product.colors[0] || '#1a1a1a');
     }
-    toast.success(`${quantity} x ${product.name} added to cart!`);
+    toast.success(`${quantity} x ${product.name} προστέθηκε στο καλάθι!`);
   };
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,14 +60,12 @@ const ProductDetail = () => {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Back Button */}
           <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4" />
-            Back to Products
+            Πίσω στα Προϊόντα
           </Link>
 
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Product Gallery */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -80,16 +77,14 @@ const ProductDetail = () => {
               />
             </motion.div>
 
-            {/* Product Info */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               className="space-y-6"
             >
-              {/* Badge */}
               {product.originalPrice && (
                 <div className="inline-block px-3 py-1 rounded-full gradient-primary text-sm font-semibold text-primary-foreground">
-                  Save {formatPrice(product.originalPrice - product.price)}
+                  Κερδίζετε {formatPrice(product.originalPrice - product.price)}
                 </div>
               )}
 
@@ -99,7 +94,6 @@ const ProductDetail = () => {
                 </h1>
               </div>
 
-              {/* Price */}
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold text-foreground">{formatPrice(product.price)}</span>
                 {product.originalPrice && (
@@ -109,10 +103,9 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Quantity */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-3">
-                  Quantity
+                  Ποσότητα
                 </label>
                 <div className="flex items-center gap-4">
                   <Button
@@ -135,7 +128,6 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Add to Cart */}
               <Button
                 variant="hero"
                 size="xl"
@@ -144,14 +136,12 @@ const ProductDetail = () => {
                 disabled={!product.inStock}
               >
                 {product.inStock 
-                  ? `Add to Cart - ${formatPrice(product.price * quantity)}`
-                  : 'Out of Stock'
+                  ? `Προσθήκη στο Καλάθι - ${formatPrice(product.price * quantity)}`
+                  : 'Εξαντλήθηκε'
                 }
               </Button>
 
-              {/* Accordion Sections */}
               <Accordion type="multiple" className="w-full border-t border-border">
-                {/* Description */}
                 {product.description && (
                   <AccordionItem value="description" className="border-b border-border">
                     <AccordionTrigger className="py-5 text-base font-medium text-foreground hover:no-underline">
@@ -163,7 +153,6 @@ const ProductDetail = () => {
                   </AccordionItem>
                 )}
 
-                {/* Specifications */}
                 {product.specs && product.specs.length > 0 && (
                   <AccordionItem value="specs" className="border-b border-border">
                     <AccordionTrigger className="py-5 text-base font-medium text-foreground hover:no-underline">
@@ -182,7 +171,6 @@ const ProductDetail = () => {
                   </AccordionItem>
                 )}
 
-                {/* Shipping & Returns */}
                 {product.shippingReturnsInfo && (
                   <AccordionItem value="shipping" className="border-b border-border">
                     <AccordionTrigger className="py-5 text-base font-medium text-foreground hover:no-underline">
@@ -194,7 +182,6 @@ const ProductDetail = () => {
                   </AccordionItem>
                 )}
 
-                {/* Warranty */}
                 {product.warrantyInfo && (
                   <AccordionItem value="warranty" className="border-b border-border">
                     <AccordionTrigger className="py-5 text-base font-medium text-foreground hover:no-underline">

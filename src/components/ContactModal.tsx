@@ -22,21 +22,19 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
     e.preventDefault();
     
     if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error('Please fill in all fields');
+      toast.error('Παρακαλώ συμπληρώστε όλα τα πεδία');
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email address');
+      toast.error('Παρακαλώ εισάγετε ένα έγκυρο email');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Save to database
       const { error: dbError } = await supabase
         .from('contact_messages')
         .insert({
@@ -47,7 +45,6 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
 
       if (dbError) throw dbError;
 
-      // Send email notification
       try {
         await supabase.functions.invoke('send-contact-email', {
           body: {
@@ -58,17 +55,16 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
         });
       } catch (emailError) {
         console.error('Email notification failed:', emailError);
-        // Don't fail the submission if email fails
       }
 
-      toast.success("Message sent successfully! We'll get back to you soon.");
+      toast.success('Το μήνυμα στάλθηκε επιτυχώς! Θα επικοινωνήσουμε μαζί σας σύντομα.');
       setName('');
       setEmail('');
       setMessage('');
       onOpenChange(false);
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message. Please try again.');
+      toast.error('Αποτυχία αποστολής μηνύματος. Δοκιμάστε ξανά.');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,18 +74,18 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Contact Us</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Επικοινωνία</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-              Name
+              Όνομα
             </label>
             <Input
               id="name"
               type="text"
-              placeholder="Your name"
+              placeholder="Το όνομά σας"
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
@@ -104,7 +100,7 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
             <Input
               id="email"
               type="email"
-              placeholder="your@email.com"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               maxLength={255}
@@ -114,11 +110,11 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
 
           <div>
             <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-              Message
+              Μήνυμα
             </label>
             <Textarea
               id="message"
-              placeholder="How can we help you?"
+              placeholder="Πώς μπορούμε να σας βοηθήσουμε;"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={2000}
@@ -127,7 +123,7 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
               className="resize-none"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {message.length}/2000 characters
+              {message.length}/2000 χαρακτήρες
             </p>
           </div>
 
@@ -139,7 +135,7 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
               disabled={isSubmitting}
               className="flex-1"
             >
-              Cancel
+              Ακύρωση
             </Button>
             <Button
               type="submit"
@@ -149,12 +145,12 @@ const ContactModal = ({ open, onOpenChange }: ContactModalProps) => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Sending...
+                  Αποστολή...
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Send Message
+                  Αποστολή Μηνύματος
                 </>
               )}
             </Button>
