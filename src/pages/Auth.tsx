@@ -37,7 +37,7 @@ const Auth = () => {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const [country, setCountry] = useState('US');
+  const [country, setCountry] = useState('GR');
   
   // Real-time validation
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -337,13 +337,13 @@ const Auth = () => {
         setConfirmPassword('');
         setFullName('');
         setPhoneNumber('');
-        setPhoneCountry('US');
+        setPhoneCountry('GR');
         setAddressLine1('');
         setAddressLine2('');
         setCity('');
         setState('');
         setPostalCode('');
-        setCountry('US');
+        setCountry('GR');
         setEmailError(null);
         setPhoneError(null);
         setJustSignedUp(false);
