@@ -5,6 +5,8 @@ import { User, Phone, MapPin, Loader2, Save, ArrowLeft, Trash2, AlertTriangle } 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { countries, getCountryByCode } from '@/data/countries';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +40,8 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [email, setEmail] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState('GR');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [profile, setProfile] = useState<Profile>({
     full_name: '',
     phone: '',
@@ -69,6 +73,24 @@ const Profile = () => {
       if (error) {
         console.error('Error fetching profile:', error);
       } else if (data) {
+        // Parse phone: extract prefix from stored phone
+        const storedPhone = data.phone || '';
+        let detectedCountry = 'GR';
+        let localPhone = storedPhone;
+        
+        // Try to match a dial code prefix
+        const sortedCountries = [...countries].sort((a, b) => b.dialCode.length - a.dialCode.length);
+        for (const c of sortedCountries) {
+          if (storedPhone.startsWith(c.dialCode)) {
+            detectedCountry = c.code;
+            localPhone = storedPhone.slice(c.dialCode.length);
+            break;
+          }
+        }
+        
+        setPhoneCountry(detectedCountry);
+        setPhoneNumber(localPhone);
+        
         setProfile({
           full_name: data.full_name || '',
           phone: data.phone || '',
@@ -93,9 +115,13 @@ const Profile = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
+      // Combine dial code + phone number
+      const dialCode = getCountryByCode(phoneCountry)?.dialCode || '+30';
+      const fullPhone = phoneNumber ? dialCode + phoneNumber.replace(/\D/g, '') : '';
+      
       const { error } = await supabase
         .from('profiles')
-        .update(profile)
+        .update({ ...profile, phone: fullPhone })
         .eq('user_id', session.user.id);
 
       if (error) throw error;
@@ -184,16 +210,32 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Τηλέφωνο</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+30 210 0000000"
-                    value={profile.phone || ''}
-                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                    className="pl-10"
-                  />
+                <div className="flex gap-2">
+                  <Select value={phoneCountry} onValueChange={setPhoneCountry}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue>
+                        {getCountryByCode(phoneCountry)?.dialCode || '+30'}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {countries.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.dialCode} {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="relative flex-1">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="210 0000000"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
               </div>
 
