@@ -89,6 +89,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 onClick={handleAddToCart}
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
                 disabled={!product.inStock}
+                aria-label={`Προσθήκη ${product.name} στο καλάθι`}
               >
                 <ShoppingCart className="h-4 w-4" />
               </Button>
