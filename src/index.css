@@ -1,4 +1,4 @@
-/* Font loaded asynchronously in index.html */
+/* Font loaded asynchronously in index.html with system font fallback for fast LCP */
 
 @tailwind base;
 @tailwind components;
