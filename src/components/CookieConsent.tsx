@@ -61,7 +61,7 @@ const CookieConsent = () => {
                 <Button
                   size="sm"
                   onClick={handleAccept}
-                  className="flex-1 md:flex-none"
+                  className="flex-1 md:flex-none bg-[hsl(220,100%,50%)] hover:bg-[hsl(220,100%,45%)] text-white"
                 >
                   Αποδοχή
                 </Button>
