@@ -198,8 +198,8 @@ const Navbar = () => {
                 </Button>
               </Link>
             )}
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
+            <Link to="/cart" className="relative" aria-label="Καλάθι αγορών">
+              <Button variant="ghost" size="icon" aria-label="Καλάθι αγορών">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
                   <motion.span
