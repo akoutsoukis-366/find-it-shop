@@ -29,16 +29,18 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <EmailVerificationBanner />
       <Navbar />
-      <HeroSection content={content} />
-      <TrustSignals />
-      <CategorySection />
-      <FeaturedProducts
-        content={content}
-        products={featuredProducts}
-        isLoading={isLoading}
-      />
-      <FeaturesStrip content={content} />
-      <CtaSection content={content} />
+      <main>
+        <HeroSection content={content} />
+        <TrustSignals />
+        <CategorySection />
+        <FeaturedProducts
+          content={content}
+          products={featuredProducts}
+          isLoading={isLoading}
+        />
+        <FeaturesStrip content={content} />
+        <CtaSection content={content} />
+      </main>
       <Footer />
     </div>
   );
