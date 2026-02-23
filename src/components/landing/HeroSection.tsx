@@ -40,17 +40,17 @@ const HeroSection = ({ content }: HeroSectionProps) => {
           )}
 
           <div className="flex flex-row gap-2 sm:gap-3 justify-center flex-wrap">
-            <Link to="/products">
-              <Button variant="hero" size="default" className="sm:px-6 sm:py-5 text-sm sm:text-base">
+            <Button variant="hero" size="default" className="sm:px-6 sm:py-5 text-sm sm:text-base" asChild>
+              <Link to="/products">
                 Αγόρασε Τώρα
                 <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/about">
-              <Button variant="glass" size="default" className="sm:px-6 sm:py-5 text-sm sm:text-base">
+              </Link>
+            </Button>
+            <Button variant="glass" size="default" className="sm:px-6 sm:py-5 text-sm sm:text-base" asChild>
+              <Link to="/about">
                 Μάθε Περισσότερα
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </motion.div>
       </div>
