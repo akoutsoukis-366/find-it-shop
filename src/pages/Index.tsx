@@ -17,29 +17,29 @@ const Index = () => {
   const featuredProducts = products.filter((p) => p.featured);
   const isLoading = productsLoading || contentLoading;
 
-  if (contentLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <EmailVerificationBanner />
       <Navbar />
       <main>
-        <HeroSection content={content} />
-        <TrustSignals />
-        <CategorySection />
-        <FeaturedProducts
-          content={content}
-          products={featuredProducts}
-          isLoading={isLoading}
-        />
-        <FeaturesStrip content={content} />
-        <CtaSection content={content} />
+        {contentLoading ? (
+          <div className="h-screen flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            <HeroSection content={content} />
+            <TrustSignals />
+            <CategorySection />
+            <FeaturedProducts
+              content={content}
+              products={featuredProducts}
+              isLoading={isLoading}
+            />
+            <FeaturesStrip content={content} />
+            <CtaSection content={content} />
+          </>
+        )}
       </main>
       <Footer />
     </div>
