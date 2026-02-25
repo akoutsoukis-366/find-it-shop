@@ -323,9 +323,9 @@ const AdminProducts = () => {
                   <tr key={product.id} className={cn(
                     "border-b border-border transition-colors",
                     product.stock_quantity === 0
-                      ? "bg-destructive/5 hover:bg-destructive/10"
+                      ? "bg-destructive/15 hover:bg-destructive/20"
                       : product.stock_quantity <= 5
-                        ? "bg-yellow-500/5 hover:bg-yellow-500/10"
+                        ? "bg-yellow-500/15 hover:bg-yellow-500/20"
                         : "hover:bg-secondary/50"
                   )}>
                     <td className="px-6 py-4">
@@ -435,9 +435,9 @@ const AdminProducts = () => {
               <div key={product.id} className={cn(
                 "p-4 flex items-center gap-3",
                 product.stock_quantity === 0
-                  ? "bg-destructive/5"
+                  ? "bg-destructive/15"
                   : product.stock_quantity <= 5
-                    ? "bg-yellow-500/5"
+                    ? "bg-yellow-500/15"
                     : ""
               )}>
                 <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex items-center justify-center shrink-0">
