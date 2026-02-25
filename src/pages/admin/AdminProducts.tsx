@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/admin/ImageUpload';
@@ -319,10 +320,23 @@ const AdminProducts = () => {
                 </tr>
               ) : (
                 filteredProducts.map((product) => (
-                  <tr key={product.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                  <tr key={product.id} className={cn(
+                    "border-b border-border transition-colors",
+                    product.stock_quantity === 0
+                      ? "bg-destructive/5 hover:bg-destructive/10"
+                      : product.stock_quantity <= 5
+                        ? "bg-yellow-500/5 hover:bg-yellow-500/10"
+                        : "hover:bg-secondary/50"
+                  )}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex items-center justify-center">
+                        <div className="relative w-12 h-12 bg-secondary rounded-lg overflow-hidden flex items-center justify-center">
+                          {product.stock_quantity === 0 && (
+                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-destructive border-2 border-card z-10" />
+                          )}
+                          {product.stock_quantity > 0 && product.stock_quantity <= 5 && (
+                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-yellow-500 border-2 border-card z-10" />
+                          )}
                           <img
                             src={getProductImage(product.image_url)}
                             alt={product.name}
@@ -376,11 +390,15 @@ const AdminProducts = () => {
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
-                        {product.stock_quantity === 0 && (
+                      {product.stock_quantity === 0 ? (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-destructive/20 text-destructive">
                             Out
                           </span>
-                        )}
+                        ) : product.stock_quantity <= 5 ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+                            Low
+                          </span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-foreground">{product.rating}</td>
@@ -414,7 +432,14 @@ const AdminProducts = () => {
             </div>
           ) : (
             filteredProducts.map((product) => (
-              <div key={product.id} className="p-4 flex items-center gap-3">
+              <div key={product.id} className={cn(
+                "p-4 flex items-center gap-3",
+                product.stock_quantity === 0
+                  ? "bg-destructive/5"
+                  : product.stock_quantity <= 5
+                    ? "bg-yellow-500/5"
+                    : ""
+              )}>
                 <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                   <img
                     src={getProductImage(product.image_url)}
@@ -431,9 +456,14 @@ const AdminProducts = () => {
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-secondary-foreground capitalize">
                       {product.category}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                      product.stock_quantity > 0 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
-                    }`}>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-medium",
+                      product.stock_quantity === 0
+                        ? "bg-destructive/20 text-destructive"
+                        : product.stock_quantity <= 5
+                          ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
+                          : "bg-success/20 text-success"
+                    )}>
                       Qty: {product.stock_quantity}
                     </span>
                   </div>
