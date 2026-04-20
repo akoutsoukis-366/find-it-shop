@@ -53,8 +53,8 @@ const Auth = () => {
   const [justSignedUp, setJustSignedUp] = useState(false);
   
   // Debounce timers
-  const emailDebounceRef = useRef<NodeJS.Timeout | null>(null);
-  const phoneDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const emailDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const phoneDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // Check if already logged in

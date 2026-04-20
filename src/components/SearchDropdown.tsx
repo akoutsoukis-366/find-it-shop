@@ -21,7 +21,7 @@ const SearchDropdown = ({ query, onSelect }: SearchDropdownProps) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { formatPrice } = useCurrency();
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
