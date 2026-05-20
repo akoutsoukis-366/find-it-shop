@@ -55,13 +55,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const adminEmail = settingsMap.contact_email || "aris.koutsouki@gmail.com";
+    const adminEmail = settingsMap.contact_email || "support@metavex.gr";
     const storeName = settingsMap.store_name || 'Our Store';
     console.log(`[SEND-CONTACT-EMAIL] Sending notification to: ${adminEmail}`);
 
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({
-      from: `${storeName} <onboarding@resend.dev>`,
+      from: `${storeName} <support@metavex.gr>`,
       to: [adminEmail],
       subject: `Νέο μήνυμα επικοινωνίας από ${name}`,
       html: `
@@ -84,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to the user
     const userEmailResponse = await resend.emails.send({
-      from: `${storeName} <onboarding@resend.dev>`,
+      from: `${storeName} <support@metavex.gr>`,
       to: [email],
       subject: "Λάβαμε το μήνυμά σας!",
       html: `
@@ -104,8 +104,8 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <p style="color: #4a4a4a; font-size: 16px;">
-            Στο μεταξύ, μη διστάσετε να περιηγηθείτε στα <a href="https://itag-store.lovable.app/products" style="color: #2563eb;">προϊόντα μας</a> 
-            ή να επισκεφθείτε τη σελίδα <a href="https://itag-store.lovable.app/about" style="color: #2563eb;">Σχετικά με εμάς</a>.
+            Στο μεταξύ, μη διστάσετε να περιηγηθείτε στα <a href="https://metavex.gr/products" style="color: #2563eb;">προϊόντα μας</a> 
+            ή να επισκεφθείτε τη σελίδα <a href="https://metavex.gr/about" style="color: #2563eb;">Σχετικά με εμάς</a>.
           </p>
           
           <p style="color: #888; font-size: 14px; margin-top: 30px;">— Η ομάδα ${storeName}</p>

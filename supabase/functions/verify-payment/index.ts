@@ -387,7 +387,7 @@ serve(async (req) => {
         );
 
         const emailResponse = await resend.emails.send({
-          from: `${storeName} <onboarding@resend.dev>`,
+          from: `${storeName} <support@metavex.gr>`,
           to: [customerEmail],
           subject: `Επιβεβαίωση Παραγγελίας - #${data.id.slice(0, 8).toUpperCase()}`,
           html: emailHtml,
@@ -417,7 +417,7 @@ serve(async (req) => {
         );
 
         const adminEmailResponse = await resend.emails.send({
-          from: `${storeName} <onboarding@resend.dev>`,
+          from: `${storeName} <support@metavex.gr>`,
           to: [adminEmail],
           subject: `🛒 Νέα Παραγγελία #${data.id.slice(0, 8).toUpperCase()} - ${formatCurrency(session.amount_total || 0, session.currency || 'usd')}`,
           html: adminEmailHtml,
