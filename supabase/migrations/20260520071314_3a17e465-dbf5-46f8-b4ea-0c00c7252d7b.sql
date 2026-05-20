@@ -1,0 +1,2 @@
+UPDATE public.settings SET value = 'support@metavex.gr' WHERE key = 'contact_email';
+INSERT INTO public.settings (key, value) SELECT 'contact_email', 'support@metavex.gr' WHERE NOT EXISTS (SELECT 1 FROM public.settings WHERE key='contact_email');
