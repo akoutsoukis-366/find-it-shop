@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://itag-store.lovable.app/sitemap.xml
+Sitemap: https://metavex.gr/sitemap.xml

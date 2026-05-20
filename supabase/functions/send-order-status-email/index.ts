@@ -339,7 +339,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: `${storeName} <onboarding@resend.dev>`,
+      from: `${storeName} <support@metavex.gr>`,
       to: [customerEmail],
       subject: emailContent.subject,
       html: emailContent.html,
