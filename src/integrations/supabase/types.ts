@@ -121,6 +121,41 @@ export type Database = {
           },
         ]
       }
+      message_reply_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          raw: Json
+          reply_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          raw?: Json
+          reply_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          raw?: Json
+          reply_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reply_events_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: false
+            referencedRelation: "message_replies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
