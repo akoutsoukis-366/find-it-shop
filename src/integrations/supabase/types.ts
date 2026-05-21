@@ -71,6 +71,56 @@ export type Database = {
         }
         Relationships: []
       }
+      message_replies: {
+        Row: {
+          body: string
+          created_at: string
+          error: string | null
+          id: string
+          message_id: string
+          recipient_email: string
+          resend_id: string | null
+          sent_by: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          message_id: string
+          recipient_email: string
+          resend_id?: string | null
+          sent_by?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          message_id?: string
+          recipient_email?: string
+          resend_id?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_replies_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
