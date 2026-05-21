@@ -384,6 +384,69 @@ const AdminMessages = () => {
                           {r.error && (
                             <p className="text-xs text-destructive mt-2">{r.error}</p>
                           )}
+                          {(() => {
+                            const evts = eventsByReply[r.id] || [];
+                            const isOpen = !!openEvents[r.id];
+                            return (
+                              <Collapsible
+                                open={isOpen}
+                                onOpenChange={(v) =>
+                                  setOpenEvents((p) => ({ ...p, [r.id]: v }))
+                                }
+                                className="mt-3"
+                              >
+                                <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                  <ChevronDown
+                                    className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                  />
+                                  Ιστορικό συμβάντων ({evts.length})
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="mt-2 space-y-2">
+                                  {evts.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">
+                                      Δεν υπάρχουν συμβάντα ακόμη.
+                                    </p>
+                                  ) : (
+                                    evts.map((e) => {
+                                      const m = STATUS_META[e.status || ''] || {
+                                        label: e.status || e.event_type,
+                                        variant: 'outline' as const,
+                                        icon: Clock,
+                                      };
+                                      const EIcon = m.icon;
+                                      return (
+                                        <div
+                                          key={e.id}
+                                          className="rounded border border-border bg-background/50 p-2"
+                                        >
+                                          <div className="flex items-center justify-between gap-2 mb-1">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <Badge
+                                                variant={m.variant}
+                                                className={m.className}
+                                              >
+                                                <EIcon className="h-3 w-3 mr-1" />
+                                                {m.label}
+                                              </Badge>
+                                              <span className="text-xs text-muted-foreground truncate">
+                                                {e.event_type}
+                                              </span>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground shrink-0">
+                                              {format(new Date(e.created_at), 'd MMM, HH:mm:ss')}
+                                            </span>
+                                          </div>
+                                          <pre className="text-[10px] leading-tight text-muted-foreground bg-muted/40 rounded p-2 overflow-x-auto max-h-48">
+{JSON.stringify(e.raw, null, 2)}
+                                          </pre>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </CollapsibleContent>
+                              </Collapsible>
+                            );
+                          })()}
                         </div>
                       );
                     })}
