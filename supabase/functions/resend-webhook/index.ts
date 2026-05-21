@@ -64,6 +64,14 @@ serve(async (req) => {
       });
     }
 
+    // Log every event with raw payload for the admin history view
+    await admin.from("message_reply_events").insert({
+      reply_id: existing.id,
+      event_type: type,
+      status: newStatus,
+      raw: payload,
+    });
+
     const currentPriority = PRIORITY[existing.status] || 0;
     const newPriority = PRIORITY[newStatus] || 0;
     if (newPriority < currentPriority) {

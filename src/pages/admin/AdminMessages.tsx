@@ -24,6 +24,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Send, CheckCheck, Check, AlertTriangle, Clock, MailX } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 interface ContactMessage {
   id: string;
@@ -42,6 +48,15 @@ interface MessageReply {
   recipient_email: string;
   status: string;
   error: string | null;
+  created_at: string;
+}
+
+interface ReplyEvent {
+  id: string;
+  reply_id: string;
+  event_type: string;
+  status: string | null;
+  raw: any;
   created_at: string;
 }
 
@@ -65,6 +80,8 @@ const AdminMessages = () => {
   const [sending, setSending] = useState(false);
   const [replies, setReplies] = useState<MessageReply[]>([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
+  const [eventsByReply, setEventsByReply] = useState<Record<string, ReplyEvent[]>>({});
+  const [openEvents, setOpenEvents] = useState<Record<string, boolean>>({});
 
   const fetchMessages = async () => {
     try {
@@ -97,9 +114,25 @@ const AdminMessages = () => {
         .order('created_at', { ascending: true });
       if (error) throw error;
       setReplies(data || []);
+      const ids = (data || []).map((r) => r.id);
+      if (ids.length > 0) {
+        const { data: evts } = await supabase
+          .from('message_reply_events')
+          .select('*')
+          .in('reply_id', ids)
+          .order('created_at', { ascending: true });
+        const grouped: Record<string, ReplyEvent[]> = {};
+        (evts || []).forEach((e: any) => {
+          (grouped[e.reply_id] ||= []).push(e as ReplyEvent);
+        });
+        setEventsByReply(grouped);
+      } else {
+        setEventsByReply({});
+      }
     } catch (e) {
       console.error('Failed to load replies', e);
       setReplies([]);
+      setEventsByReply({});
     } finally {
       setLoadingReplies(false);
     }
@@ -116,6 +149,11 @@ const AdminMessages = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'message_replies', filter: `message_id=eq.${selectedMessage.id}` },
+        () => fetchReplies(selectedMessage.id),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'message_reply_events' },
         () => fetchReplies(selectedMessage.id),
       )
       .subscribe();
@@ -346,6 +384,69 @@ const AdminMessages = () => {
                           {r.error && (
                             <p className="text-xs text-destructive mt-2">{r.error}</p>
                           )}
+                          {(() => {
+                            const evts = eventsByReply[r.id] || [];
+                            const isOpen = !!openEvents[r.id];
+                            return (
+                              <Collapsible
+                                open={isOpen}
+                                onOpenChange={(v) =>
+                                  setOpenEvents((p) => ({ ...p, [r.id]: v }))
+                                }
+                                className="mt-3"
+                              >
+                                <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                  <ChevronDown
+                                    className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                  />
+                                  Ιστορικό συμβάντων ({evts.length})
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="mt-2 space-y-2">
+                                  {evts.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">
+                                      Δεν υπάρχουν συμβάντα ακόμη.
+                                    </p>
+                                  ) : (
+                                    evts.map((e) => {
+                                      const m = STATUS_META[e.status || ''] || {
+                                        label: e.status || e.event_type,
+                                        variant: 'outline' as const,
+                                        icon: Clock,
+                                      };
+                                      const EIcon = m.icon;
+                                      return (
+                                        <div
+                                          key={e.id}
+                                          className="rounded border border-border bg-background/50 p-2"
+                                        >
+                                          <div className="flex items-center justify-between gap-2 mb-1">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <Badge
+                                                variant={m.variant}
+                                                className={m.className}
+                                              >
+                                                <EIcon className="h-3 w-3 mr-1" />
+                                                {m.label}
+                                              </Badge>
+                                              <span className="text-xs text-muted-foreground truncate">
+                                                {e.event_type}
+                                              </span>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground shrink-0">
+                                              {format(new Date(e.created_at), 'd MMM, HH:mm:ss')}
+                                            </span>
+                                          </div>
+                                          <pre className="text-[10px] leading-tight text-muted-foreground bg-muted/40 rounded p-2 overflow-x-auto max-h-48">
+{JSON.stringify(e.raw, null, 2)}
+                                          </pre>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </CollapsibleContent>
+                              </Collapsible>
+                            );
+                          })()}
                         </div>
                       );
                     })}
