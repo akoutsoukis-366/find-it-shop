@@ -20,6 +20,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Send } from 'lucide-react';
 
 interface ContactMessage {
   id: string;
@@ -34,6 +38,9 @@ const AdminMessages = () => {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [replySubject, setReplySubject] = useState('');
+  const [replyBody, setReplyBody] = useState('');
+  const [sending, setSending] = useState(false);
 
   const fetchMessages = async () => {
     try {
@@ -77,8 +84,37 @@ const AdminMessages = () => {
 
   const viewMessage = async (message: ContactMessage) => {
     setSelectedMessage(message);
+    setReplySubject(`Re: Μήνυμα από ${message.name}`);
+    setReplyBody('');
     if (!message.read) {
       await markAsRead(message.id, true);
+    }
+  };
+
+  const sendReply = async () => {
+    if (!selectedMessage) return;
+    if (!replyBody.trim()) {
+      toast.error('Γράψτε ένα μήνυμα');
+      return;
+    }
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-message-reply', {
+        body: {
+          messageId: selectedMessage.id,
+          subject: replySubject,
+          replyBody,
+        },
+      });
+      if (error) throw error;
+      toast.success(`Η απάντηση στάλθηκε στο ${selectedMessage.email}`);
+      setSelectedMessage(null);
+      setReplyBody('');
+    } catch (err) {
+      console.error('Reply error:', err);
+      toast.error('Αποτυχία αποστολής απάντησης');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -193,7 +229,7 @@ const AdminMessages = () => {
       </motion.div>
 
       <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Message from {selectedMessage?.name}</DialogTitle>
           </DialogHeader>
@@ -215,15 +251,51 @@ const AdminMessages = () => {
                   {selectedMessage.message}
                 </p>
               </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    window.location.href = `mailto:${selectedMessage.email}`;
-                  }}
-                >
-                  Reply via Email
-                </Button>
+
+              <div className="border-t border-border pt-4 space-y-3">
+                <h3 className="text-sm font-semibold text-foreground">Απάντηση</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="reply-subject">Θέμα</Label>
+                  <Input
+                    id="reply-subject"
+                    value={replySubject}
+                    onChange={(e) => setReplySubject(e.target.value)}
+                    maxLength={200}
+                    disabled={sending}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reply-body">Μήνυμα</Label>
+                  <Textarea
+                    id="reply-body"
+                    value={replyBody}
+                    onChange={(e) => setReplyBody(e.target.value)}
+                    rows={8}
+                    placeholder={`Γεια σας ${selectedMessage.name},`}
+                    maxLength={10000}
+                    disabled={sending}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Θα σταλεί από support@metavex.gr στο {selectedMessage.email}
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedMessage(null)}
+                    disabled={sending}
+                  >
+                    Ακύρωση
+                  </Button>
+                  <Button onClick={sendReply} disabled={sending || !replyBody.trim()}>
+                    {sending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Αποστολή
+                  </Button>
+                </div>
               </div>
             </div>
           )}
