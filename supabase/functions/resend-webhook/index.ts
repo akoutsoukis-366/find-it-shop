@@ -73,11 +73,20 @@ serve(async (req) => {
       });
     }
 
-    const errorMsg = newStatus === "bounced"
-      ? payload?.data?.bounce?.message || "Bounced"
-      : newStatus === "complained"
-      ? "Complaint received"
-      : null;
+    let errorMsg: string | null = null;
+    if (newStatus === "bounced") {
+      const bounceType: string = (payload?.data?.bounce?.type || "").toLowerCase();
+      const bounceSubType: string = (payload?.data?.bounce?.subType || "").toLowerCase();
+      if (bounceType === "hard" || bounceSubType === "general" || bounceSubType === "noemail" || bounceSubType === "suppressed") {
+        errorMsg = "Η διεύθυνση email δεν υπάρχει ή δεν δέχεται μηνύματα. Ελέγξτε αν είναι σωστή.";
+      } else if (bounceType === "soft") {
+        errorMsg = "Προσωρινή αποτυχία παράδοσης (π.χ. γεμάτο γραμματοκιβώτιο ή μη διαθέσιμος server). Δοκιμάστε ξανά αργότερα.";
+      } else {
+        errorMsg = "Το email δεν παραδόθηκε. Πιθανώς η διεύθυνση είναι λάθος ή δεν δέχεται μηνύματα.";
+      }
+    } else if (newStatus === "complained") {
+      errorMsg = "Ο παραλήπτης σήμανε το email ως spam.";
+    }
 
     await admin
       .from("message_replies")
