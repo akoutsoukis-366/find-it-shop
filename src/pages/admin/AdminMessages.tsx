@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Send } from 'lucide-react';
+import { Send, CheckCheck, Check, AlertTriangle, Clock, MailX } from 'lucide-react';
 
 interface ContactMessage {
   id: string;
@@ -34,6 +34,28 @@ interface ContactMessage {
   created_at: string;
 }
 
+interface MessageReply {
+  id: string;
+  message_id: string;
+  subject: string;
+  body: string;
+  recipient_email: string;
+  status: string;
+  error: string | null;
+  created_at: string;
+}
+
+const STATUS_META: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any; className?: string }> = {
+  sent: { label: 'Στάλθηκε', variant: 'secondary', icon: Check },
+  delivered: { label: 'Παραδόθηκε', variant: 'default', icon: CheckCheck, className: 'bg-green-600 hover:bg-green-600 text-white' },
+  opened: { label: 'Ανοίχτηκε', variant: 'default', icon: CheckCheck, className: 'bg-green-600 hover:bg-green-600 text-white' },
+  clicked: { label: 'Πατήθηκε σύνδεσμος', variant: 'default', icon: CheckCheck, className: 'bg-green-600 hover:bg-green-600 text-white' },
+  delayed: { label: 'Καθυστέρηση', variant: 'outline', icon: Clock },
+  bounced: { label: 'Επέστρεψε (bounce)', variant: 'destructive', icon: MailX },
+  complained: { label: 'Καταγγελία spam', variant: 'destructive', icon: AlertTriangle },
+  failed: { label: 'Αποτυχία', variant: 'destructive', icon: AlertTriangle },
+};
+
 const AdminMessages = () => {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +63,8 @@ const AdminMessages = () => {
   const [replySubject, setReplySubject] = useState('');
   const [replyBody, setReplyBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [replies, setReplies] = useState<MessageReply[]>([]);
+  const [loadingReplies, setLoadingReplies] = useState(false);
 
   const fetchMessages = async () => {
     try {
@@ -62,6 +86,43 @@ const AdminMessages = () => {
   useEffect(() => {
     fetchMessages();
   }, []);
+
+  const fetchReplies = async (messageId: string) => {
+    setLoadingReplies(true);
+    try {
+      const { data, error } = await supabase
+        .from('message_replies')
+        .select('*')
+        .eq('message_id', messageId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      setReplies(data || []);
+    } catch (e) {
+      console.error('Failed to load replies', e);
+      setReplies([]);
+    } finally {
+      setLoadingReplies(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedMessage) {
+      setReplies([]);
+      return;
+    }
+    fetchReplies(selectedMessage.id);
+    const channel = supabase
+      .channel(`message_replies_${selectedMessage.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'message_replies', filter: `message_id=eq.${selectedMessage.id}` },
+        () => fetchReplies(selectedMessage.id),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedMessage?.id]);
 
   const markAsRead = async (id: string, read: boolean) => {
     try {
@@ -108,8 +169,8 @@ const AdminMessages = () => {
       });
       if (error) throw error;
       toast.success(`Η απάντηση στάλθηκε στο ${selectedMessage.email}`);
-      setSelectedMessage(null);
       setReplyBody('');
+      fetchReplies(selectedMessage.id);
     } catch (err) {
       console.error('Reply error:', err);
       toast.error('Αποτυχία αποστολής απάντησης');
@@ -250,6 +311,46 @@ const AdminMessages = () => {
                 <p className="text-foreground whitespace-pre-wrap mt-1 p-4 bg-muted rounded-lg">
                   {selectedMessage.message}
                 </p>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Ιστορικό απαντήσεων {replies.length > 0 && `(${replies.length})`}
+                </h3>
+                {loadingReplies ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Φόρτωση...
+                  </div>
+                ) : replies.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Δεν έχει σταλεί ακόμα καμία απάντηση.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {replies.map((r) => {
+                      const meta = STATUS_META[r.status] || { label: r.status, variant: 'outline' as const, icon: Clock };
+                      const Icon = meta.icon;
+                      return (
+                        <div key={r.id} className="p-3 rounded-lg border border-border bg-muted/30">
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{r.subject}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(r.created_at), 'd MMM yyyy, HH:mm')} → {r.recipient_email}
+                              </p>
+                            </div>
+                            <Badge variant={meta.variant} className={meta.className}>
+                              <Icon className="h-3 w-3 mr-1" />
+                              {meta.label}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-foreground/90 whitespace-pre-wrap">{r.body}</p>
+                          {r.error && (
+                            <p className="text-xs text-destructive mt-2">{r.error}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-border pt-4 space-y-3">
