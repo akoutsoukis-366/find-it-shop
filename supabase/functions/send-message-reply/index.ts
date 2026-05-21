@@ -120,8 +120,22 @@ serve(async (req) => {
       html,
     });
 
-    if ((result as any)?.error) {
-      console.error("[SEND-MESSAGE-REPLY] Resend error:", (result as any).error);
+    const resendError = (result as any)?.error;
+    const resendId = (result as any)?.data?.id || (result as any)?.id || null;
+
+    await admin.from("message_replies").insert({
+      message_id: messageId,
+      subject: finalSubject,
+      body: replyBody,
+      recipient_email: message.email,
+      status: resendError ? "failed" : "sent",
+      resend_id: resendId,
+      error: resendError ? String(resendError?.message || resendError) : null,
+      sent_by: userData.user.id,
+    });
+
+    if (resendError) {
+      console.error("[SEND-MESSAGE-REPLY] Resend error:", resendError);
       return new Response(JSON.stringify({ error: "Send failed" }), {
         status: 502,
         headers: { "Content-Type": "application/json", ...corsHeaders },
