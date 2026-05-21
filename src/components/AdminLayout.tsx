@@ -16,6 +16,7 @@ const AdminLayout = () => {
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -95,6 +96,33 @@ const AdminLayout = () => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('contact_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('read', false);
+      setUnreadMessages(count || 0);
+    };
+
+    fetchUnread();
+
+    const channel = supabase
+      .channel('admin-contact-messages')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contact_messages' },
+        () => fetchUnread()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/admin/login');
@@ -106,7 +134,7 @@ const AdminLayout = () => {
     { icon: FolderOpen, label: 'Categories', path: '/admin/categories' },
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: CreditCard, label: 'Orders', path: '/admin/orders' },
-    { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
+    { icon: MessageSquare, label: 'Messages', path: '/admin/messages', badge: 'messages' as const },
     { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
@@ -161,7 +189,12 @@ const AdminLayout = () => {
             )}
           >
             <item.icon className="h-5 w-5 shrink-0" />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {item.badge === 'messages' && unreadMessages > 0 && (
+              <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold animate-pulse">
+                {unreadMessages > 99 ? '99+' : unreadMessages}
+              </span>
+            )}
           </Link>
         ))}
       </nav>
