@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Package, Loader2, Eye } from 'lucide-react';
+import { Search, Package, Loader2, Eye, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -605,8 +605,8 @@ const AdminOrders = () => {
             <div className="space-y-6">
               {/* Status & Dates */}
               <div className="flex items-center justify-between">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedOrder.status)}`}>
-                  {selectedOrder.status}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
+                  {getStatusLabel(selectedOrder.status)}
                 </span>
                 <div className="text-sm text-muted-foreground">
                   Ordered: {formatDateTime(selectedOrder.created_at)}
@@ -663,11 +663,24 @@ const AdminOrders = () => {
                 </div>
                 {detailTracking.trim() && (() => {
                   const info = detectCarrierAndGetUrl(detailTracking.trim());
-                  return info ? (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      ✓ {info.carrier} detected
-                    </p>
-                  ) : null;
+                  const url = info?.url || `https://www.google.com/search?q=${encodeURIComponent('track ' + detailTracking.trim())}`;
+                  const carrier = info?.carrier || 'Tracking';
+                  return (
+                    <div className="flex items-center gap-3 mt-2">
+                      {info && (
+                        <span className="text-xs text-muted-foreground">✓ {info.carrier} detected</span>
+                      )}
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                      >
+                        Track on {carrier}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  );
                 })()}
               </div>
 
