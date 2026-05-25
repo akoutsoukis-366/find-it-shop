@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, ArrowLeft, Loader2 } from 'lucide-react';
+import { Package, ArrowLeft, Loader2, Truck, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 import Navbar from '@/components/Navbar';
@@ -19,6 +19,7 @@ interface Order {
   total: number;
   status: string;
   created_at: string;
+  tracking_number: string | null;
   shipping_address: {
     name?: string;
     line1?: string;
@@ -32,6 +33,18 @@ const statusLabels: Record<string, string> = {
   processing: 'Σε Επεξεργασία',
   shipped: 'Απεστάλη',
   pending: 'Εκκρεμεί',
+};
+
+// Detect carrier from tracking number and return tracking URL
+const detectCarrierAndGetUrl = (trackingNumber: string): { carrier: string; url: string } | null => {
+  const cleaned = trackingNumber.replace(/\s/g, '').toUpperCase();
+  if (/^(EL|RR|RA|RB|RC|RD|RE|RF|RG|RH|RI|RJ|RK|RL|RM|RN|RO|RP|RQ|RS|RT|RU|RV|RW|RX|RY|RZ|CP|CY|EE|EA|EB|EC|ED)\d{9}(GR|US|GB|DE)?$/.test(cleaned)) {
+    return { carrier: 'ELTA', url: `https://itemsearch.elta.gr/el-GR/Query/Direct/${cleaned}` };
+  }
+  if (/^1Z[0-9A-Z]{16}$/.test(cleaned)) return { carrier: 'UPS', url: `https://www.ups.com/track?tracknum=${cleaned}` };
+  if (/^\d{12}$|^\d{15}$|^\d{20}$/.test(cleaned)) return { carrier: 'FedEx', url: `https://www.fedex.com/fedextrack/?trknbr=${cleaned}` };
+  if (/^\d{10}$/.test(cleaned)) return { carrier: 'DHL', url: `https://www.dhl.com/en/express/tracking.html?AWB=${cleaned}` };
+  return { carrier: 'Tracking', url: `https://www.google.com/search?q=${encodeURIComponent('track ' + cleaned)}` };
 };
 
 const Orders = () => {
@@ -158,6 +171,34 @@ const Orders = () => {
                   </div>
                   
                   <div className="p-6">
+                    {order.tracking_number && (
+                      <div className="mb-6 pb-6 border-b border-border">
+                        <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                          <Truck className="h-4 w-4" />
+                          Παρακολούθηση Αποστολής
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="font-mono text-sm text-foreground bg-muted px-3 py-1.5 rounded-lg">
+                            {order.tracking_number}
+                          </span>
+                          {(() => {
+                            const info = detectCarrierAndGetUrl(order.tracking_number!);
+                            return info ? (
+                              <a
+                                href={info.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                              >
+                                Παρακολούθηση στον {info.carrier}
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            ) : null;
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
                     <h3 className="font-medium text-foreground mb-4">Προϊόντα</h3>
                     <div className="space-y-3">
                       {order.items.map((item, i) => (
