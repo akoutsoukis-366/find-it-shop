@@ -322,9 +322,16 @@ const AdminOrders = () => {
         return 'bg-primary/20 text-primary';
       case 'cancelled':
         return 'bg-destructive/20 text-destructive';
+      case 'pending':
+        return 'bg-destructive/20 text-destructive';
       default:
         return 'bg-muted text-muted-foreground';
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === 'pending') return 'New Order';
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const formatDate = (dateString: string) => {
@@ -441,13 +448,13 @@ const AdminOrders = () => {
                         >
                           <SelectTrigger className="w-[140px]">
                             <SelectValue>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                                {order.status}
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {getStatusLabel(order.status)}
                               </span>
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="pending">New Order</SelectItem>
                             <SelectItem value="processing">Processing</SelectItem>
                             <SelectItem value="shipped">Shipped</SelectItem>
                             <SelectItem value="delivered">Delivered</SelectItem>
@@ -478,8 +485,8 @@ const AdminOrders = () => {
                 <div key={order.id} className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-muted-foreground">{order.id.slice(0, 8)}...</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                      {order.status}
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                      {getStatusLabel(order.status)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
