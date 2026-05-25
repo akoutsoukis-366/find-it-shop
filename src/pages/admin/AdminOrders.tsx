@@ -138,6 +138,8 @@ const AdminOrders = () => {
   const [detectedCarrier, setDetectedCarrier] = useState<string | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [detailTracking, setDetailTracking] = useState('');
+  const [savingTracking, setSavingTracking] = useState(false);
 
   // Auto-detect carrier when tracking number changes
   const handleTrackingNumberChange = (value: string) => {
@@ -181,7 +183,33 @@ const AdminOrders = () => {
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
+    setDetailTracking(order.tracking_number || '');
     setDetailDialogOpen(true);
+  };
+
+  const handleSaveTracking = async () => {
+    if (!selectedOrder) return;
+    setSavingTracking(true);
+    try {
+      const newTracking = detailTracking.trim() || null;
+      const { error } = await supabase
+        .from('orders')
+        .update({ tracking_number: newTracking })
+        .eq('id', selectedOrder.id);
+
+      if (error) throw error;
+
+      setOrders(orders.map(o =>
+        o.id === selectedOrder.id ? { ...o, tracking_number: newTracking } : o
+      ));
+      setSelectedOrder({ ...selectedOrder, tracking_number: newTracking });
+      toast.success('Tracking number updated');
+    } catch (error) {
+      console.error('Error updating tracking number:', error);
+      toast.error('Failed to update tracking number');
+    } finally {
+      setSavingTracking(false);
+    }
   };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
@@ -607,17 +635,32 @@ const AdminOrders = () => {
                 </div>
               </div>
 
-              {selectedOrder.tracking_number && (
-                <>
-                  <Separator />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3">Tracking</h3>
-                    <div className="font-mono text-sm bg-secondary/50 px-3 py-2 rounded-lg">
-                      {selectedOrder.tracking_number}
-                    </div>
-                  </div>
-                </>
-              )}
+              <Separator />
+              <div>
+                <h3 className="font-semibold text-foreground mb-3">Tracking Number</h3>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    placeholder="e.g., 1Z999AA10123456784"
+                    value={detailTracking}
+                    onChange={(e) => setDetailTracking(e.target.value)}
+                    className="font-mono"
+                  />
+                  <Button
+                    onClick={handleSaveTracking}
+                    disabled={savingTracking || detailTracking.trim() === (selectedOrder.tracking_number || '')}
+                  >
+                    {savingTracking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                  </Button>
+                </div>
+                {detailTracking.trim() && (() => {
+                  const info = detectCarrierAndGetUrl(detailTracking.trim());
+                  return info ? (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      ✓ {info.carrier} detected
+                    </p>
+                  ) : null;
+                })()}
+              </div>
 
               <Separator />
 
