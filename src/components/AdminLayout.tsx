@@ -131,7 +131,7 @@ const AdminLayout = () => {
       const { count } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
+        .in('status', ['pending', 'completed']);
       setNewOrders(count || 0);
     };
 
