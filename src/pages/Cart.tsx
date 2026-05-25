@@ -182,7 +182,13 @@ const Cart = () => {
       }
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.location.href = data.url;
+        } else {
+          const win = window.open(data.url, '_blank');
+          if (!win) window.location.href = data.url;
+        }
       }
     } catch (error) {
       console.error('Checkout error:', error);
