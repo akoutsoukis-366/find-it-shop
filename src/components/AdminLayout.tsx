@@ -17,6 +17,7 @@ const AdminLayout = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [newOrders, setNewOrders] = useState(0);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -123,6 +124,33 @@ const AdminLayout = () => {
     };
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchNewOrders = async () => {
+      const { count } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      setNewOrders(count || 0);
+    };
+
+    fetchNewOrders();
+
+    const channel = supabase
+      .channel('admin-new-orders')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => fetchNewOrders()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/admin/login');
@@ -190,6 +218,11 @@ const AdminLayout = () => {
           >
             <item.icon className="h-5 w-5 shrink-0" />
             <span className="flex-1">{item.label}</span>
+            {item.path === '/admin/orders' && newOrders > 0 && (
+              <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold animate-pulse">
+                {newOrders > 99 ? '99+' : newOrders}
+              </span>
+            )}
             {item.badge === 'messages' && unreadMessages > 0 && (
               <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold animate-pulse">
                 {unreadMessages > 99 ? '99+' : unreadMessages}
