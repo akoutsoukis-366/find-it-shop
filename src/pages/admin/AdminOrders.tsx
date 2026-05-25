@@ -316,6 +316,8 @@ const AdminOrders = () => {
     switch (status) {
       case 'delivered':
         return 'bg-success/20 text-success';
+      case 'completed':
+        return 'bg-destructive/20 text-destructive';
       case 'processing':
         return 'bg-warning/20 text-warning';
       case 'shipped':
@@ -330,7 +332,7 @@ const AdminOrders = () => {
   };
 
   const getStatusLabel = (status: string) => {
-    if (status === 'pending') return 'New Order';
+    if (status === 'pending' || status === 'completed') return 'New Order';
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
@@ -454,7 +456,7 @@ const AdminOrders = () => {
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">New Order</SelectItem>
+                            <SelectItem value="completed">New Order</SelectItem>
                             <SelectItem value="processing">Processing</SelectItem>
                             <SelectItem value="shipped">Shipped</SelectItem>
                             <SelectItem value="delivered">Delivered</SelectItem>
@@ -510,7 +512,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="completed">New Order</SelectItem>
                           <SelectItem value="processing">Processing</SelectItem>
                           <SelectItem value="shipped">Shipped</SelectItem>
                           <SelectItem value="delivered">Delivered</SelectItem>
