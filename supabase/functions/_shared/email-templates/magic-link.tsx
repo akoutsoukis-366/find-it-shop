@@ -48,5 +48,5 @@ const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacS
 const container = { padding: '28px 28px', maxWidth: '560px' }
 const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '0 0 20px' }
 const text = { fontSize: '15px', color: '#3f3f46', lineHeight: '1.6', margin: '0 0 22px' }
-const button = { backgroundColor: 'hsl(220, 100%, 50%)', color: '#ffffff', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '12px', padding: '14px 24px', textDecoration: 'none', display: 'inline-block' }
+const button = { backgroundColor: '#0055ff', color: '#ffffff', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '12px', padding: '14px 24px', textDecoration: 'none', display: 'inline-block' }
 const footer = { fontSize: '12px', color: '#9ca3af', margin: '30px 0 0' }
