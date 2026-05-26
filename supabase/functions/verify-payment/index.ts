@@ -330,7 +330,7 @@ serve(async (req) => {
         total: session.amount_total || 0,
         currency: session.currency || "usd",
         status: "completed",
-        user_id: userId || null,
+        user_id: safeUserId,
       })
       .select()
       .single();
