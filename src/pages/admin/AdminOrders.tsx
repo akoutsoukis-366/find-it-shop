@@ -141,6 +141,8 @@ const AdminOrders = () => {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailTracking, setDetailTracking] = useState('');
+  const [detailTrackingUrl, setDetailTrackingUrl] = useState('');
+  const [detailEstimatedDelivery, setDetailEstimatedDelivery] = useState('');
   const [savingTracking, setSavingTracking] = useState(false);
 
   // Auto-detect carrier when tracking number changes
@@ -186,6 +188,8 @@ const AdminOrders = () => {
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
     setDetailTracking(order.tracking_number || '');
+    setDetailTrackingUrl(order.tracking_url || '');
+    setDetailEstimatedDelivery(order.estimated_delivery || '');
     setDetailDialogOpen(true);
   };
 
@@ -194,18 +198,55 @@ const AdminOrders = () => {
     setSavingTracking(true);
     try {
       const newTracking = detailTracking.trim() || null;
+      const newTrackingUrl = detailTrackingUrl.trim() || null;
+      const newEstimated = detailEstimatedDelivery.trim() || null;
       const { error } = await supabase
         .from('orders')
-        .update({ tracking_number: newTracking })
+        .update({
+          tracking_number: newTracking,
+          tracking_url: newTrackingUrl,
+          estimated_delivery: newEstimated,
+        })
         .eq('id', selectedOrder.id);
 
       if (error) throw error;
 
       setOrders(orders.map(o =>
-        o.id === selectedOrder.id ? { ...o, tracking_number: newTracking } : o
+        o.id === selectedOrder.id
+          ? { ...o, tracking_number: newTracking, tracking_url: newTrackingUrl, estimated_delivery: newEstimated }
+          : o
       ));
-      setSelectedOrder({ ...selectedOrder, tracking_number: newTracking });
-      toast.success('Tracking number updated');
+      setSelectedOrder({
+        ...selectedOrder,
+        tracking_number: newTracking,
+        tracking_url: newTrackingUrl,
+        estimated_delivery: newEstimated,
+      });
+      toast.success('Στοιχεία αποστολής αποθηκεύτηκαν');
+
+      // Notify customer with the updated shipping details
+      if (selectedOrder.customer_email && newTracking) {
+        try {
+          const autoUrl = newTrackingUrl || detectCarrierAndGetUrl(newTracking)?.url;
+          await supabase.functions.invoke('send-order-status-email', {
+            body: {
+              customerEmail: selectedOrder.customer_email,
+              customerName: selectedOrder.customer_name,
+              orderId: selectedOrder.id,
+              status: 'shipped',
+              items: selectedOrder.items,
+              trackingNumber: newTracking,
+              trackingUrl: autoUrl,
+              estimatedDelivery: newEstimated || undefined,
+              shippingAddress: selectedOrder.shipping_address,
+            },
+          });
+          toast.success('Ο πελάτης ενημερώθηκε με email');
+        } catch (emailError) {
+          console.error('Failed to send shipping update email:', emailError);
+          toast.error('Η αποθήκευση έγινε αλλά το email απέτυχε');
+        }
+      }
     } catch (error) {
       console.error('Error updating tracking number:', error);
       toast.error('Failed to update tracking number');
