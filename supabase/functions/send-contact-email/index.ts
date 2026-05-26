@@ -15,6 +15,14 @@ interface ContactEmailRequest {
   message: string;
 }
 
+const escapeHtml = (s: string): string =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -59,23 +67,28 @@ const handler = async (req: Request): Promise<Response> => {
     const storeName = settingsMap.store_name || 'Our Store';
     console.log(`[SEND-CONTACT-EMAIL] Sending notification to: ${adminEmail}`);
 
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeMessage = escapeHtml(message);
+    const safeStoreName = escapeHtml(storeName);
+
     // Send notification to admin
     const adminEmailResponse = await resend.emails.send({
       from: `${storeName} <support@metavex.gr>`,
       to: [adminEmail],
-      subject: `Νέο μήνυμα επικοινωνίας από ${name}`,
+      subject: `Νέο μήνυμα επικοινωνίας από ${name}`.slice(0, 200),
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #1a1a1a; font-size: 24px;">Νέο Μήνυμα Επικοινωνίας</h1>
           
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 12px 0;"><strong>Όνομα:</strong> ${name}</p>
-            <p style="margin: 0 0 12px 0;"><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+            <p style="margin: 0 0 12px 0;"><strong>Όνομα:</strong> ${safeName}</p>
+            <p style="margin: 0 0 12px 0;"><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
             <p style="margin: 0;"><strong>Μήνυμα:</strong></p>
-            <p style="margin: 8px 0 0 0; white-space: pre-wrap;">${message}</p>
+            <p style="margin: 8px 0 0 0; white-space: pre-wrap;">${safeMessage}</p>
           </div>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— Φόρμα Επικοινωνίας ${storeName}</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— Φόρμα Επικοινωνίας ${safeStoreName}</p>
         </div>
       `,
     });
@@ -91,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #1a1a1a; font-size: 24px;">Ευχαριστούμε που Επικοινωνήσατε!</h1>
           
-          <p style="color: #4a4a4a; font-size: 16px;">Γεια σας ${name},</p>
+          <p style="color: #4a4a4a; font-size: 16px;">Γεια σας ${safeName},</p>
           
           <p style="color: #4a4a4a; font-size: 16px;">
             Λάβαμε το μήνυμά σας και θα επικοινωνήσουμε μαζί σας το συντομότερο δυνατό, 
@@ -100,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0 0 8px 0; font-weight: 600;">Το μήνυμά σας:</p>
-            <p style="margin: 0; color: #666; white-space: pre-wrap;">${message}</p>
+            <p style="margin: 0; color: #666; white-space: pre-wrap;">${safeMessage}</p>
           </div>
           
           <p style="color: #4a4a4a; font-size: 16px;">
@@ -108,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
             ή να επισκεφθείτε τη σελίδα <a href="https://metavex.gr/about" style="color: #2563eb;">Σχετικά με εμάς</a>.
           </p>
           
-          <p style="color: #888; font-size: 14px; margin-top: 30px;">— Η ομάδα ${storeName}</p>
+          <p style="color: #888; font-size: 14px; margin-top: 30px;">— Η ομάδα ${safeStoreName}</p>
         </div>
       `,
     });
