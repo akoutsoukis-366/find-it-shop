@@ -103,6 +103,24 @@ const AdminDashboard = () => {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed':
+      case 'pending':
+        return 'New Order';
+      case 'processing':
+        return 'Processing';
+      case 'shipped':
+        return 'Shipped';
+      case 'delivered':
+        return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  };
+
   const formatPrice = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
   };
@@ -191,8 +209,8 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-foreground">{formatPrice(order.total)}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                          {order.status}
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                          {getStatusLabel(order.status)}
                         </span>
                       </td>
                     </tr>
@@ -207,8 +225,8 @@ const AdminDashboard = () => {
                 <div key={order.id} className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-muted-foreground">{order.id.slice(0, 8)}...</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                      {order.status}
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                      {getStatusLabel(order.status)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
