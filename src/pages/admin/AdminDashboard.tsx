@@ -24,6 +24,21 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchOrders();
+
+    const channel = supabase
+      .channel('admin-dashboard-orders')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchOrders = async () => {
