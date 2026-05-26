@@ -689,24 +689,50 @@ const AdminOrders = () => {
 
               <Separator />
               <div>
-                <h3 className="font-semibold text-foreground mb-3">Tracking Number</h3>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input
-                    placeholder="e.g., 1Z999AA10123456784"
-                    value={detailTracking}
-                    onChange={(e) => setDetailTracking(e.target.value)}
-                    className="font-mono"
-                  />
-                  <Button
-                    onClick={handleSaveTracking}
-                    disabled={savingTracking || detailTracking.trim() === (selectedOrder.tracking_number || '')}
-                  >
-                    {savingTracking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                  </Button>
+                <h3 className="font-semibold text-foreground mb-3">Στοιχεία Αποστολής</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Tracking Number</label>
+                    <Input
+                      placeholder="e.g., 1Z999AA10123456784"
+                      value={detailTracking}
+                      onChange={(e) => setDetailTracking(e.target.value)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Tracking URL (προαιρετικό — αυτόματο αν αναγνωριστεί ο μεταφορέας)</label>
+                    <Input
+                      placeholder="https://..."
+                      value={detailTrackingUrl}
+                      onChange={(e) => setDetailTrackingUrl(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Estimated Delivery</label>
+                    <Input
+                      placeholder="π.χ. 28-30 Μαΐου 2026"
+                      value={detailEstimatedDelivery}
+                      onChange={(e) => setDetailEstimatedDelivery(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSaveTracking}
+                      disabled={
+                        savingTracking ||
+                        (detailTracking.trim() === (selectedOrder.tracking_number || '') &&
+                          detailTrackingUrl.trim() === (selectedOrder.tracking_url || '') &&
+                          detailEstimatedDelivery.trim() === (selectedOrder.estimated_delivery || ''))
+                      }
+                    >
+                      {savingTracking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Αποθήκευση & Email πελάτη'}
+                    </Button>
+                  </div>
                 </div>
                 {detailTracking.trim() && (() => {
                   const info = detectCarrierAndGetUrl(detailTracking.trim());
-                  const url = info?.url || `https://www.google.com/search?q=${encodeURIComponent('track ' + detailTracking.trim())}`;
+                  const url = detailTrackingUrl.trim() || info?.url || `https://www.google.com/search?q=${encodeURIComponent('track ' + detailTracking.trim())}`;
                   const carrier = info?.carrier || 'Tracking';
                   return (
                     <div className="flex items-center gap-3 mt-2">
