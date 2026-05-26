@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "itag-store"
+const SITE_NAME = "Metavex"
 const SENDER_DOMAIN = "notify.metavex.gr"
 const ROOT_DOMAIN = "metavex.gr"
 const FROM_DOMAIN = "notify.metavex.gr" // Domain shown in From address (may be root or sender subdomain)
