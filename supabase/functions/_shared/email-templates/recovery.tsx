@@ -19,25 +19,24 @@ interface RecoveryEmailProps {
 }
 
 export const RecoveryEmail = ({
-  siteName,
   confirmationUrl,
 }: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="el" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Επαναφορά κωδικού πρόσβασης για τη Metavex</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
+        <Heading style={h1}>Επαναφορά κωδικού πρόσβασης</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          Λάβαμε αίτημα για επαναφορά του κωδικού πρόσβασής σου στη Metavex.
+          Πάτησε το κουμπί παρακάτω για να ορίσεις νέο κωδικό.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Reset Password
+          Επαναφορά Κωδικού
         </Button>
         <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+          Αν δεν ζήτησες επαναφορά κωδικού, μπορείς να αγνοήσεις αυτό το email.
+          Ο κωδικός σου δεν θα αλλάξει.
         </Text>
       </Container>
     </Body>
@@ -46,26 +45,9 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif' }
+const container = { padding: '28px 28px', maxWidth: '560px' }
+const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '0 0 20px' }
+const text = { fontSize: '15px', color: '#3f3f46', lineHeight: '1.6', margin: '0 0 22px' }
+const button = { backgroundColor: 'hsl(220, 100%, 50%)', color: '#ffffff', fontSize: '15px', fontWeight: 'bold' as const, borderRadius: '12px', padding: '14px 24px', textDecoration: 'none', display: 'inline-block' }
+const footer = { fontSize: '12px', color: '#9ca3af', margin: '30px 0 0' }
