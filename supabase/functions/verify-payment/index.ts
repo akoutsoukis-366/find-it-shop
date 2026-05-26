@@ -224,13 +224,11 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId, userId } = await req.json();
+    const { sessionId } = await req.json();
     
     if (!sessionId) {
       throw new Error("No session ID provided");
     }
-
-    console.log("[VERIFY-PAYMENT] Verifying session:", sessionId, "User:", userId);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -240,6 +238,18 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Derive user_id from the caller's JWT only — never trust a client-supplied userId.
+    // Unauthenticated callers (guest checkout) get null.
+    let safeUserId: string | null = null;
+    const authHeader = req.headers.get("Authorization") || req.headers.get("authorization");
+    if (authHeader) {
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      safeUserId = user?.id ?? null;
+    }
+
+    console.log("[VERIFY-PAYMENT] Verifying session:", sessionId, "User:", safeUserId);
 
     // Check if order already exists
     const { data: existingOrder } = await supabase
