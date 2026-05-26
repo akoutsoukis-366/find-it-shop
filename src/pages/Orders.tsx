@@ -29,10 +29,10 @@ interface Order {
 }
 
 const statusLabels: Record<string, string> = {
-  completed: 'Ολοκληρώθηκε',
+  completed: 'Νέα Παραγγελία',
   processing: 'Σε Επεξεργασία',
   shipped: 'Απεστάλη',
-  pending: 'Εκκρεμεί',
+  pending: 'Νέα Παραγγελία',
 };
 
 // Detect carrier from tracking number and return tracking URL
