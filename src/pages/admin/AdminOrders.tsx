@@ -49,6 +49,8 @@ interface Order {
   updated_at: string;
   status: string;
   tracking_number: string | null;
+  tracking_url: string | null;
+  estimated_delivery: string | null;
   shipping_address: ShippingAddress | null;
   currency: string | null;
   stripe_session_id: string | null;
