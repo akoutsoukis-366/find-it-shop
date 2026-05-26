@@ -216,6 +216,24 @@ const AdminUsers = () => {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed':
+      case 'pending':
+        return 'New Order';
+      case 'processing':
+        return 'Processing';
+      case 'shipped':
+        return 'Shipped';
+      case 'delivered':
+        return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  };
+
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       month: 'short',
@@ -602,8 +620,8 @@ const AdminUsers = () => {
                               <span className="font-mono text-sm text-foreground">
                                 #{order.id.slice(0, 8)}
                               </span>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                                {order.status}
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {getStatusLabel(order.status)}
                               </span>
                             </div>
                             <div className="text-xs text-muted-foreground mt-1">
@@ -648,8 +666,8 @@ const AdminUsers = () => {
             <div className="space-y-6">
               {/* Status & Dates */}
               <div className="flex items-center justify-between">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedOrder.status)}`}>
-                  {selectedOrder.status}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
+                  {getStatusLabel(selectedOrder.status)}
                 </span>
                 <div className="text-sm text-muted-foreground">
                   Ordered: {formatDateTime(selectedOrder.created_at)}
