@@ -349,7 +349,7 @@ const Auth = () => {
         setJustSignedUp(false);
         
         // Set verification message and switch to login tab
-        setVerificationMessage('Ο λογαριασμός δημιουργήθηκε! Ελέγξτε το email σας για να επιβεβαιώσετε τον λογαριασμό σας πριν συνδεθείτε.');
+        setVerificationMessage('Ο λογαριασμός δημιουργήθηκε! Ελέγξτε το email σας (καθώς και τον φάκελο ανεπιθύμητης αλληλογραφίας/spam) για να επιβεβαιώσετε τον λογαριασμό σας πριν συνδεθείτε.');
         setActiveTab('login');
       }
     } catch (err) {
