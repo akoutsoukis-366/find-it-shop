@@ -76,7 +76,11 @@ const ResetPassword = () => {
       }, 2000);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Αποτυχία επαναφοράς κωδικού';
-      setError(message);
+      if (message.toLowerCase().includes('pwned') || message.toLowerCase().includes('weak') || message.toLowerCase().includes('easy to guess')) {
+        setError('Ο κωδικός είναι γνωστός ως αδύναμος και εύκολος να μαντευτεί. Παρακαλώ επιλέξτε διαφορετικό κωδικό.');
+      } else {
+        setError(message);
+      }
     } finally {
       setIsLoading(false);
     }

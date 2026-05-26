@@ -357,6 +357,8 @@ const Auth = () => {
       if (message.includes('already registered') || message.includes('already exists')) {
         setError('Υπάρχει ήδη λογαριασμός με αυτό το email');
         setEmailError('Υπάρχει ήδη λογαριασμός με αυτό το email');
+      } else if (message.toLowerCase().includes('pwned') || message.toLowerCase().includes('weak') || message.toLowerCase().includes('easy to guess')) {
+        setError('Ο κωδικός είναι γνωστός ως αδύναμος και εύκολος να μαντευτεί. Παρακαλώ επιλέξτε διαφορετικό κωδικό.');
       } else {
         setError(message);
       }
