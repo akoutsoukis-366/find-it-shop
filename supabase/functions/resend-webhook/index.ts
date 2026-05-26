@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Webhook } from "https://esm.sh/svix@1.21.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,7 +40,46 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, serviceKey);
 
-    const payload = await req.json();
+    // Verify Resend webhook signature (Svix headers) to prevent spoofed events
+    const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET");
+    const rawBody = await req.text();
+    let payload: any;
+
+    if (webhookSecret) {
+      const svixId = req.headers.get("svix-id");
+      const svixTimestamp = req.headers.get("svix-timestamp");
+      const svixSignature = req.headers.get("svix-signature");
+
+      if (!svixId || !svixTimestamp || !svixSignature) {
+        console.warn("[RESEND-WEBHOOK] Missing Svix signature headers");
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      try {
+        const wh = new Webhook(webhookSecret);
+        payload = wh.verify(rawBody, {
+          "svix-id": svixId,
+          "svix-timestamp": svixTimestamp,
+          "svix-signature": svixSignature,
+        }) as any;
+      } catch (verifyErr) {
+        console.warn("[RESEND-WEBHOOK] Invalid signature");
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+    } else {
+      console.warn("[RESEND-WEBHOOK] RESEND_WEBHOOK_SECRET not configured — refusing request");
+      return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const type: string = payload?.type || "";
     const emailId: string | undefined = payload?.data?.email_id || payload?.data?.id;
     const newStatus = EVENT_STATUS[type];
