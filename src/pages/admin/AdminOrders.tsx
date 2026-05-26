@@ -49,6 +49,8 @@ interface Order {
   updated_at: string;
   status: string;
   tracking_number: string | null;
+  tracking_url: string | null;
+  estimated_delivery: string | null;
   shipping_address: ShippingAddress | null;
   currency: string | null;
   stripe_session_id: string | null;
@@ -139,6 +141,8 @@ const AdminOrders = () => {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailTracking, setDetailTracking] = useState('');
+  const [detailTrackingUrl, setDetailTrackingUrl] = useState('');
+  const [detailEstimatedDelivery, setDetailEstimatedDelivery] = useState('');
   const [savingTracking, setSavingTracking] = useState(false);
 
   // Auto-detect carrier when tracking number changes
@@ -184,6 +188,8 @@ const AdminOrders = () => {
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
     setDetailTracking(order.tracking_number || '');
+    setDetailTrackingUrl(order.tracking_url || '');
+    setDetailEstimatedDelivery(order.estimated_delivery || '');
     setDetailDialogOpen(true);
   };
 
@@ -192,18 +198,55 @@ const AdminOrders = () => {
     setSavingTracking(true);
     try {
       const newTracking = detailTracking.trim() || null;
+      const newTrackingUrl = detailTrackingUrl.trim() || null;
+      const newEstimated = detailEstimatedDelivery.trim() || null;
       const { error } = await supabase
         .from('orders')
-        .update({ tracking_number: newTracking })
+        .update({
+          tracking_number: newTracking,
+          tracking_url: newTrackingUrl,
+          estimated_delivery: newEstimated,
+        })
         .eq('id', selectedOrder.id);
 
       if (error) throw error;
 
       setOrders(orders.map(o =>
-        o.id === selectedOrder.id ? { ...o, tracking_number: newTracking } : o
+        o.id === selectedOrder.id
+          ? { ...o, tracking_number: newTracking, tracking_url: newTrackingUrl, estimated_delivery: newEstimated }
+          : o
       ));
-      setSelectedOrder({ ...selectedOrder, tracking_number: newTracking });
-      toast.success('Tracking number updated');
+      setSelectedOrder({
+        ...selectedOrder,
+        tracking_number: newTracking,
+        tracking_url: newTrackingUrl,
+        estimated_delivery: newEstimated,
+      });
+      toast.success('Στοιχεία αποστολής αποθηκεύτηκαν');
+
+      // Notify customer with the updated shipping details
+      if (selectedOrder.customer_email && newTracking) {
+        try {
+          const autoUrl = newTrackingUrl || detectCarrierAndGetUrl(newTracking)?.url;
+          await supabase.functions.invoke('send-order-status-email', {
+            body: {
+              customerEmail: selectedOrder.customer_email,
+              customerName: selectedOrder.customer_name,
+              orderId: selectedOrder.id,
+              status: 'shipped',
+              items: selectedOrder.items,
+              trackingNumber: newTracking,
+              trackingUrl: autoUrl,
+              estimatedDelivery: newEstimated || undefined,
+              shippingAddress: selectedOrder.shipping_address,
+            },
+          });
+          toast.success('Ο πελάτης ενημερώθηκε με email');
+        } catch (emailError) {
+          console.error('Failed to send shipping update email:', emailError);
+          toast.error('Η αποθήκευση έγινε αλλά το email απέτυχε');
+        }
+      }
     } catch (error) {
       console.error('Error updating tracking number:', error);
       toast.error('Failed to update tracking number');
@@ -646,24 +689,50 @@ const AdminOrders = () => {
 
               <Separator />
               <div>
-                <h3 className="font-semibold text-foreground mb-3">Tracking Number</h3>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input
-                    placeholder="e.g., 1Z999AA10123456784"
-                    value={detailTracking}
-                    onChange={(e) => setDetailTracking(e.target.value)}
-                    className="font-mono"
-                  />
-                  <Button
-                    onClick={handleSaveTracking}
-                    disabled={savingTracking || detailTracking.trim() === (selectedOrder.tracking_number || '')}
-                  >
-                    {savingTracking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                  </Button>
+                <h3 className="font-semibold text-foreground mb-3">Στοιχεία Αποστολής</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Tracking Number</label>
+                    <Input
+                      placeholder="e.g., 1Z999AA10123456784"
+                      value={detailTracking}
+                      onChange={(e) => setDetailTracking(e.target.value)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Tracking URL (προαιρετικό — αυτόματο αν αναγνωριστεί ο μεταφορέας)</label>
+                    <Input
+                      placeholder="https://..."
+                      value={detailTrackingUrl}
+                      onChange={(e) => setDetailTrackingUrl(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Estimated Delivery</label>
+                    <Input
+                      placeholder="π.χ. 28-30 Μαΐου 2026"
+                      value={detailEstimatedDelivery}
+                      onChange={(e) => setDetailEstimatedDelivery(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSaveTracking}
+                      disabled={
+                        savingTracking ||
+                        (detailTracking.trim() === (selectedOrder.tracking_number || '') &&
+                          detailTrackingUrl.trim() === (selectedOrder.tracking_url || '') &&
+                          detailEstimatedDelivery.trim() === (selectedOrder.estimated_delivery || ''))
+                      }
+                    >
+                      {savingTracking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Αποθήκευση & Email πελάτη'}
+                    </Button>
+                  </div>
                 </div>
                 {detailTracking.trim() && (() => {
                   const info = detectCarrierAndGetUrl(detailTracking.trim());
-                  const url = info?.url || `https://www.google.com/search?q=${encodeURIComponent('track ' + detailTracking.trim())}`;
+                  const url = detailTrackingUrl.trim() || info?.url || `https://www.google.com/search?q=${encodeURIComponent('track ' + detailTracking.trim())}`;
                   const carrier = info?.carrier || 'Tracking';
                   return (
                     <div className="flex items-center gap-3 mt-2">
